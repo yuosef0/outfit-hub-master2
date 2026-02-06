@@ -293,7 +293,7 @@ export default function OrdersPage() {
     const filteredOrders = getOrdersByStatus(activeTab);
 
     return (
-        <div className="bg-background-light min-h-screen">
+        <div className="bg-background-light">
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
             {/* Header */}
