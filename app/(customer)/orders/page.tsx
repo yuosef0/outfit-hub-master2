@@ -127,8 +127,8 @@ export default function OrdersPage() {
                     <button
                         onClick={() => setActiveTab('all')}
                         className={`flex-1 py-3 font-semibold text-sm text-center border-b-2 transition-colors ${activeTab === 'all'
-                                ? 'border-primary text-primary'
-                                : 'border-transparent text-text-light-secondary hover:text-text-light-primary'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-text-light-secondary hover:text-text-light-primary'
                             }`}
                     >
                         {language === 'ar' ? 'كل الطلبات' : 'All Orders'} ({orders.length})
@@ -136,8 +136,8 @@ export default function OrdersPage() {
                     <button
                         onClick={() => setActiveTab('pending')}
                         className={`flex-1 py-3 font-semibold text-sm text-center border-b-2 transition-colors ${activeTab === 'pending'
-                                ? 'border-primary text-primary'
-                                : 'border-transparent text-text-light-secondary hover:text-text-light-primary'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-text-light-secondary hover:text-text-light-primary'
                             }`}
                     >
                         {language === 'ar' ? 'قيد الانتظار' : 'Pending'} ({pendingOrders.length})
@@ -205,30 +205,43 @@ export default function OrdersPage() {
 
                                     {/* Pickup Code - Only for pending orders */}
                                     {['reserved', 'confirmed', 'ready'].includes(order.status) && (
-                                        <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-xl">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm text-text-light-secondary">
-                                                    {language === 'ar' ? 'كود الاستلام' : 'Pickup Code'}
-                                                </span>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-2xl font-bold text-primary tracking-[0.3em]">
-                                                        {order.pickup_code}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => {
-                                                            navigator.clipboard.writeText(order.pickup_code);
-                                                        }}
-                                                        className="p-1.5 hover:bg-primary/10 rounded-lg transition-colors"
-                                                    >
-                                                        <span className="material-symbols-outlined text-primary text-[20px]">content_copy</span>
-                                                    </button>
+                                        <div className="mt-3 p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                                            <div className="flex flex-col items-center gap-3">
+                                                {/* QR Code */}
+                                                <div className="bg-white p-3 rounded-xl shadow-sm">
+                                                    <img
+                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${order.pickup_code}&bgcolor=ffffff&color=000000&margin=0`}
+                                                        alt="QR Code"
+                                                        className="w-32 h-32"
+                                                    />
                                                 </div>
+
+                                                {/* Pickup Code Text */}
+                                                <div className="text-center">
+                                                    <span className="text-xs text-text-light-secondary block mb-1">
+                                                        {language === 'ar' ? 'كود الاستلام' : 'Pickup Code'}
+                                                    </span>
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <span className="text-2xl font-bold text-primary tracking-[0.3em]">
+                                                            {order.pickup_code}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(order.pickup_code);
+                                                            }}
+                                                            className="p-1.5 hover:bg-primary/10 rounded-lg transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined text-primary text-[20px]">content_copy</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {order.status === 'ready' && (
+                                                    <p className="text-xs text-primary font-medium bg-primary/10 px-3 py-1.5 rounded-full">
+                                                        {language === 'ar' ? '🎉 طلبك جاهز للاستلام!' : '🎉 Your order is ready for pickup!'}
+                                                    </p>
+                                                )}
                                             </div>
-                                            {order.status === 'ready' && (
-                                                <p className="text-xs text-primary mt-2 font-medium">
-                                                    {language === 'ar' ? '🎉 طلبك جاهز للاستلام!' : '🎉 Your order is ready for pickup!'}
-                                                </p>
-                                            )}
                                         </div>
                                     )}
                                 </div>

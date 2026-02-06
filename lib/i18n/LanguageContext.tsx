@@ -59,6 +59,10 @@ const translations: Record<Language, Record<string, string>> = {
         'store.contact': 'Contact',
         'store.workingHours': 'Working Hours',
         'store.description': 'Description',
+        'store.openUntil': 'Until',
+        'store.verifiedMerchant': 'Verified Merchant',
+        'store.noDescription': 'No description available.',
+        'store.noReviews': 'No reviews yet',
 
         // Profile Page
         'profile.title': 'Profile',
@@ -268,6 +272,10 @@ const translations: Record<Language, Record<string, string>> = {
         'store.contact': 'التواصل',
         'store.workingHours': 'ساعات العمل',
         'store.description': 'الوصف',
+        'store.openUntil': 'حتى',
+        'store.verifiedMerchant': 'تاجر موثوق',
+        'store.noDescription': 'لا يوجد وصف متاح.',
+        'store.noReviews': 'لا توجد تقييمات بعد',
 
         // Profile Page
         'profile.title': 'الملف الشخصي',
