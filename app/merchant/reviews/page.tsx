@@ -179,7 +179,7 @@ export default function ReviewsPage() {
     const filteredReviews = getFilteredReviews();
 
     return (
-        <div className="bg-background-light">
+        <div className="bg-background-light pb-6">
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
             {/* Header */}
