@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -8,9 +8,19 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 export default function Footer() {
     const pathname = usePathname();
     const { language, setLanguage, t } = useLanguage();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Hide Footer on merchant pages
     if (pathname.startsWith('/merchant')) {
+        return null;
+    }
+
+    // Show loading state until mounted to avoid hydration mismatch
+    if (!mounted) {
         return null;
     }
 
@@ -87,8 +97,8 @@ export default function Footer() {
                             <button
                                 onClick={() => setLanguage('ar')}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${language === 'ar'
-                                        ? 'bg-primary text-white'
-                                        : 'text-text-light-secondary hover:text-text-light-primary'
+                                    ? 'bg-primary text-white'
+                                    : 'text-text-light-secondary hover:text-text-light-primary'
                                     }`}
                             >
                                 العربية
@@ -96,8 +106,8 @@ export default function Footer() {
                             <button
                                 onClick={() => setLanguage('en')}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${language === 'en'
-                                        ? 'bg-primary text-white'
-                                        : 'text-text-light-secondary hover:text-text-light-primary'
+                                    ? 'bg-primary text-white'
+                                    : 'text-text-light-secondary hover:text-text-light-primary'
                                     }`}
                             >
                                 English
