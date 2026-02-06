@@ -89,33 +89,6 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Language Toggle */}
-                <div className="border-t border-border-light pt-6 mb-6">
-                    <div className="flex items-center justify-center gap-4">
-                        <span className="text-sm text-text-light-secondary">{t('footer.language')}:</span>
-                        <div className="flex bg-card-light rounded-lg p-1">
-                            <button
-                                onClick={() => setLanguage('ar')}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${language === 'ar'
-                                    ? 'bg-primary text-white'
-                                    : 'text-text-light-secondary hover:text-text-light-primary'
-                                    }`}
-                            >
-                                العربية
-                            </button>
-                            <button
-                                onClick={() => setLanguage('en')}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${language === 'en'
-                                    ? 'bg-primary text-white'
-                                    : 'text-text-light-secondary hover:text-text-light-primary'
-                                    }`}
-                            >
-                                English
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="border-t border-border-light pt-6 text-center">
                     <p className="text-xs text-text-light-secondary">
                         {t('footer.copyright')}

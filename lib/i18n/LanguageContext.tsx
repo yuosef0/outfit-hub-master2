@@ -51,6 +51,26 @@ const translations: Record<Language, Record<string, string>> = {
         'store.all': 'All',
         'store.search': 'Search in',
 
+        // Profile Page
+        'profile.title': 'Profile',
+        'profile.editProfile': 'Edit Profile',
+        'profile.myShopping': 'My Shopping',
+        'profile.myOrders': 'My Orders',
+        'profile.myWishlist': 'My Wishlist',
+        'profile.myReviews': 'My Reviews',
+        'profile.preferences': 'Preferences',
+        'profile.notifications': 'Notifications',
+        'profile.language': 'Language',
+        'profile.supportLegal': 'Support & Legal',
+        'profile.helpSupport': 'Help & Support',
+        'profile.termsConditions': 'Terms & Conditions',
+        'profile.privacyPolicy': 'Privacy Policy',
+        'profile.aboutApp': 'About Outfit Hub',
+        'profile.logout': 'Log Out',
+        'profile.loggingOut': 'Logging out...',
+        'profile.loadingProfile': 'Loading profile...',
+        'profile.merchantAccount': 'Merchant Account',
+
         // Common
         'common.loading': 'Loading...',
         'common.error': 'Error',
@@ -61,6 +81,31 @@ const translations: Record<Language, Record<string, string>> = {
         'common.edit': 'Edit',
         'common.add': 'Add',
         'common.soldOut': 'SOLD OUT',
+        'common.addToCart': 'Add to Cart',
+        'common.buyNow': 'Buy Now',
+        'common.price': 'Price',
+        'common.quantity': 'Quantity',
+        'common.total': 'Total',
+        'common.checkout': 'Checkout',
+        'common.continue': 'Continue',
+        'common.back': 'Back',
+        'common.search': 'Search',
+        'common.filter': 'Filter',
+        'common.sort': 'Sort',
+        'common.all': 'All',
+        'common.viewAll': 'View All',
+        'common.seeMore': 'See More',
+        'common.noResults': 'No results found',
+
+        // Cart
+        'cart.title': 'Shopping Cart',
+        'cart.empty': 'Your cart is empty',
+        'cart.subtotal': 'Subtotal',
+        'cart.proceedToCheckout': 'Proceed to Checkout',
+
+        // Categories
+        'categories.title': 'Categories',
+        'categories.all': 'All Categories',
     },
     ar: {
         // Navigation
@@ -101,6 +146,26 @@ const translations: Record<Language, Record<string, string>> = {
         'store.all': 'الكل',
         'store.search': 'ابحث في',
 
+        // Profile Page
+        'profile.title': 'الملف الشخصي',
+        'profile.editProfile': 'تعديل الملف',
+        'profile.myShopping': 'مشترياتي',
+        'profile.myOrders': 'طلباتي',
+        'profile.myWishlist': 'قائمة الأمنيات',
+        'profile.myReviews': 'تقييماتي',
+        'profile.preferences': 'التفضيلات',
+        'profile.notifications': 'الإشعارات',
+        'profile.language': 'اللغة',
+        'profile.supportLegal': 'الدعم والقانون',
+        'profile.helpSupport': 'المساعدة والدعم',
+        'profile.termsConditions': 'الشروط والأحكام',
+        'profile.privacyPolicy': 'سياسة الخصوصية',
+        'profile.aboutApp': 'عن أوتفيت هب',
+        'profile.logout': 'تسجيل الخروج',
+        'profile.loggingOut': 'جاري الخروج...',
+        'profile.loadingProfile': 'جاري تحميل الملف...',
+        'profile.merchantAccount': 'حساب تاجر',
+
         // Common
         'common.loading': 'جاري التحميل...',
         'common.error': 'خطأ',
@@ -111,6 +176,31 @@ const translations: Record<Language, Record<string, string>> = {
         'common.edit': 'تعديل',
         'common.add': 'إضافة',
         'common.soldOut': 'نفدت الكمية',
+        'common.addToCart': 'أضف للسلة',
+        'common.buyNow': 'اشتري الآن',
+        'common.price': 'السعر',
+        'common.quantity': 'الكمية',
+        'common.total': 'الإجمالي',
+        'common.checkout': 'الدفع',
+        'common.continue': 'متابعة',
+        'common.back': 'رجوع',
+        'common.search': 'بحث',
+        'common.filter': 'فلتر',
+        'common.sort': 'ترتيب',
+        'common.all': 'الكل',
+        'common.viewAll': 'عرض الكل',
+        'common.seeMore': 'عرض المزيد',
+        'common.noResults': 'لا توجد نتائج',
+
+        // Cart
+        'cart.title': 'سلة التسوق',
+        'cart.empty': 'سلتك فارغة',
+        'cart.subtotal': 'المجموع الفرعي',
+        'cart.proceedToCheckout': 'متابعة الدفع',
+
+        // Categories
+        'categories.title': 'الفئات',
+        'categories.all': 'جميع الفئات',
     },
 };
 
@@ -118,12 +208,16 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
     const [language, setLanguageState] = useState<Language>('ar');
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         // Load saved language from localStorage
         const savedLang = localStorage.getItem('language') as Language;
         if (savedLang && (savedLang === 'en' || savedLang === 'ar')) {
             setLanguageState(savedLang);
+            document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.lang = savedLang;
         }
     }, []);
 
@@ -142,9 +236,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const dir = language === 'ar' ? 'rtl' : 'ltr';
 
     useEffect(() => {
-        document.documentElement.dir = dir;
-        document.documentElement.lang = language;
-    }, [language, dir]);
+        if (mounted) {
+            document.documentElement.dir = dir;
+            document.documentElement.lang = language;
+        }
+    }, [language, dir, mounted]);
 
     return (
         <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>
