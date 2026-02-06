@@ -135,7 +135,10 @@ export default function ProfilePage() {
                             </span>
                         )}
                     </div>
-                    <button className="mt-2 w-full max-w-[200px] h-10 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+                    <button
+                        onClick={() => router.push('/profile/edit')}
+                        className="mt-2 w-full max-w-[200px] h-10 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                    >
                         <span className="material-symbols-outlined text-[18px]">edit_square</span>
                         {t('profile.editProfile')}
                     </button>
@@ -164,7 +167,7 @@ export default function ProfilePage() {
 
                         {/* My Wishlist */}
                         <button
-                            onClick={() => router.push('/wishlist')}
+                            onClick={() => router.push('/saved')}
                             className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group"
                         >
                             <div className="w-10 h-10 rounded-lg bg-pink-900/20 flex items-center justify-center text-pink-500 shrink-0">

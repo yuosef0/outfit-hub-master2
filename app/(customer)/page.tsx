@@ -157,7 +157,7 @@ export default function CustomerHome() {
                                 </div>
                                 <div>
                                     <p className="text-text-light-primary text-base font-medium leading-normal line-clamp-1">{product.name}</p>
-                                    <p className="text-[#4c739a] text-sm font-normal leading-normal">EGP {product.price.toFixed(2)}</p>
+                                    <p className="text-[#4c739a] text-sm font-normal leading-normal">{t('common.egp')} {product.price.toFixed(2)}</p>
                                 </div>
                             </Link>
                         ))
