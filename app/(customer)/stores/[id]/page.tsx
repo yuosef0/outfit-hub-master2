@@ -26,8 +26,11 @@ export default function StoreProfilePage() {
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followersCount, setFollowersCount] = useState(0);
+    const [followLoading, setFollowLoading] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
     const supabase = useMemo(
         () =>
@@ -73,6 +76,40 @@ export default function StoreProfilePage() {
             fetchStore();
         } else {
             console.log('No storeId in URL params');
+        }
+    }, [storeId, supabase]);
+
+    // Check if user is following this store and get followers count
+    useEffect(() => {
+        const checkFollowStatus = async () => {
+            try {
+                // Get current user
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    setCurrentUserId(user.id);
+                    // Check if following
+                    const { data: followData } = await supabase
+                        .from('store_follows')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .eq('store_id', storeId)
+                        .maybeSingle();
+                    setIsFollowing(!!followData);
+                }
+
+                // Get followers count
+                const { count } = await supabase
+                    .from('store_follows')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('store_id', storeId);
+                setFollowersCount(count || 0);
+            } catch (error) {
+                console.error('Error checking follow status:', error);
+            }
+        };
+
+        if (storeId) {
+            checkFollowStatus();
         }
     }, [storeId, supabase]);
 
@@ -138,6 +175,39 @@ export default function StoreProfilePage() {
             setIsLoading(false);
         }
     }, [storeId, supabase]);
+
+    const handleFollow = async () => {
+        if (!currentUserId) {
+            // Redirect to login if not authenticated
+            router.push('/login?redirect=/stores/' + storeId);
+            return;
+        }
+
+        setFollowLoading(true);
+        try {
+            if (isFollowing) {
+                // Unfollow
+                await supabase
+                    .from('store_follows')
+                    .delete()
+                    .eq('user_id', currentUserId)
+                    .eq('store_id', storeId);
+                setIsFollowing(false);
+                setFollowersCount(prev => Math.max(0, prev - 1));
+            } else {
+                // Follow
+                await supabase
+                    .from('store_follows')
+                    .insert({ user_id: currentUserId, store_id: storeId });
+                setIsFollowing(true);
+                setFollowersCount(prev => prev + 1);
+            }
+        } catch (error) {
+            console.error('Error toggling follow:', error);
+        } finally {
+            setFollowLoading(false);
+        }
+    };
 
     // Filter products
     useEffect(() => {
@@ -234,8 +304,27 @@ export default function StoreProfilePage() {
                             </div>
                         </div>
                         {/* Follow Button */}
-                        <button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-sm transition-transform active:scale-95 h-10 mb-2">
-                            <span>Follow</span>
+                        <button
+                            onClick={handleFollow}
+                            disabled={followLoading}
+                            className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-semibold shadow-sm transition-all active:scale-95 h-10 mb-2 ${isFollowing
+                                ? 'bg-card-light border border-border-light text-text-light-primary hover:bg-red-50 hover:text-red-500 hover:border-red-200'
+                                : 'bg-primary hover:bg-primary/90 text-white'
+                                }`}
+                        >
+                            {followLoading ? (
+                                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                            ) : isFollowing ? (
+                                <>
+                                    <span className="material-symbols-outlined text-[18px]">check</span>
+                                    <span>متابَع</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="material-symbols-outlined text-[18px]">add</span>
+                                    <span>متابعة</span>
+                                </>
+                            )}
                         </button>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -248,6 +337,11 @@ export default function StoreProfilePage() {
                                 <span className="material-symbols-outlined text-[16px] fill-current">star</span>
                                 <span className="font-bold text-text-light-primary">4.8</span>
                                 <span className="text-text-light-secondary font-normal">(1.2k Reviews)</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-primary">
+                                <span className="material-symbols-outlined text-[16px]">group</span>
+                                <span className="font-bold text-text-light-primary">{followersCount}</span>
+                                <span className="text-text-light-secondary font-normal">متابع</span>
                             </div>
                         </div>
                     </div>
