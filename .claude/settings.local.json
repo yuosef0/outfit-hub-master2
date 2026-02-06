@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv tool install:*)",
+      "Bash(python -m uv tool install:*)",
+      "Bash(python -m uv tool run:*)",
+      "Bash(taskkill:*)",
+      "Bash(nul)",
+      "Bash(if exist .next rmdir /s /q .next)",
+      "Bash(powershell -Command:*)",
+      "Bash(find:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "Bash(if not exist \"C:\\Users\\medor\\Desktop\\out\\outfit-hub-master\\outfit-hub-master\\app\\merchant\\products\\[id]\" mkdir \"C:\\Users\\medor\\Desktop\\out\\outfit-hub-master\\outfit-hub-master\\app\\merchant\\products\\[id]\")",
+      "Bash(ls:*)",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"replace-colors.ps1\")",
+      "Bash(del replace-colors.ps1)",
+      "Bash(npm run build:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"update-all-colors.ps1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File replace-colors.ps1:*)"
+    ]
+  }
+}

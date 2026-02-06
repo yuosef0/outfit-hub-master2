@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@theme {
+  --font-display: var(--font-inter);
+
+  /* Outfit Hub Dark Theme - Logo-Inspired */
+  --color-primary: #2D5A43;           /* Outfit Green - from logo */
+  --color-primary-light: #3D7A5A;     /* Lighter green for hovers */
+  --color-primary-dark: #1F4030;      /* Darker green for pressed states */
+  --color-background-light: #0F1713;  /* Deep Forest Black */
+  --color-background-dark: #0F1713;
+  --color-text-light-primary: #E2E8E4;   /* Off-White - cool green tint */
+  --color-text-light-secondary: #8A9490; /* Muted green-gray */
+  --color-text-dark-primary: #E2E8E4;
+  --color-text-dark-secondary: #8A9490;
+  --color-card-light: #1A2420;        /* Charcoal Green - cards/panels */
+  --color-card-dark: #1A2420;
+  --color-border-light: #2A3B34;      /* Subtle green border */
+  --color-border-dark: #2A3B34;
+  --color-surface-light: #141C17;     /* Elevated surface */
+  --color-surface-dark: #141C17;
+  --color-accent-green: #2D5A43;      /* Same as primary */
+  --color-accent-gold: #C5A377;       /* Muted Gold - from logo icon */
+  --color-accent-glow: #3D7A5A;      /* Glow variant */
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+}
+
+
+@layer base {
+  :root {
+    --font-inter: var(--font-inter);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-primary);
+  }
+
+  body {
+    min-height: max(884px, 100dvh);
+    background-color: var(--color-background-light);
+  }
+
+  /* Custom scrollbar for modern look */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-background-light);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-light);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary-dark);
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .material-symbols-outlined.filled,
+  .material-symbols-outlined.fill {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Smooth transitions for theme switching */
+  * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  /* Selection color */
+  ::selection {
+    background-color: rgba(45, 90, 67, 0.4);
+    color: #E2E8E4;
+  }
+}
+
+@layer utilities {
+
+  /* Safe area utilities for mobile devices */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Glass morphism effect - deep forest green */
+  .glass {
+    background: rgba(26, 36, 32, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(42, 59, 52, 0.5);
+  }
+
+  .glass-dark {
+    background: rgba(15, 23, 19, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(42, 59, 52, 0.3);
+  }
+
+  /* Glow effects for buttons and interactive elements */
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(45, 90, 67, 0.3), 0 0 60px rgba(45, 90, 67, 0.08);
+  }
+
+  .glow-primary-hover:hover {
+    box-shadow: 0 0 30px rgba(45, 90, 67, 0.4), 0 0 80px rgba(45, 90, 67, 0.15);
+  }
+
+  /* Gradient text utility */
+  .text-gradient-green {
+    background: linear-gradient(135deg, #2D5A43, #3D7A5A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(45, 90, 67, 0.12);
+  }
+}
