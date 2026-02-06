@@ -106,6 +106,15 @@ const translations: Record<Language, Record<string, string>> = {
         // Categories
         'categories.title': 'Categories',
         'categories.all': 'All Categories',
+        'categories.clothing': 'Clothing',
+        'categories.shoes': 'Shoes',
+        'categories.accessories': 'Accessories',
+
+        // Homepage
+        'home.featuredStores': 'Featured Stores',
+        'home.newArrivals': 'New Arrivals',
+        'home.noNewArrivals': 'No new arrivals yet.',
+        'home.reviews': 'reviews',
     },
     ar: {
         // Navigation
@@ -201,6 +210,15 @@ const translations: Record<Language, Record<string, string>> = {
         // Categories
         'categories.title': 'الفئات',
         'categories.all': 'جميع الفئات',
+        'categories.clothing': 'ملابس',
+        'categories.shoes': 'أحذية',
+        'categories.accessories': 'إكسسوارات',
+
+        // Homepage
+        'home.featuredStores': 'متاجر مميزة',
+        'home.newArrivals': 'وصل حديثاً',
+        'home.noNewArrivals': 'لا يوجد منتجات جديدة.',
+        'home.reviews': 'تقييم',
     },
 };
 
@@ -216,16 +234,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         const savedLang = localStorage.getItem('language') as Language;
         if (savedLang && (savedLang === 'en' || savedLang === 'ar')) {
             setLanguageState(savedLang);
-            document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
-            document.documentElement.lang = savedLang;
         }
+        // Always keep LTR direction
+        document.documentElement.dir = 'ltr';
     }, []);
 
     const setLanguage = (lang: Language) => {
         setLanguageState(lang);
         localStorage.setItem('language', lang);
-        // Update document direction
-        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        // Keep LTR direction always
         document.documentElement.lang = lang;
     };
 
@@ -233,14 +250,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         return translations[language][key] || key;
     };
 
-    const dir = language === 'ar' ? 'rtl' : 'ltr';
-
-    useEffect(() => {
-        if (mounted) {
-            document.documentElement.dir = dir;
-            document.documentElement.lang = language;
-        }
-    }, [language, dir, mounted]);
+    // Always LTR
+    const dir = 'ltr' as const;
 
     return (
         <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>
