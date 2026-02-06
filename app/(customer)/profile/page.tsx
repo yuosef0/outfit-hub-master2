@@ -83,7 +83,7 @@ export default function ProfilePage() {
             <div className="bg-background-light min-h-screen flex items-center justify-center pb-24">
                 <div className="text-center">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-text-light-secondary">Loading profile...</p>
+                    <p className="text-text-light-secondary">{t('profile.loadingProfile')}</p>
                 </div>
             </div>
         );
@@ -103,7 +103,7 @@ export default function ProfilePage() {
                 >
                     <span className="material-symbols-outlined text-text-light-primary">arrow_back</span>
                 </button>
-                <h1 className="text-lg font-bold text-center flex-1 pr-10">Profile</h1>
+                <h1 className="text-lg font-bold text-center flex-1 pr-10">{t('profile.title')}</h1>
             </div>
 
             {/* Profile Header */}
@@ -126,18 +126,18 @@ export default function ProfilePage() {
                     </div>
                     <div className="text-center space-y-1">
                         <h2 className="text-2xl font-bold text-text-light-primary">
-                            {user.full_name || 'User'}
+                            {user.full_name || t('profile.user')}
                         </h2>
                         <p className="text-text-light-secondary text-sm">{user.email}</p>
                         {user.role === 'merchant' && (
                             <span className="inline-block mt-2 px-3 py-1 bg-primary/20 text-primary text-xs font-semibold rounded-full">
-                                Merchant Account
+                                {t('profile.merchantAccount')}
                             </span>
                         )}
                     </div>
                     <button className="mt-2 w-full max-w-[200px] h-10 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary font-semibold text-sm transition-colors flex items-center justify-center gap-2">
                         <span className="material-symbols-outlined text-[18px]">edit_square</span>
-                        Edit Profile
+                        {t('profile.editProfile')}
                     </button>
                 </div>
             </div>
@@ -146,7 +146,7 @@ export default function ProfilePage() {
             <div className="flex flex-col gap-6 px-4">
                 {/* Shopping Activity Group */}
                 <div className="flex flex-col gap-2">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-text-light-secondary ml-2">My Shopping</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-text-light-secondary ml-2">{t('profile.myShopping')}</h3>
                     <div className="bg-surface-light rounded-xl overflow-hidden shadow-sm border border-border-light">
                         {/* My Orders */}
                         <button
@@ -156,7 +156,7 @@ export default function ProfilePage() {
                             <div className="w-10 h-10 rounded-lg bg-blue-900/20 flex items-center justify-center text-primary shrink-0">
                                 <span className="material-symbols-outlined">shopping_bag</span>
                             </div>
-                            <div className="flex-1 text-left font-medium text-text-light-primary">My Orders</div>
+                            <div className="flex-1 text-left font-medium text-text-light-primary">{t('profile.myOrders')}</div>
                             <div className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-text-light-secondary text-[20px]">chevron_right</span>
                             </div>
@@ -170,7 +170,7 @@ export default function ProfilePage() {
                             <div className="w-10 h-10 rounded-lg bg-pink-900/20 flex items-center justify-center text-pink-500 shrink-0">
                                 <span className="material-symbols-outlined">favorite</span>
                             </div>
-                            <div className="flex-1 text-left font-medium text-text-light-primary">My Wishlist</div>
+                            <div className="flex-1 text-left font-medium text-text-light-primary">{t('profile.myWishlist')}</div>
                             <span className="material-symbols-outlined text-text-light-secondary text-[20px]">chevron_right</span>
                         </button>
 
@@ -179,7 +179,7 @@ export default function ProfilePage() {
                             <div className="w-10 h-10 rounded-lg bg-amber-900/20 flex items-center justify-center text-amber-500 shrink-0">
                                 <span className="material-symbols-outlined">rate_review</span>
                             </div>
-                            <div className="flex-1 text-left font-medium text-text-light-primary">My Reviews</div>
+                            <div className="flex-1 text-left font-medium text-text-light-primary">{t('profile.myReviews')}</div>
                             <span className="material-symbols-outlined text-text-light-secondary text-[20px]">chevron_right</span>
                         </button>
                     </div>
@@ -187,14 +187,14 @@ export default function ProfilePage() {
 
                 {/* Settings Group */}
                 <div className="flex flex-col gap-2">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-text-light-secondary ml-2">Preferences</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-text-light-secondary ml-2">{t('profile.preferences')}</h3>
                     <div className="bg-surface-light rounded-xl overflow-hidden shadow-sm border border-border-light">
                         {/* Notifications */}
                         <button className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group">
                             <div className="w-10 h-10 rounded-lg bg-purple-900/20 flex items-center justify-center text-purple-500 shrink-0">
                                 <span className="material-symbols-outlined">notifications</span>
                             </div>
-                            <div className="flex-1 text-left font-medium text-text-light-primary">Notifications</div>
+                            <div className="flex-1 text-left font-medium text-text-light-primary">{t('profile.notifications')}</div>
                             <span className="material-symbols-outlined text-text-light-secondary text-[20px]">chevron_right</span>
                         </button>
 
@@ -227,14 +227,14 @@ export default function ProfilePage() {
 
                 {/* Support & Legal Group */}
                 <div className="flex flex-col gap-2">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-text-light-secondary ml-2">Support &amp; Legal</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-text-light-secondary ml-2">{t('profile.supportLegal')}</h3>
                     <div className="bg-surface-light rounded-xl overflow-hidden shadow-sm border border-border-light">
                         {/* Help & Support */}
                         <button className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group">
                             <div className="w-10 h-10 rounded-lg bg-card-light flex items-center justify-center text-text-light-secondary shrink-0">
                                 <span className="material-symbols-outlined">help</span>
                             </div>
-                            <div className="flex-1 text-left font-medium text-text-light-primary">Help &amp; Support</div>
+                            <div className="flex-1 text-left font-medium text-text-light-primary">{t('profile.helpSupport')}</div>
                             <span className="material-symbols-outlined text-text-light-secondary text-[20px]">chevron_right</span>
                         </button>
 
@@ -243,7 +243,7 @@ export default function ProfilePage() {
                             <div className="w-10 h-10 rounded-lg bg-card-light flex items-center justify-center text-text-light-secondary shrink-0">
                                 <span className="material-symbols-outlined">description</span>
                             </div>
-                            <div className="flex-1 text-left font-medium text-text-light-primary">Terms &amp; Conditions</div>
+                            <div className="flex-1 text-left font-medium text-text-light-primary">{t('profile.termsConditions')}</div>
                             <span className="material-symbols-outlined text-text-light-secondary text-[20px]">chevron_right</span>
                         </button>
 
@@ -252,7 +252,7 @@ export default function ProfilePage() {
                             <div className="w-10 h-10 rounded-lg bg-card-light flex items-center justify-center text-text-light-secondary shrink-0">
                                 <span className="material-symbols-outlined">lock</span>
                             </div>
-                            <div className="flex-1 text-left font-medium text-text-light-primary">Privacy Policy</div>
+                            <div className="flex-1 text-left font-medium text-text-light-primary">{t('profile.privacyPolicy')}</div>
                             <span className="material-symbols-outlined text-text-light-secondary text-[20px]">chevron_right</span>
                         </button>
 
@@ -261,7 +261,7 @@ export default function ProfilePage() {
                             <div className="w-10 h-10 rounded-lg bg-card-light flex items-center justify-center text-text-light-secondary shrink-0">
                                 <span className="material-symbols-outlined">info</span>
                             </div>
-                            <div className="flex-1 text-left font-medium text-text-light-primary">About Outfit Hub</div>
+                            <div className="flex-1 text-left font-medium text-text-light-primary">{t('profile.aboutApp')}</div>
                             <span className="material-symbols-outlined text-text-light-secondary text-[20px]">chevron_right</span>
                         </button>
                     </div>
@@ -282,12 +282,12 @@ export default function ProfilePage() {
                             )}
                         </div>
                         <div className="flex-1 text-left font-semibold text-red-500">
-                            {loggingOut ? 'Logging out...' : 'Log Out'}
+                            {loggingOut ? t('profile.loggingOut') : t('profile.logout')}
                         </div>
                     </button>
                 </div>
 
-                <p className="text-center text-xs text-text-light-secondary pb-4">Version 1.0.0 (Build 1)</p>
+                <p className="text-center text-xs text-text-light-secondary pb-4">{t('profile.version')} 1.0.0 (Build 1)</p>
             </div>
         </div>
     );
