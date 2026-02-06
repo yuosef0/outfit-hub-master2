@@ -162,22 +162,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update product stock quantities
-    for (const item of validatedData.items) {
-      const { data: product } = await supabaseServer
-        .from('products')
-        .select('stock_quantity')
-        .eq('id', item.product_id)
-        .single();
-
-      if (product) {
-        await supabaseServer
-          .from('products')
-          .update({ stock_quantity: product.stock_quantity - item.quantity })
-          .eq('id', item.product_id);
-      }
-    }
-
     return NextResponse.json(
       {
         message: 'Order created successfully',
