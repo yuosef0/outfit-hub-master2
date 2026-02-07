@@ -3,6 +3,7 @@
 
 @theme {
   --font-display: var(--font-inter);
+  --font-playfair: var(--font-playfair);
 
   /* Outfit Hub Dark Theme - Logo-Inspired */
   --color-primary: #2D5A43;           /* Outfit Green - from logo */
@@ -23,6 +24,9 @@
   --color-accent-green: #2D5A43;      /* Same as primary */
   --color-accent-gold: #C5A377;       /* Muted Gold - from logo icon */
   --color-accent-glow: #3D7A5A;      /* Glow variant */
+  --color-cream: #F5E6D3;            /* Warm cream for text */
+  --color-cream-light: #FFF3E6;
+  --color-cream-dark: #E8D5B7;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
 }
@@ -39,7 +43,7 @@
   h4,
   h5,
   h6 {
-    color: var(--color-primary);
+    color: var(--color-cream);
   }
 
   body {
@@ -144,6 +148,13 @@
   /* Gradient text utility */
   .text-gradient-green {
     background: linear-gradient(135deg, #2D5A43, #3D7A5A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-cream {
+    background: linear-gradient(135deg, #F5E6D3, #E8D5B7);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

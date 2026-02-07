@@ -61,10 +61,10 @@ export default function CustomerHome() {
         >
             <div>
                 {/* Hero Banner */}
-                <div className="@container">
-                    <div className="@[480px]:px-4 @[480px]:py-3">
+                <div className="@container px-4 pt-3">
+                    <div>
                         <div
-                            className="bg-cover bg-center flex flex-col justify-end overflow-hidden bg-background-light @[480px]:rounded-xl min-h-[218px]"
+                            className="bg-cover bg-center flex flex-col justify-end overflow-hidden bg-background-light rounded-2xl min-h-[218px]"
                             style={{
                                 backgroundImage: `linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 25%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuCw5nivGPYrZWcARh3zC1c4M4EV0erj_yXcnwuI8wQZI02tFJ4q1VmK4C4pdGm4dR5RzPIXo8GJwrCmso6bgC_koxwT9ejvXt04jTwIb-ulbn_nWH0t-VEcscxpN6SbRNP7Ka6GMNXz3XfWnj1WBPetENxGEodJ2qT40pPFFZvBK2cAYvJaNsgCqHKRgcLR6IMZImJ_6t3XY6XQiKOnV2kdyOk5w5NTm3Cf6nkY_N4QucWWlb2C7pdXUISy8c6og_sL0NKXigdn0wY")`
                             }}

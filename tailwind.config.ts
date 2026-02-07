@@ -41,9 +41,15 @@ const config: Config = {
         "accent-green": "#2D5A43",
         "accent-gold": "#C5A377",     // Muted Gold - from logo icon
         "accent-glow": "#3D7A5A",
+
+        // Cream colors for text
+        "cream": "#F5E6D3",
+        "cream-light": "#FFF3E6",
+        "cream-dark": "#E8D5B7",
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],
+        playfair: ["var(--font-playfair)", "Playfair Display", "serif"],
       },
       borderRadius: {
         DEFAULT: "0.5rem",

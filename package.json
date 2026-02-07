@@ -12,6 +12,8 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.0",
     "axios": "^1.13.4",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.33.0",
     "html5-qrcode": "^2.3.8",
     "next": "16.1.6",
     "qrcode.react": "^4.2.0",

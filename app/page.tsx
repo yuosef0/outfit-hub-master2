@@ -2,13 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { SearchModal } from '@/components/SearchModal';
 import WishlistButton from '@/components/WishlistButton';
 import { createBrowserClient } from '@supabase/ssr';
 import type { SliderImage, Category, Store, Product } from '@/lib/types';
 
 export default function HomePage() {
- const [isSearchOpen, setIsSearchOpen] = useState(false);
  const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
  const [currentSlide, setCurrentSlide] = useState(0);
  const [categories, setCategories] = useState<Category[]>([]);
@@ -108,9 +106,9 @@ export default function HomePage() {
  >
  <div className="pb-24">
  {/* Slider Section */}
- <div className="@container">
- <div className="@[480px]:px-4 @[480px]:py-3">
- <div className="relative overflow-hidden bg-background-dark @[480px]:rounded-xl min-h-[218px]">
+ <div className="@container px-4 pt-3">
+ <div>
+ <div className="relative overflow-hidden bg-background-dark rounded-2xl min-h-[218px]">
  {sliderImages.length > 0 ? (
  <>
  {sliderImages.map((slide, index) => (
@@ -126,7 +124,7 @@ export default function HomePage() {
  >
  {slide.title && (
  <div className="absolute bottom-0 left-0 right-0 p-6">
- <h2 className="text-primary text-2xl font-bold">{slide.title}</h2>
+ <h2 className="text-cream text-2xl font-bold">{slide.title}</h2>
  {slide.description && (
  <p className="text-text-dark-primary text-sm mt-1">{slide.description}</p>
  )}
@@ -140,7 +138,7 @@ export default function HomePage() {
  <button
  key={index}
  onClick={() => setCurrentSlide(index)}
- className={`size-1.5 rounded-full transition-opacity ${index === currentSlide ? 'bg-primary' : 'bg-primary/50'
+ className={`size-1.5 rounded-full transition-opacity ${index === currentSlide ? 'bg-cream' : 'bg-cream/50'
  }`}
  />
  ))}
@@ -156,7 +154,7 @@ export default function HomePage() {
  </div>
 
  {/* Categories Section */}
- <h3 className="text-primary text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+ <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
  Categories
  </h3>
  <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -184,7 +182,7 @@ export default function HomePage() {
  </div>
 
  {/* Featured Stores Section */}
- <h3 className="text-primary text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+ <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
  Featured Stores
  </h3>
  <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -217,7 +215,7 @@ export default function HomePage() {
  </div>
 
  {/* New Arrivals Section */}
- <h3 className="text-primary text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+ <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
  New Arrivals
  </h3>
  <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
@@ -263,7 +261,6 @@ export default function HomePage() {
  )}
  </div>
  </div>
- <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
  </div>
  );
 }

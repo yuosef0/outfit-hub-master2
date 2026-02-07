@@ -1,23 +1,71 @@
-﻿'use client';
+'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
+import { motion, LayoutGroup } from 'framer-motion';
 
 import { useCartUI } from '@/context/CartUIContext';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
+interface NavItem {
+    key: string;
+    path: string | null;
+    icon: string;
+    labelKey: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
+    { key: 'stores', path: '/stores', icon: 'storefront', labelKey: 'footer.stores' },
+    { key: 'categories', path: '/categories', icon: 'category', labelKey: 'categories.title' },
+    { key: 'home', path: '/', icon: 'home', labelKey: 'nav.home' },
+    { key: 'cart', path: '/cart', icon: 'shopping_cart', labelKey: 'nav.cart' },
+    { key: 'saved', path: '/saved', icon: 'favorite', labelKey: 'nav.saved' },
+];
+
+/**
+ * Reorder the items so that the active one is always at center (index 2).
+ * Items wrap around circularly.
+ */
+function getReorderedItems(activeKey: string): NavItem[] {
+    const n = NAV_ITEMS.length;
+    const activeIdx = NAV_ITEMS.findIndex((item) => item.key === activeKey);
+    const idx = activeIdx >= 0 ? activeIdx : 2;
+
+    const result: NavItem[] = [];
+    for (let offset = -2; offset <= 2; offset++) {
+        const i = ((idx + offset) % n + n) % n;
+        result.push(NAV_ITEMS[i]);
+    }
+    return result;
+}
+
+const CENTER_INDEX = 2;
+const CURVE_WIDTH = 72;
+const NAV_HEIGHT = 70;
+const TOP_LINE = 14;
+
+// Static SVG path — curve is always at center position
+const STATIC_CURVE_PATH = buildCurvePath(CENTER_INDEX, 5, CURVE_WIDTH, TOP_LINE, NAV_HEIGHT + 20);
+
 export default function BottomNav() {
     const pathname = usePathname();
+    const router = useRouter();
     const { openCart } = useCartUI();
     const [cartCount, setCartCount] = useState(0);
+    const [activeKey, setActiveKey] = useState<string>('home');
     const { t } = useLanguage();
 
     // Hide BottomNav on merchant pages
     if (pathname.startsWith('/merchant')) {
         return null;
     }
+
+    // Sync activeKey with the current route
+    useEffect(() => {
+        const match = NAV_ITEMS.find((item) => item.path === pathname);
+        if (match) setActiveKey(match.key);
+    }, [pathname]);
 
     const supabase = useMemo(
         () =>
@@ -32,10 +80,7 @@ export default function BottomNav() {
     useEffect(() => {
         const fetchCartCount = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                setCartCount(0);
-                return;
-            }
+            if (!user) { setCartCount(0); return; }
 
             const { data, error } = await supabase
                 .from('cart_items')
@@ -43,97 +88,137 @@ export default function BottomNav() {
                 .eq('user_id', user.id);
 
             if (!error && data) {
-                const total = data.reduce((sum, item) => sum + item.quantity, 0);
-                setCartCount(total);
+                setCartCount(data.reduce((sum, item) => sum + item.quantity, 0));
             }
         };
 
         fetchCartCount();
-
-        // Refresh cart count every 5 seconds
         const interval = setInterval(fetchCartCount, 5000);
         return () => clearInterval(interval);
     }, [supabase]);
 
-    // Helper function for active/inactive styles
-    const getItemStyles = (path: string) => {
-        const isActive = pathname === path;
-        return {
-            link: `flex flex-1 flex-col items-center justify-end gap-1 ${isActive ? 'text-primary' : 'text-text-light-secondary'}`,
-            icon: `flex h-8 items-center justify-center ${isActive ? 'text-primary' : 'text-text-light-secondary'}`,
-            text: `text-xs font-medium leading-normal tracking-[0.015em] ${isActive ? 'text-primary' : 'text-text-light-secondary'}`
-        };
+    const handleItemClick = (item: NavItem) => {
+        setActiveKey(item.key);
+        if (item.path) {
+            router.push(item.path);
+        }
     };
 
-    const homeStyles = getItemStyles('/');
-    const categoriesStyles = getItemStyles('/categories');
-    const profileStyles = getItemStyles('/profile');
-    const inactiveStyles = {
-        link: 'flex flex-1 flex-col items-center justify-end gap-1 text-text-light-secondary',
-        icon: 'flex h-8 items-center justify-center text-text-light-secondary',
-        text: 'text-xs font-medium leading-normal tracking-[0.015em] text-text-light-secondary'
-    };
+    const reorderedItems = getReorderedItems(activeKey);
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background-light/95 backdrop-blur border-t border-border-light">
-            <div className="flex gap-2 px-4 py-2">
-                <Link className={homeStyles.link} href="/">
-                    <div className={homeStyles.icon} data-icon="House" data-size="24px" data-weight="fill">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M224,115.55V208a16,16,0,0,1-16,16H168a16,16,0,0,1-16-16V168a8,8,0,0,0-8-8H112a8,8,0,0,0-8,8v40a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V115.55a16,16,0,0,1,5.17-11.78l80-75.48.11-.11a16,16,0,0,1,21.53,0,1.14,1.14,0,0,0,.11.11l80,75.48A16,16,0,0,1,224,115.55Z"></path>
-                        </svg>
-                    </div>
-                    <p className={homeStyles.text}>{t('nav.home')}</p>
-                </Link>
-                <Link className={getItemStyles('/stores').link} href="/stores">
-                    <div className={getItemStyles('/stores').icon} data-icon="Storefront" data-size="24px" data-weight="regular">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M232,96l-20.69-51.73A16,16,0,0,0,196.44,32H59.56A16,16,0,0,0,44.69,44.27L24,96v112a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V96ZM40,96l19.56-48.91,1.15-.29H195.29l1.15.29L216,96v8H192a20,20,0,0,1-40,0H128a20,20,0,0,1-40,0H64a20,20,0,0,1-24,0V96Zm176,112H40V128.79a35.84,35.84,0,0,0,8,2.21,36,36,0,0,0,8,.8,20.1,20.1,0,0,0,19.6-16h24.8a20.1,20.1,0,0,0,19.6,16h16a20.1,20.1,0,0,0,19.6-16h24.8a20.1,20.1,0,0,0,19.6,16,36,36,0,0,0,8-.8,35.84,35.84,0,0,0,8-2.21V208Z"></path>
-                        </svg>
-                    </div>
-                    <p className={getItemStyles('/stores').text}>{t('footer.stores')}</p>
-                </Link>
-                <Link className={categoriesStyles.link} href="/categories">
-                    <div className={categoriesStyles.icon} data-icon="ListBullets" data-size="24px" data-weight="regular">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M80,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H88A8,8,0,0,1,80,64Zm136,56H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,64H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16ZM44,52A12,12,0,1,0,56,64,12,12,0,0,0,44,52Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,116Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,180Z"></path>
-                        </svg>
-                    </div>
-                    <p className={categoriesStyles.text}>{t('categories.title')}</p>
-                </Link>
-                <button
-                    className={inactiveStyles.link}
-                    onClick={openCart}
+        <div className="fixed bottom-0 left-0 right-0 z-50" style={{ height: NAV_HEIGHT + 20 }}>
+            {/* SVG Background — curve is always at center */}
+            <div className="absolute bottom-0 w-full pointer-events-none" style={{ height: NAV_HEIGHT + 20 }}>
+                <svg
+                    viewBox={`0 0 375 ${NAV_HEIGHT + 20}`}
+                    preserveAspectRatio="none"
+                    className="w-full h-full"
+                    style={{ filter: 'drop-shadow(0 -4px 12px rgba(0,0,0,0.15))' }}
                 >
-                    <div className={`${inactiveStyles.icon} relative`} data-icon="ShoppingCart" data-size="24px" data-weight="regular">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M222.14,58.87A8,8,0,0,0,216,56H54.68L49.79,29.14A16,16,0,0,0,34.05,16H16a8,8,0,0,0,0,16h18L59.56,172.29a24,24,0,0,0,5.33,11.27,28,28,0,1,0,44.4,8.44h45.42A27.75,27.75,0,0,0,152,204a28,28,0,1,0,28-28H83.17a8,8,0,0,1-7.87-6.57L72.13,152h116a24,24,0,0,0,23.61-19.71l12.16-66.86A8,8,0,0,0,222.14,58.87ZM96,204a12,12,0,1,1-12-12A12,12,0,0,1,96,204Zm96,0a12,12,0,1,1-12-12A12,12,0,0,1,192,204Zm4-74.57A8,8,0,0,1,188.1,136H69.22L57.59,72H206.41Z"></path>
-                        </svg>
-                        {cartCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                                {cartCount > 9 ? '9+' : cartCount}
-                            </span>
-                        )}
-                    </div>
-                    <p className={inactiveStyles.text}>{t('nav.cart')}</p>
-                </button>
-                <Link className={inactiveStyles.link} href="/saved">
-                    <div className={inactiveStyles.icon} data-icon="Heart" data-size="24px" data-weight="regular">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M178,32c-20.65,0-38.73,8.88-50,23.89C116.73,40.88,98.65,32,78,32A62.07,62.07,0,0,0,16,94c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,220.66,240,164,240,94A62.07,62.07,0,0,0,178,32ZM128,206.8C109.74,196.16,32,147.69,32,94A46.06,46.06,0,0,1,78,48c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,147.61,146.24,196.15,128,206.8Z"></path>
-                        </svg>
-                    </div>
-                    <p className={inactiveStyles.text}>{t('nav.saved')}</p>
-                </Link>
-                <Link className={profileStyles.link} href="/profile">
-                    <div className={profileStyles.icon} data-icon="User" data-size="24px" data-weight="regular">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path>
-                        </svg>
-                    </div>
-                    <p className={profileStyles.text}>{t('nav.profile')}</p>
-                </Link>
+                    <path className="fill-background-light" d={STATIC_CURVE_PATH} />
+                </svg>
             </div>
+
+            {/* Nav Items — reorder so active is always center */}
+            <LayoutGroup>
+                <div
+                    className="relative flex items-end justify-around px-2"
+                    style={{ height: NAV_HEIGHT + 20 }}
+                >
+                    {reorderedItems.map((item, displayIndex) => {
+                        const isCenter = displayIndex === CENTER_INDEX;
+
+                        return (
+                            <motion.div
+                                key={item.key}
+                                layout
+                                transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                                className="flex-1 flex flex-col items-center relative"
+                                style={{ height: NAV_HEIGHT + 20 }}
+                            >
+                                {/* Raised circle — only the center item */}
+                                {isCenter && (
+                                    <div
+                                        className="absolute flex items-center justify-center w-[52px] h-[52px] rounded-full bg-primary shadow-lg shadow-primary/30 z-10"
+                                        style={{ top: -6 }}
+                                    >
+                                        <span className="material-symbols-outlined text-white text-[26px]">
+                                            {item.icon}
+                                        </span>
+                                        {item.key === 'cart' && cartCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-primary">
+                                                {cartCount > 9 ? '9+' : cartCount}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Clickable area */}
+                                <button
+                                    onClick={() => handleItemClick(item)}
+                                    className={`flex flex-col items-center justify-end pb-6 w-full h-full transition-colors ${isCenter ? '' : 'text-text-light-secondary hover:text-text-light-primary active:scale-95'
+                                        }`}
+                                >
+                                    {!isCenter && (
+                                        <div className="relative mb-0.5">
+                                            <span className="material-symbols-outlined text-[24px]">
+                                                {item.icon}
+                                            </span>
+                                            {item.key === 'cart' && cartCount > 0 && (
+                                                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-background-light">
+                                                    {cartCount > 9 ? '9+' : cartCount}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                    <p className={`text-[10px] font-bold leading-none tracking-wide ${isCenter ? 'text-primary' : 'text-text-light-secondary'
+                                        }`}>
+                                        {t(item.labelKey)}
+                                    </p>
+                                </button>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+            </LayoutGroup>
         </div>
     );
+}
+
+/**
+ * Build the SVG path for the bottom nav background with a notch/curve
+ * centered on the item at `activeIndex` out of 5 items.
+ */
+function buildCurvePath(
+    activeIndex: number,
+    totalItems: number,
+    curveWidth: number,
+    topY: number,
+    height: number
+): string {
+    const segmentWidth = 375 / totalItems;
+    const centerX = segmentWidth * activeIndex + segmentWidth / 2;
+
+    const halfCurve = curveWidth / 2;
+    const curveDepth = 28;
+
+    const leftStart = centerX - halfCurve;
+    const rightEnd = centerX + halfCurve;
+
+    const cp1x = leftStart + 12;
+    const cp2x = centerX - 14;
+    const cp3x = centerX + 14;
+    const cp4x = rightEnd - 12;
+
+    return `
+        M 0,${topY}
+        L ${leftStart},${topY}
+        C ${cp1x},${topY} ${cp2x},${topY + curveDepth} ${centerX},${topY + curveDepth}
+        C ${cp3x},${topY + curveDepth} ${cp4x},${topY} ${rightEnd},${topY}
+        L 375,${topY}
+        L 375,${height}
+        L 0,${height}
+        Z
+    `.trim();
 }

@@ -31,6 +31,11 @@ export async function GET(request: NextRequest) {
       query = query.eq('is_active', isActive === 'true');
     }
 
+    const search = searchParams.get('search');
+    if (search) {
+      query = query.ilike('name', `%${search}%`);
+    }
+
     const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
