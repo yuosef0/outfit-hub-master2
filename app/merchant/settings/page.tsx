@@ -47,6 +47,9 @@ export default function MerchantSettingsPage() {
     const [bannerFile, setBannerFile] = useState<File | null>(null);
     const [bannerPreview, setBannerPreview] = useState<string | null>(null);
 
+    const [availableSubcategories, setAvailableSubcategories] = useState<{ id: string; name: string; name_ar: string | null }[]>([]);
+    const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+
     const logoInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,6 +61,29 @@ export default function MerchantSettingsPage() {
         checkAuth();
         fetchCategories();
     }, []);
+
+    // Fetch subcategories when category changes
+    useEffect(() => {
+        const fetchSubcategories = async () => {
+            if (!formData.category) {
+                setAvailableSubcategories([]);
+                return;
+            }
+
+            const selectedCat = categories.find(c => (c.name_ar || c.name) === formData.category);
+            if (!selectedCat) return;
+
+            const { data } = await supabase
+                .from('subcategories')
+                .select('id, name, name_ar')
+                .eq('category_id', selectedCat.id)
+                .order('name');
+
+            setAvailableSubcategories(data || []);
+        };
+
+        fetchSubcategories();
+    }, [formData.category, categories]);
 
     const fetchCategories = async () => {
         const { data } = await supabase
@@ -108,6 +134,16 @@ export default function MerchantSettingsPage() {
             });
             setLogoPreview(storeData.logo_url);
             setBannerPreview(storeData.banner_url);
+
+            // Fetch existing store subcategories
+            const { data: existingSubs } = await supabase
+                .from('store_subcategories')
+                .select('subcategory_id')
+                .eq('store_id', storeData.id);
+
+            if (existingSubs) {
+                setSelectedSubcategories(existingSubs.map(s => s.subcategory_id));
+            }
         } catch (error) {
             console.error('Error checking auth:', error);
             setToast({ message: 'حدث خطأ في التحقق من الحساب', type: 'error' });
@@ -222,6 +258,24 @@ export default function MerchantSettingsPage() {
                     banner_url: bannerUrl,
                 })
                 .eq('id', store!.id);
+
+            if (error) throw error;
+
+            // Update Store Subcategories
+            // First delete existing
+            await supabase.from('store_subcategories').delete().eq('store_id', store!.id);
+
+            // Then insert new
+            if (selectedSubcategories.length > 0) {
+                const { error: subError } = await supabase
+                    .from('store_subcategories')
+                    .insert(selectedSubcategories.map(subId => ({
+                        store_id: store!.id,
+                        subcategory_id: subId
+                    })));
+
+                if (subError) console.error('Error saving subcategories:', subError);
+            }
 
             if (error) throw error;
 
@@ -427,6 +481,37 @@ export default function MerchantSettingsPage() {
                                     ))}
                                 </select>
                             </div>
+
+                            {/* Subcategories Selection */}
+                            {availableSubcategories.length > 0 && (
+                                <div className="space-y-2 animate-fade-in">
+                                    <label className="block text-sm font-medium text-text-light-primary">
+                                        التخصصات (اختياري)
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-2 bg-background-light rounded-lg border border-border-light p-3 max-h-48 overflow-y-auto">
+                                        {availableSubcategories.map((sub) => (
+                                            <label key={sub.id} className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-card-light transition-colors">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedSubcategories.includes(sub.id)}
+                                                    onChange={() => {
+                                                        setSelectedSubcategories(prev =>
+                                                            prev.includes(sub.id)
+                                                                ? prev.filter(id => id !== sub.id)
+                                                                : [...prev, sub.id]
+                                                        );
+                                                    }}
+                                                    className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+                                                />
+                                                <span className="text-sm text-text-light-primary text-right flex-1">{sub.name_ar || sub.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-text-light-secondary">
+                                        اختر التخصصات الدقيقة متجرك ليظهر في نتائج البحث المخصصة.
+                                    </p>
+                                </div>
+                            )}
 
                             {/* Description */}
                             <div>

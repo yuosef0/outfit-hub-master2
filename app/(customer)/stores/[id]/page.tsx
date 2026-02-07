@@ -237,7 +237,17 @@ export default function StoreProfilePage() {
         let filtered = [...products];
 
         if (activeCategory) {
-            filtered = filtered.filter(product => product.category === activeCategory);
+            // Find the category object
+            const selectedCategory = categories.find(c => c.id === activeCategory);
+            if (selectedCategory) {
+                // Filter by name (primary) OR id (fallback) OR arabic name (fallback)
+                // This ensures compatibility regardless of how the category is stored in the product
+                filtered = filtered.filter(product =>
+                    product.category === selectedCategory.name ||
+                    product.category === selectedCategory.id ||
+                    (selectedCategory.name_ar && product.category === selectedCategory.name_ar)
+                );
+            }
         }
 
         if (searchQuery) {

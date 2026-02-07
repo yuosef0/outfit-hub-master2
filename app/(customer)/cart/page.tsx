@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import type { CartItem, Product } from '@/lib/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface GroupedCartItems {
     [storeId: string]: {
@@ -16,6 +17,7 @@ interface GroupedCartItems {
 
 export default function CartPage() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [cartItems, setCartItems] = useState<(CartItem & { products: Product })[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -151,7 +153,7 @@ export default function CartPage() {
             <div className="flex items-center justify-center min-h-screen bg-background-light">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-4 text-text-light-secondary">Loading cart...</p>
+                    <p className="mt-4 text-text-light-secondary">{t('cart.loading')}</p>
                 </div>
             </div>
         );
@@ -169,7 +171,7 @@ export default function CartPage() {
                     >
                         <span className="material-symbols-outlined text-[24px]">arrow_back</span>
                     </button>
-                    <h1 className="text-lg font-bold tracking-tight text-text-light-primary">My Cart</h1>
+                    <h1 className="text-lg font-bold tracking-tight text-text-light-primary">{t('cart.myCart')}</h1>
                     <div className="w-10"></div>
                 </div>
             </header>
@@ -236,12 +238,12 @@ export default function CartPage() {
                                                     <div className="flex gap-2 mt-2">
                                                         {item.size && (
                                                             <span className="text-xs bg-surface-light px-2 py-1 rounded text-text-light-secondary border border-border-light">
-                                                                Size: {item.size}
+                                                                {t('product.size')}: {item.size}
                                                             </span>
                                                         )}
                                                         {item.color && (
                                                             <span className="text-xs bg-surface-light px-2 py-1 rounded text-text-light-secondary border border-border-light flex items-center gap-1">
-                                                                Color:
+                                                                {t('product.color')}:
                                                                 <span
                                                                     className="w-3 h-3 rounded-full border border-border-light inline-block"
                                                                     style={{ backgroundColor: item.color }}
@@ -304,16 +306,16 @@ export default function CartPage() {
                             </div>
                         </div>
                         <div className="max-w-[280px] flex flex-col items-center gap-3">
-                            <h3 className="text-xl font-bold text-text-light-primary text-center">Your cart is empty</h3>
+                            <h3 className="text-xl font-bold text-text-light-primary text-center">{t('cart.empty')}</h3>
                             <p className="text-sm text-text-light-secondary text-center leading-relaxed">
-                                Looks like you haven&apos;t added anything to your cart yet. Explore our latest collections!
+                                {t('cart.emptyMessage')}
                             </p>
                         </div>
                         <Link
                             href="/"
                             className="mt-8 flex items-center justify-center px-8 h-11 bg-primary hover:bg-primary-light text-white text-sm font-bold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95"
                         >
-                            Start Shopping
+                            {t('cart.startShopping')}
                         </Link>
                     </div>
                 )}
@@ -325,7 +327,7 @@ export default function CartPage() {
                     <div className="w-full max-w-md mx-auto space-y-4">
                         <div className="flex justify-between items-center">
                             <span className="text-sm font-medium text-text-light-secondary">
-                                Subtotal ({totalItems} item{totalItems !== 1 ? 's' : ''})
+                                {t('cart.subtotal')} ({totalItems} {totalItems !== 1 ? t('cart.items') : t('cart.item')})
                             </span>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-xl font-bold text-text-light-primary tracking-tight">
@@ -333,8 +335,11 @@ export default function CartPage() {
                                 </span>
                             </div>
                         </div>
-                        <button className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-light active:bg-primary-dark text-white h-12 rounded-xl font-bold text-base transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
-                            Proceed to Checkout
+                        <button
+                            onClick={() => router.push('/checkout')}
+                            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-light active:bg-primary-dark text-white h-12 rounded-xl font-bold text-base transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            {t('cart.proceedToCheckout')}
                             <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                         </button>
                     </div>

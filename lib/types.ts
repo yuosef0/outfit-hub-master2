@@ -48,6 +48,14 @@ export interface Store {
     updated_at: string;
 }
 
+export interface ProductVariant {
+    id: string;
+    product_id: string;
+    size: string | null;
+    color: string | null;
+    stock_quantity: number;
+}
+
 export interface Product {
     id: string;
     store_id: string;
@@ -55,14 +63,16 @@ export interface Product {
     description?: string;
     price: number;
     category?: string;
+    category_id?: string; // System category ID
     gender_filter?: string;
     image_urls?: string[];
     sizes?: string[];
-    colors?: string[];
+    colors?: string[]; // stored as JSON string or array of strings/objects depending on DB
     stock_quantity: number;
     is_active: boolean;
     created_at: string;
     updated_at: string;
+    variants?: ProductVariant[];
     // For joined queries with store information
     stores?: {
         id: string;

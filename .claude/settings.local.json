@@ -22,7 +22,8 @@
       "Bash(powershell -ExecutionPolicy Bypass -File \"update-all-colors.ps1\")",
       "Bash(powershell -ExecutionPolicy Bypass -File replace-colors.ps1:*)",
       "Bash(npx next build:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(npx next lint)"
     ]
   }
 }

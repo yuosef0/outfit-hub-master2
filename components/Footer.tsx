@@ -70,10 +70,10 @@ export default function Footer() {
                     <div>
                         <h3 className="font-semibold text-text-light-primary mb-3">{t('footer.quickLinks')}</h3>
                         <ul className="space-y-2 text-sm text-text-light-secondary">
-                            <li><Link href="#" className="hover:text-primary transition-colors">{t('footer.aboutUs')}</Link></li>
+                            <li><Link href="/about" className="hover:text-primary transition-colors">{t('footer.aboutUs')}</Link></li>
                             <li><Link href="/stores" className="hover:text-primary transition-colors">{t('footer.stores')}</Link></li>
-                            <li><Link href="#" className="hover:text-primary transition-colors">{t('footer.contact')}</Link></li>
-                            <li><Link href="#" className="hover:text-primary transition-colors">{t('footer.faq')}</Link></li>
+                            <li><Link href="/contact" className="hover:text-primary transition-colors">{t('footer.contact')}</Link></li>
+                            <li><Link href="/faq" className="hover:text-primary transition-colors">{t('footer.faq')}</Link></li>
                         </ul>
                     </div>
 
@@ -81,10 +81,10 @@ export default function Footer() {
                     <div>
                         <h3 className="font-semibold text-text-light-primary mb-3">{t('footer.legal')}</h3>
                         <ul className="space-y-2 text-sm text-text-light-secondary">
-                            <li><Link href="#" className="hover:text-primary transition-colors">{t('footer.privacy')}</Link></li>
-                            <li><Link href="#" className="hover:text-primary transition-colors">{t('footer.terms')}</Link></li>
-                            <li><Link href="#" className="hover:text-primary transition-colors">{t('footer.returnPolicy')}</Link></li>
-                            <li><Link href="#" className="hover:text-primary transition-colors">{t('footer.cookiePolicy')}</Link></li>
+                            <li><Link href="/privacy" className="hover:text-primary transition-colors">{t('footer.privacy')}</Link></li>
+                            <li><Link href="/terms" className="hover:text-primary transition-colors">{t('footer.terms')}</Link></li>
+                            <li><Link href="/return-policy" className="hover:text-primary transition-colors">{t('footer.returnPolicy')}</Link></li>
+                            <li><Link href="/cookie-policy" className="hover:text-primary transition-colors">{t('footer.cookiePolicy')}</Link></li>
                         </ul>
                     </div>
                 </div>

@@ -42,31 +42,50 @@ export default function CallbackHandler() {
  .maybeSingle();
 
  if (existingUser) {
- // Update existing user
- const { error: updateError } = await supabase
+ // User already exists - get their actual role from DB and preserve it
+ const { data: existingUserData } = await supabase
  .from('users')
- .update({
- role: pendingRole,
- updated_at: new Date().toISOString()
- })
- .eq('id', user.id);
+ .select('role, governorate')
+ .eq('id', user.id)
+ .single();
 
- if (updateError) {
- console.error('Error updating user role:', updateError.message || updateError);
+ const actualRole = existingUserData?.role || 'customer';
+
+ // Clear pending role since user already has a role
+ if (typeof window !== 'undefined') {
+ sessionStorage.removeItem('pending_role');
  }
 
- // Merchants don't need governorate
- if (pendingRole === 'merchant') {
- // Will be handled in the main redirect logic below
+ // Redirect based on actual database role
+ if (actualRole === 'admin') {
+ router.push('/admin/dashboard');
+ return;
+ } else if (actualRole === 'merchant') {
+ const { data: store } = await supabase
+ .from('stores')
+ .select('id, is_active')
+ .eq('merchant_id', user.id)
+ .maybeSingle();
+
+ if (!store) {
+ router.push('/merchant/setup');
+ } else if (!store.is_active) {
+ router.push('/merchant/pending');
  } else {
- // Check if customer needs governorate
- if (!existingUser.governorate) {
+ router.push('/merchant/dashboard');
+ }
+ return;
+ } else {
+ // Customer - check governorate
+ if (!existingUserData?.governorate) {
  if (typeof window !== 'undefined') {
  sessionStorage.setItem('needs_governorate', 'true');
  }
  router.push('/select-governorate');
  return;
  }
+ router.push('/');
+ return;
  }
  } else {
  // Insert new user without governorate (will be set later)
@@ -100,35 +119,6 @@ export default function CallbackHandler() {
  router.push('/select-governorate');
  return;
  }
-
- // Clear pending role
- if (typeof window !== 'undefined') {
- sessionStorage.removeItem('pending_role');
- }
-
- // Redirect based on role
- if (pendingRole === 'merchant') {
- // Check if merchant has a store
- const { data: store } = await supabase
- .from('stores')
- .select('id, is_active')
- .eq('merchant_id', user.id)
- .maybeSingle();
-
- if (!store) {
- // No store, redirect to setup
- router.push('/merchant/setup');
- } else if (!store.is_active) {
- // Store exists but not active, redirect to pending
- router.push('/merchant/pending');
- } else {
- // Store exists and active, redirect to dashboard
- router.push('/merchant/dashboard');
- }
- } else {
- // Customer - redirect to home
- router.push('/');
- }
  } else {
  // No pending role, get from database or default to customer
  const { data: userData } = await supabase
@@ -139,9 +129,14 @@ export default function CallbackHandler() {
 
  const role = userData?.role || 'customer';
 
+ // Handle admin redirects
+ if (role === 'admin') {
+ router.push('/admin/dashboard');
+ return;
+ }
+
  // Handle merchant redirects
  if (role === 'merchant') {
- // Check if merchant has a store
  const { data: store } = await supabase
  .from('stores')
  .select('id, is_active')

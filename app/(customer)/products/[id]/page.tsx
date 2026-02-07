@@ -180,18 +180,46 @@ export default function ProductDetailPage() {
             scrollbar-width: none;
           }
         `}</style>
-                {/* Image Gallery Carousel */}
-                <div className="relative w-full aspect-[4/5] bg-card-light" onClick={nextImage}>
-                    <img
-                        key={currentImageIndex}
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-opacity duration-300"
-                        src={currentImage}
-                    />
-                    {/* Image Counter Badge */}
+                {/* Image Gallery */}
+                <div className="bg-card-light pb-4">
+                    {/* Main Image */}
+                    <div className="relative w-full h-[50vh] bg-card-light" onClick={nextImage}>
+                        <img
+                            key={currentImageIndex}
+                            alt={product.name}
+                            className="w-full h-full object-contain transition-opacity duration-300"
+                            src={currentImage}
+                        />
+                        {/* Image Counter Badge */}
+                        {product.image_urls && product.image_urls.length > 1 && (
+                            <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full">
+                                {currentImageIndex + 1}/{product.image_urls.length}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Thumbnails */}
                     {product.image_urls && product.image_urls.length > 1 && (
-                        <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full">
-                            {currentImageIndex + 1}/{product.image_urls.length}
+                        <div className="flex gap-2 overflow-x-auto px-4 mt-4 hide-scrollbar">
+                            {product.image_urls.map((url, index) => (
+                                <button
+                                    key={index}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCurrentImageIndex(index);
+                                    }}
+                                    className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${currentImageIndex === index
+                                        ? 'border-primary'
+                                        : 'border-transparent opacity-70 hover:opacity-100'
+                                        }`}
+                                >
+                                    <img
+                                        src={url}
+                                        alt={`${product.name} thumbnail ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </button>
+                            ))}
                         </div>
                     )}
                 </div>

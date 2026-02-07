@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import type { Product } from '@/lib/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function WishlistPage() {
  const router = useRouter();
+ const { t } = useLanguage();
  const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
  const [isLoading, setIsLoading] = useState(true);
 
@@ -80,7 +82,7 @@ export default function WishlistPage() {
  <div className="flex items-center justify-center min-h-screen bg-background-light">
  <div className="text-center">
  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
- <p className="mt-4 text-text-light-secondary">Loading wishlist...</p>
+ <p className="mt-4 text-text-light-secondary">{t('wishlist.loading')}</p>
  </div>
  </div>
  );
@@ -96,10 +98,10 @@ export default function WishlistPage() {
  >
  <span className="material-symbols-outlined text-text-light-primary">arrow_back</span>
  </button>
- <h1 className="text-xl font-bold text-text-light-primary">Wishlist</h1>
+ <h1 className="text-xl font-bold text-text-light-primary">{t('wishlist.title')}</h1>
  <div className="flex-1"></div>
  <div className="text-sm font-medium text-text-light-secondary">
- {wishlistItems.length} items
+ {wishlistItems.length} {t('wishlist.items')}
  </div>
  </div>
 
@@ -110,15 +112,15 @@ export default function WishlistPage() {
  <div className="w-20 h-20 bg-background-light rounded-full flex items-center justify-center mb-4">
  <span className="material-symbols-outlined text-4xl text-text-light-secondary">favorite_border</span>
  </div>
- <h2 className="text-lg font-bold text-text-light-primary mb-2">Your wishlist is empty</h2>
+ <h2 className="text-lg font-bold text-text-light-primary mb-2">{t('wishlist.empty')}</h2>
  <p className="text-text-light-secondary mb-6 max-w-xs">
- Explore products and save your favorites to view them here later.
+ {t('wishlist.emptyMessage')}
  </p>
  <Link
  href="/stores"
  className="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors active:scale-95"
  >
- Explore Store
+ {t('wishlist.exploreStores')}
  </Link>
  </div>
  ) : (
@@ -158,7 +160,7 @@ export default function WishlistPage() {
  </h3>
  <div className="mt-auto pt-2 flex items-center justify-between">
  <span className="text-base font-bold text-text-light-primary">
- EGP {product.price.toFixed(2)}
+ {t('common.egp')} {product.price.toFixed(2)}
  </span>
  </div>
  </div>

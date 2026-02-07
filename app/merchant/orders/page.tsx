@@ -348,13 +348,15 @@ export default function OrdersPage() {
                                                 {formatDate(order.created_at)}
                                             </span>
                                         </div>
-                                        {order.customer && (
+                                        {order.customer_name && (
                                             <div className="text-sm text-text-light-secondary">
-                                                <p className="font-medium">العميل: {order.customer.full_name || 'غير متوفر'}</p>
-                                                {order.customer.phone && (
+                                                <p className="font-medium">العميل: {order.customer_name}</p>
+                                                {order.customer_phone && (
                                                     <p className="flex items-center gap-1 mt-1">
                                                         <span className="material-symbols-outlined text-sm">phone</span>
-                                                        {order.customer.phone}
+                                                        <a href={`tel:${order.customer_phone}`} className="hover:text-primary transition-colors">
+                                                            {order.customer_phone}
+                                                        </a>
                                                     </p>
                                                 )}
                                             </div>

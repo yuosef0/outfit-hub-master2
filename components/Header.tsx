@@ -202,7 +202,7 @@ export default function Header() {
                         <div className="flex items-center gap-2 text-text-light-secondary text-sm">
                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>location_on</span>
                             {loading ? (
-                                <span>Loading...</span>
+                                <span>{t('common.loading')}</span>
                             ) : (
                                 <select
                                     value={localGovernorate}
@@ -211,7 +211,7 @@ export default function Header() {
                                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center' }}
                                     disabled={isUpdatingGov}
                                 >
-                                    <option value="">Select governorate</option>
+                                    <option value="">{t('header.selectGovernorate')}</option>
                                     {EGYPTIAN_GOVERNORATES.map((gov) => (
                                         <option key={gov.code} value={gov.name}>
                                             {gov.name} - {gov.name_ar}

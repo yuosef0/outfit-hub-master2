@@ -44,26 +44,43 @@ export async function GET(request: NextRequest) {
             return NextResponse.redirect(new URL('/login?error=user_not_found', request.url));
         }
 
-        // Use upsert to create or update user record
-        // This ensures the user exists in the database
-        const { error: upsertError } = await supabase
+        // Check if user exists first to preserve role
+        const { data: existingUser } = await supabase
             .from('users')
-            .upsert({
-                id: user.id,
-                email: user.email,
-                full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-                avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-                role: 'customer', // Default role, will be updated by callback-handler
-                updated_at: new Date().toISOString(),
-            }, {
-                onConflict: 'id',
-                ignoreDuplicates: false,
-            });
+            .select('role')
+            .eq('id', user.id)
+            .single();
 
-        if (upsertError) {
-            console.error('Error upserting user:', upsertError);
-            // Continue anyway - the callback-handler will try to handle it
+        if (existingUser) {
+            // Update metadata but PRESERVE role
+            const { error: updateError } = await supabase
+                .from('users')
+                .update({
+                    email: user.email,
+                    full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                    avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', user.id);
+
+            if (updateError) console.error('Error updating user:', updateError);
+        } else {
+            // Insert new user with default role
+            const { error: insertError } = await supabase
+                .from('users')
+                .insert({
+                    id: user.id,
+                    email: user.email,
+                    full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                    avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+                    role: 'customer',
+                    updated_at: new Date().toISOString(),
+                });
+
+            if (insertError) console.error('Error inserting user:', insertError);
         }
+
+
     }
 
     // Redirect to callback handler page that will handle role-based routing

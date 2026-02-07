@@ -5,17 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import Toast from '@/components/Toast';
 
-const CATEGORIES = [
-    'ملابس',
-    'أحذية',
-    'شنط وحقائب',
-    'إكسسوارات',
-    'أخرى',
-];
-
-
-
-const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
 
 const AVAILABLE_COLORS = [
     { name: 'أسود', hex: '#000000' },
@@ -26,9 +16,19 @@ const AVAILABLE_COLORS = [
     { name: 'أصفر', hex: '#FFFF00' },
     { name: 'رمادي', hex: '#808080' },
     { name: 'بني', hex: '#8B4513' },
+    { name: 'بيج', hex: '#F5F5DC' },
+    { name: 'كحلي', hex: '#000080' },
+    { name: 'نبيتي', hex: '#800000' },
+    { name: 'زيتي', hex: '#808000' },
 ];
 
 interface StoreCategory {
+    id: string;
+    name: string;
+    name_ar: string | null;
+}
+
+interface SystemCategory {
     id: string;
     name: string;
     name_ar: string | null;
@@ -40,6 +40,7 @@ export default function NewProductPage() {
     const [submitting, setSubmitting] = useState(false);
     const [storeId, setStoreId] = useState<string | null>(null);
     const [storeCategories, setStoreCategories] = useState<StoreCategory[]>([]);
+    const [systemCategories, setSystemCategories] = useState<SystemCategory[]>([]);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
     const [formData, setFormData] = useState({
@@ -51,6 +52,7 @@ export default function NewProductPage() {
         category_id: '',
         gender_filter: '',
         stock_quantity: '',
+        subcategory_id: '',
         is_active: true,
     });
 
@@ -116,11 +118,42 @@ export default function NewProductPage() {
                 .order('display_order');
 
             setStoreCategories(categories || []);
+
+            // Fetch system categories
+            const { data: sysCategories } = await supabase
+                .from('categories')
+                .select('id, name, name_ar')
+                .eq('is_active', true)
+                .order('display_order');
+
+            setSystemCategories(sysCategories || []);
+
         } catch (error) {
             console.error('[Products/New] Error:', error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const [availableSubcategories, setAvailableSubcategories] = useState<{ id: string, name: string, name_ar: string | null }[]>([]);
+
+    useEffect(() => {
+        if (formData.category_id) {
+            fetchSubcategories(formData.category_id);
+        } else {
+            setAvailableSubcategories([]);
+            setFormData(prev => ({ ...prev, subcategory_id: '' }));
+        }
+    }, [formData.category_id]);
+
+    const fetchSubcategories = async (categoryId: string) => {
+        const { data } = await supabase
+            .from('subcategories')
+            .select('id, name, name_ar')
+            .eq('category_id', categoryId)
+            .order('name');
+
+        setAvailableSubcategories(data || []);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -242,6 +275,63 @@ export default function NewProductPage() {
         return 0;
     };
 
+    const [variants, setVariants] = useState<{ size: string; color: string; stock: number }[]>([]);
+
+    // Update variants when sizes or colors change
+    useEffect(() => {
+        const newVariants: { size: string; color: string; stock: number }[] = [];
+
+        // If we have both sizes and colors
+        if (selectedSizes.length > 0 && selectedColors.length > 0) {
+            selectedSizes.forEach(size => {
+                selectedColors.forEach(color => {
+                    const existingWrapper = variants.find(v => v.size === size && v.color === color.name);
+                    newVariants.push({
+                        size,
+                        color: color.name,
+                        stock: existingWrapper ? existingWrapper.stock : 0
+                    });
+                });
+            });
+        }
+        // If we only have sizes
+        else if (selectedSizes.length > 0) {
+            selectedSizes.forEach(size => {
+                const existingWrapper = variants.find(v => v.size === size && v.color === '');
+                newVariants.push({
+                    size,
+                    color: '',
+                    stock: existingWrapper ? existingWrapper.stock : 0
+                });
+            });
+        }
+        // If we only have colors
+        else if (selectedColors.length > 0) {
+            selectedColors.forEach(color => {
+                const existingWrapper = variants.find(v => v.size === '' && v.color === color.name);
+                newVariants.push({
+                    size: '',
+                    color: color.name,
+                    stock: existingWrapper ? existingWrapper.stock : 0
+                });
+            });
+        } else {
+            // No variants (handled by main stock input if needed, but we'll try to enforce variants if any options selected)
+        }
+
+        setVariants(newVariants);
+    }, [selectedSizes, selectedColors]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const updateVariantStock = (index: number, value: string) => {
+        const newVariants = [...variants];
+        newVariants[index].stock = parseInt(value) || 0;
+        setVariants(newVariants);
+
+        // Update total stock
+        const totalStock = newVariants.reduce((sum, v) => sum + v.stock, 0);
+        setFormData(prev => ({ ...prev, stock_quantity: totalStock.toString() }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -253,6 +343,15 @@ export default function NewProductPage() {
         if (images.length === 0) {
             setToast({ message: 'برجاء رفع صورة واحدة على الأقل', type: 'error' });
             return;
+        }
+
+        // Validate variants stock if variants exist
+        if (variants.length > 0) {
+            const totalVariantStock = variants.reduce((sum, v) => sum + v.stock, 0);
+            if (totalVariantStock === 0) {
+                setToast({ message: 'برجاء تحديد كمية المخزون للأنواع المختلفة', type: 'error' });
+                return;
+            }
         }
 
         setSubmitting(true);
@@ -284,9 +383,10 @@ export default function NewProductPage() {
                 price: parseFloat(formData.price),
                 category: formData.category,
                 category_id: formData.category_id || null,
-                stock_quantity: parseInt(formData.stock_quantity),
+                stock_quantity: parseInt(formData.stock_quantity), // Total stock
                 image_urls: imageUrls,
                 is_active: formData.is_active,
+                subcategory_id: formData.subcategory_id || null,
             };
 
             // Add optional fields if provided
@@ -297,14 +397,36 @@ export default function NewProductPage() {
                 productData.sizes = selectedSizes;
             }
             if (selectedColors.length > 0) {
-                productData.colors = selectedColors;
+                // Ensure we store detailed color info if possible, or just names
+                // The current DB schema likely expects arrays of strings or JSON
+                // Based on previous code, it seemed to be handling objects but check types.ts
+                // types.ts says `colors?: string[]`. So we should extract names.
+                productData.colors = selectedColors.map(c => c.name);
             }
 
-            const { error: productError } = await supabase
+            const { data: newProduct, error: productError } = await supabase
                 .from('products')
-                .insert(productData);
+                .insert(productData)
+                .select()
+                .single();
 
             if (productError) throw productError;
+
+            // Insert Variants
+            if (variants.length > 0 && newProduct) {
+                const variantsData = variants.map(v => ({
+                    product_id: newProduct.id,
+                    size: v.size || null,
+                    color: v.color || null,
+                    stock_quantity: v.stock
+                }));
+
+                const { error: variantsError } = await supabase
+                    .from('product_variants')
+                    .insert(variantsData);
+
+                if (variantsError) throw variantsError;
+            }
 
             setToast({ message: 'تم إضافة المنتج بنجاح! ✅', type: 'success' });
 
@@ -313,15 +435,7 @@ export default function NewProductPage() {
             }, 1500);
         } catch (err: any) {
             console.error('Error creating product:', err);
-            console.error('Error details:', {
-                message: err.message,
-                code: err.code,
-                details: err.details,
-                hint: err.hint,
-                status: err.status,
-                statusCode: err.statusCode,
-                full: JSON.stringify(err, null, 2)
-            });
+            // ... error handling
             setToast({ message: err.message || err.details || 'حدث خطأ أثناء إضافة المنتج', type: 'error' });
         } finally {
             setSubmitting(false);
@@ -474,24 +588,78 @@ export default function NewProductPage() {
                                 </p>
                             </div>
                         )}
-
+                        {/* System Category Select */}
                         <div>
                             <label className="block text-right font-bold text-text-light-primary mb-3">
-                                التصنيف *
+                                التصنيف العام (للبحث والفلترة العامة) *
                             </label>
                             <select
-                                name="category"
-                                value={formData.category}
+                                name="system_category_id"
+                                value={formData.system_category_id || ''}
                                 onChange={handleChange}
                                 required
                                 className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
                             >
-                                <option value="">اختر التصنيف</option>
-                                {CATEGORIES.map((cat) => (
-                                    <option key={cat} value={cat}>{cat}</option>
+                                <option value="">اختر التصنيف العام</option>
+                                {systemCategories.map((cat) => (
+                                    <option key={cat.id} value={cat.id}>{cat.name_ar || cat.name}</option>
                                 ))}
                             </select>
+                            <p className="text-xs text-text-light-secondary mt-1 text-right">
+                                هذا التصنيف يساعد العملاء في العثور على منتجك عند البحث في التطبيق بالكامل.
+                            </p>
                         </div>
+
+                        {/* Subcategory Select */}
+                        {availableSubcategories.length > 0 && (
+                            <div>
+                                <label className="block text-right font-bold text-text-light-primary mb-3">
+                                    القسم الفرعي *
+                                </label>
+                                <select
+                                    name="subcategory_id"
+                                    value={formData.subcategory_id || ''}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
+                                >
+                                    <option value="">اختر القسم الفرعي</option>
+                                    {availableSubcategories.map((sub) => (
+                                        <option key={sub.id} value={sub.id}>
+                                            {sub.name_ar || sub.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {/* Store Section Select (NEW) */}
+                        <div>
+                            <label className="block text-right font-bold text-text-light-primary mb-3">
+                                قسم المتجر (للظهور في صفحة متجرك) *
+                            </label>
+                            <select
+                                name="category"
+                                value={formData.category} // Save Name here
+                                onChange={handleChange}
+                                required
+                                className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
+                            >
+                                <option value="">اختر قسم داخل متجرك</option>
+                                {storeCategories.map((cat) => (
+                                    <option key={cat.id} value={cat.name}>{cat.name_ar || cat.name}</option>
+                                ))}
+                            </select>
+                            {storeCategories.length === 0 && (
+                                <p className="text-xs text-red-500 mt-1 text-right">
+                                    تنبيه: لم تقم بإضافة أقسام لمتجرك بعد (مثل: رجالي، حريمي). يمكنك إضافتها من "الأقسام" في لوحة التحكم.
+                                </p>
+                            )}
+                            <p className="text-xs text-text-light-secondary mt-1 text-right">
+                                هذا هو القسم الذي سيظهر فيه المنتج عند زيارة العميل لصفحة متجرك.
+                            </p>
+                        </div>
+
                     </div>
 
                     {/* السعر */}
@@ -676,21 +844,62 @@ export default function NewProductPage() {
                         )}
                     </div>
 
-                    {/* الكمية المتاحة */}
+                    {/* الكمية المتاحة / المخزون تفصيلي */}
                     <div className="bg-card-light rounded-xl p-5 border border-border-light">
                         <label className="block text-right font-bold text-text-light-primary mb-3">
                             الكمية المتاحة *
                         </label>
-                        <input
-                            type="number"
-                            name="stock_quantity"
-                            value={formData.stock_quantity}
-                            onChange={handleChange}
-                            required
-                            min="0"
-                            className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
-                            placeholder="50"
-                        />
+
+                        {variants.length > 0 ? (
+                            <div className="space-y-4">
+                                <p className="text-sm text-text-light-secondary text-right mb-2">
+                                    أدخل الكمية المتاحة لكل نوع (المجموع: {formData.stock_quantity})
+                                </p>
+                                <div className="border border-border-light rounded-lg overflow-hidden">
+                                    <table className="w-full text-right">
+                                        <thead className="bg-surface-light">
+                                            <tr>
+                                                <th className="px-4 py-2 text-text-light-primary font-bold border-b border-border-light">المقاس</th>
+                                                <th className="px-4 py-2 text-text-light-primary font-bold border-b border-border-light">اللون</th>
+                                                <th className="px-4 py-2 text-text-light-primary font-bold border-b border-border-light">الكمية</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {variants.map((variant, index) => (
+                                                <tr key={index} className="border-b border-border-light last:border-0 hover:bg-background-light">
+                                                    <td className="px-4 py-2 text-text-light-secondary">
+                                                        {variant.size || '-'}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-text-light-secondary">
+                                                        {variant.color || '-'}
+                                                    </td>
+                                                    <td className="px-4 py-2">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={variant.stock}
+                                                            onChange={(e) => updateVariantStock(index, e.target.value)}
+                                                            className="w-24 px-2 py-1 rounded border border-border-light bg-background-light focus:ring-2 focus:ring-primary text-center"
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        ) : (
+                            <input
+                                type="number"
+                                name="stock_quantity"
+                                value={formData.stock_quantity}
+                                onChange={handleChange}
+                                required
+                                min="0"
+                                className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
+                                placeholder="50"
+                            />
+                        )}
                     </div>
 
                     {/* نشر فوراً */}

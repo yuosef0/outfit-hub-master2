@@ -7,9 +7,11 @@ import { createBrowserClient } from '@supabase/ssr';
 import StoreWishlistButton from '@/components/StoreWishlistButton';
 import type { Store } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 function DiscoverStoresContent() {
     const searchParams = useSearchParams();
+    const { t } = useLanguage();
     const initialCategory = searchParams.get('category');
     console.log('Initial Category from URL:', initialCategory);
 
@@ -117,7 +119,7 @@ function DiscoverStoresContent() {
             <div className="flex items-center justify-center min-h-screen bg-background-light">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-4 text-text-light-secondary">Loading stores...</p>
+                    <p className="mt-4 text-text-light-secondary">{t('stores.loading')}</p>
                 </div>
             </div>
         );
@@ -128,14 +130,14 @@ function DiscoverStoresContent() {
             {/* Header Section */}
             <div className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md pb-2 shadow-sm">
                 <div className="px-4 py-3">
-                    <h1 className="text-2xl font-bold text-text-light-primary mb-3">Discover Stores</h1>
+                    <h1 className="text-2xl font-bold text-text-light-primary mb-3">{t('stores.discover')}</h1>
 
                     {/* Search Bar */}
                     <div className="relative mb-3">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-light-secondary">search</span>
                         <input
                             type="text"
-                            placeholder="Search stores..."
+                            placeholder={t('stores.searchPlaceholder')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 rounded-xl bg-card-light border border-border-light text-text-light-primary placeholder:text-text-light-secondary focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -177,10 +179,10 @@ function DiscoverStoresContent() {
                             className="flex items-center gap-1.5 text-text-light-secondary hover:text-primary transition-colors"
                         >
                             <span className="material-symbols-outlined text-[18px]">sort</span>
-                            <span className="text-xs font-medium">Sort by: {sortBy === 'newest' ? 'Newest' : 'Name'}</span>
+                            <span className="text-xs font-medium">{t('stores.sortBy')}: {sortBy === 'newest' ? t('stores.newest') : t('stores.name')}</span>
                         </button>
                         <div className="text-xs text-text-light-secondary">
-                            {filteredStores.length} {filteredStores.length === 1 ? 'store' : 'stores'}
+                            {filteredStores.length} {filteredStores.length === 1 ? t('stores.store') : t('stores.stores')}
                         </div>
                     </div>
                 </div>
@@ -191,8 +193,8 @@ function DiscoverStoresContent() {
                 {filteredStores.length === 0 ? (
                     <div className="text-center py-12">
                         <span className="material-symbols-outlined text-6xl text-border-light mb-4">store</span>
-                        <p className="text-text-light-secondary">No stores found</p>
-                        <p className="text-sm text-text-light-secondary mt-2">Try adjusting your filters</p>
+                        <p className="text-text-light-secondary">{t('stores.noStores')}</p>
+                        <p className="text-sm text-text-light-secondary mt-2">{t('stores.adjustFilters')}</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 gap-3">
@@ -240,7 +242,7 @@ function DiscoverStoresContent() {
                                         )}
                                         {store.subscription_plan === 'premium' && (
                                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-900/10 text-amber-600 border border-amber-200">
-                                                Premium
+                                                {t('stores.premium')}
                                             </span>
                                         )}
                                     </div>
@@ -257,7 +259,7 @@ function DiscoverStoresContent() {
                                 <div
                                     className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg bg-cream text-primary font-bold text-xs hover:bg-cream/90 transition-all mt-auto"
                                 >
-                                    View
+                                    {t('stores.view')}
                                 </div>
                             </Link>
                         ))}

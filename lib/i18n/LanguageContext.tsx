@@ -160,6 +160,21 @@ const translations: Record<Language, Record<string, string>> = {
         'home.bestSellers': 'Best Sellers',
         'home.deals': 'Deals',
         'home.forYou': 'For You',
+        'home.store.fashionHub': 'Fashion Hub',
+        'home.store.footwearEmporium': 'Footwear Emporium',
+        'home.store.accessoryHaven': 'Accessory Haven',
+
+        // Search
+        'search.placeholder': 'Search products, categories, stores...',
+        'search.all': 'All',
+        'search.products': 'Products',
+        'search.stores': 'Stores',
+        'search.noResults': 'No results found for',
+        'search.typeToSearch': 'Type to search...',
+        'search.unknownStore': 'Unknown Store',
+
+        // Header
+        'header.selectGovernorate': 'Select governorate',
 
         // Product
         'product.details': 'Details',
@@ -429,6 +444,102 @@ const translations: Record<Language, Record<string, string>> = {
         'governorate.current': 'Current Governorate',
         'governorate.allStores': 'All Stores',
 
+        // About Page
+        'about.title': 'About Us',
+        'about.p1': "Welcome to Outfit Hub, your number one source for all things fashion. We're dedicated to providing you the best of clothing, with a focus on dependability, customer service, and uniqueness.",
+        'about.p2': "We're working to turn our passion for fashion into a booming online store. We hope you enjoy our products as much as we enjoy offering them to you.",
+        'about.signoff': 'Sincerely,',
+        'about.team': 'The Outfit Hub Team',
+
+        // FAQ Page
+        'faq.title': 'Frequently Asked Questions',
+        'faq.q1': 'How do I place an order?',
+        'faq.a1': 'You can place an order by browsing our products, adding items to your cart, and proceeding to checkout.',
+        'faq.q2': 'What payment methods do you accept?',
+        'faq.a2': 'We accept credit/debit cards, mobile wallets, and cash on delivery.',
+        'faq.q3': 'How can I track my order?',
+        'faq.a3': 'Once your order is shipped, you will receive a tracking number via email/SMS.',
+        'faq.q4': 'Do you offer international shipping?',
+        'faq.a4': 'Currently, we only ship within Egypt.',
+        'faq.q5': 'What is your return policy?',
+        'faq.a5': 'You can return items within 14 days of delivery, provided they are unused and in original packaging.',
+
+        // Cart additions
+        'cart.myCart': 'My Cart',
+        'cart.startShopping': 'Start Shopping',
+        'cart.loading': 'Loading cart...',
+
+        // Categories additions
+        'categories.loading': 'Loading stores...',
+        'categories.noStores': 'No stores found in this category',
+        'categories.tryOther': 'Try browsing other categories',
+        'categories.premium': 'Premium',
+        'categories.viewStore': 'View Store',
+        'categories.found': 'found',
+        'categories.store': 'store',
+        'categories.stores': 'stores',
+
+        // Stores page
+        'stores.discover': 'Discover Stores',
+        'stores.loading': 'Loading stores...',
+        'stores.searchPlaceholder': 'Search stores...',
+        'stores.sortBy': 'Sort by',
+        'stores.newest': 'Newest',
+        'stores.name': 'Name',
+        'stores.store': 'store',
+        'stores.stores': 'stores',
+        'stores.noStores': 'No stores found',
+        'stores.adjustFilters': 'Try adjusting your filters',
+        'stores.premium': 'Premium',
+        'stores.view': 'View',
+
+        // Wishlist additions
+        'wishlist.loading': 'Loading wishlist...',
+        'wishlist.items': 'items',
+        'wishlist.exploreStores': 'Explore Stores',
+
+        // Orders additions
+        'orders.allOrders': 'All Orders',
+        'orders.pendingTab': 'Pending',
+        'orders.noOrdersYet': 'You have no orders yet',
+        'orders.pickupCode': 'Pickup Code',
+        'orders.readyForPickup': 'Your order is ready for pickup!',
+        'orders.items': 'items',
+        'orders.reserved': 'Reserved',
+        'orders.ready': 'Ready for Pickup',
+        'orders.expired': 'Expired',
+
+        // Auth additions
+        'auth.welcomeBack': 'Welcome Back',
+        'auth.enterEmail': 'Enter your email',
+        'auth.enterPassword': 'Enter your password',
+        'auth.signingIn': 'Signing in...',
+        'auth.or': 'OR',
+        'auth.continueWithGoogle': 'Continue with Google',
+        'auth.createAccount': 'Create Account',
+        'auth.selectAccountType': 'Select account type',
+        'auth.customer': 'Customer',
+        'auth.merchant': 'Merchant',
+        'auth.fullName': 'Full Name',
+        'auth.enterFullName': 'Enter your full name',
+        'auth.enterEmailAddress': 'Enter your email address',
+        'auth.phoneNumber': 'Phone Number',
+        'auth.enterPhone': 'Enter your phone number',
+        'auth.governorate': 'Governorate',
+        'auth.selectGovernorate': 'Select your governorate',
+        'auth.confirmPassword': 'Confirm Password',
+        'auth.confirmPasswordPlaceholder': 'Confirm your password',
+        'auth.passwordRequirements': 'Must be 8+ characters and contain at least 1 number.',
+        'auth.agreeToTerms': 'I agree to the',
+        'auth.termsAndPrivacy': 'Terms & Privacy',
+        'auth.creatingAccount': 'Creating Account...',
+        'auth.signUpWithGoogle': 'Sign up with Google',
+        'auth.alreadyHaveAccount': 'Already have an account?',
+
+        // Mall
+        'mall.title': 'Mall',
+        'mall.comingSoon': 'Coming Soon',
+
         // Admin
         'admin.title': 'Admin Panel',
         'admin.dashboard': 'Dashboard',
@@ -440,6 +551,7 @@ const translations: Record<Language, Record<string, string>> = {
         'admin.logout': 'Logout',
         'admin.slider': 'Slider Management',
         'admin.categories': 'Categories',
+        'admin.panelTitle': 'Admin Panel',
 
         // Admin Dashboard
         'admin.dashboard.title': 'Dashboard',
@@ -683,6 +795,21 @@ const translations: Record<Language, Record<string, string>> = {
         'home.bestSellers': 'الأكثر مبيعاً',
         'home.deals': 'عروض',
         'home.forYou': 'لك',
+        'home.store.fashionHub': 'مركز الأزياء',
+        'home.store.footwearEmporium': 'متجر الأحذية',
+        'home.store.accessoryHaven': 'واحة الإكسسوارات',
+
+        // Search
+        'search.placeholder': 'ابحث عن منتجات، فئات، متاجر...',
+        'search.all': 'الكل',
+        'search.products': 'المنتجات',
+        'search.stores': 'المتاجر',
+        'search.noResults': 'لا توجد نتائج لـ',
+        'search.typeToSearch': 'اكتب للبحث...',
+        'search.unknownStore': 'متجر غير معروف',
+
+        // Header
+        'header.selectGovernorate': 'اختر المحافظة',
 
         // Product
         'product.details': 'التفاصيل',
@@ -952,6 +1079,82 @@ const translations: Record<Language, Record<string, string>> = {
         'governorate.current': 'المحافظة الحالية',
         'governorate.allStores': 'جميع المتاجر',
 
+        // Cart additions
+        'cart.myCart': 'سلتي',
+        'cart.startShopping': 'ابدأ التسوق',
+        'cart.loading': 'جاري تحميل السلة...',
+
+        // Categories additions
+        'categories.loading': 'جاري تحميل المتاجر...',
+        'categories.noStores': 'لا توجد متاجر في هذه الفئة',
+        'categories.tryOther': 'جرب تصفح فئات أخرى',
+        'categories.premium': 'مميز',
+        'categories.viewStore': 'عرض المتجر',
+        'categories.found': 'وُجد',
+        'categories.store': 'متجر',
+        'categories.stores': 'متاجر',
+
+        // Stores page
+        'stores.discover': 'اكتشف المتاجر',
+        'stores.loading': 'جاري تحميل المتاجر...',
+        'stores.searchPlaceholder': 'ابحث عن متاجر...',
+        'stores.sortBy': 'ترتيب حسب',
+        'stores.newest': 'الأحدث',
+        'stores.name': 'الاسم',
+        'stores.store': 'متجر',
+        'stores.stores': 'متاجر',
+        'stores.noStores': 'لا توجد متاجر',
+        'stores.adjustFilters': 'جرب تعديل الفلاتر',
+        'stores.premium': 'مميز',
+        'stores.view': 'عرض',
+
+        // Wishlist additions
+        'wishlist.loading': 'جاري تحميل المفضلة...',
+        'wishlist.items': 'عنصر',
+        'wishlist.exploreStores': 'اكتشف المتاجر',
+
+        // Orders additions
+        'orders.allOrders': 'كل الطلبات',
+        'orders.pendingTab': 'قيد الانتظار',
+        'orders.noOrdersYet': 'لا توجد طلبات حتى الآن',
+        'orders.pickupCode': 'كود الاستلام',
+        'orders.readyForPickup': 'طلبك جاهز للاستلام!',
+        'orders.items': 'منتج',
+        'orders.reserved': 'محجوز',
+        'orders.ready': 'جاهز للاستلام',
+        'orders.expired': 'منتهي',
+
+        // Auth additions
+        'auth.welcomeBack': 'مرحباً بك',
+        'auth.enterEmail': 'أدخل بريدك الإلكتروني',
+        'auth.enterPassword': 'أدخل كلمة المرور',
+        'auth.signingIn': 'جاري تسجيل الدخول...',
+        'auth.or': 'أو',
+        'auth.continueWithGoogle': 'المتابعة مع جوجل',
+        'auth.createAccount': 'إنشاء حساب',
+        'auth.selectAccountType': 'اختر نوع الحساب',
+        'auth.customer': 'عميل',
+        'auth.merchant': 'تاجر',
+        'auth.fullName': 'الاسم الكامل',
+        'auth.enterFullName': 'أدخل اسمك الكامل',
+        'auth.enterEmailAddress': 'أدخل بريدك الإلكتروني',
+        'auth.phoneNumber': 'رقم الهاتف',
+        'auth.enterPhone': 'أدخل رقم هاتفك',
+        'auth.governorate': 'المحافظة',
+        'auth.selectGovernorate': 'اختر محافظتك',
+        'auth.confirmPassword': 'تأكيد كلمة المرور',
+        'auth.confirmPasswordPlaceholder': 'أكد كلمة المرور',
+        'auth.passwordRequirements': 'يجب أن تكون 8 أحرف أو أكثر وتحتوي على رقم واحد على الأقل.',
+        'auth.agreeToTerms': 'أوافق على',
+        'auth.termsAndPrivacy': 'الشروط والخصوصية',
+        'auth.creatingAccount': 'جاري إنشاء الحساب...',
+        'auth.signUpWithGoogle': 'التسجيل بجوجل',
+        'auth.alreadyHaveAccount': 'لديك حساب بالفعل؟',
+
+        // Mall
+        'mall.title': 'المول',
+        'mall.comingSoon': 'قريباً',
+
         // Admin
         'admin.title': 'لوحة الإدارة',
         'admin.dashboard': 'لوحة التحكم',
@@ -963,6 +1166,27 @@ const translations: Record<Language, Record<string, string>> = {
         'admin.logout': 'تسجيل الخروج',
         'admin.slider': 'إدارة السلايدر',
         'admin.categories': 'الفئات',
+        'admin.panelTitle': 'لوحة الإدارة',
+
+        // About Page
+        'about.title': 'من نحن',
+        'about.p1': 'أهلاً بكم في أوتفيت هب، مصدركم الأول لكل ما يتعلق بالموضة. نحن مكرسون لتقديم أفضل الملابس لكم، مع التركيز على الاعتمادية، وخدمة العملاء، والتميز.',
+        'about.p2': 'نحن نعمل على تحويل شغفنا بالموضة إلى متجر إلكتروني مزدهر. نأمل أن تستمتعوا بمنتجاتنا بقدر ما نستمتع بتقديمها لكم.',
+        'about.signoff': 'مع خالص التقدير،',
+        'about.team': 'فريق عمل أوتفيت هب',
+
+        // FAQ Page
+        'faq.title': 'الأسئلة الشائعة',
+        'faq.q1': 'كيف يمكنني تقديم طلب؟',
+        'faq.a1': 'يمكنك تقديم طلب عن طريق تصفح منتجاتنا، وإضافة العناصر إلى عربة التسوق، ثم الانتقال إلى الدفع.',
+        'faq.q2': 'ما هي طرق الدفع المقبولة؟',
+        'faq.a2': 'نقبل بطاقات الائتمان/الخصم، والمحافظ الإلكترونية، والدفع عند الاستلام.',
+        'faq.q3': 'كيف يمكنني تتبع طلبي؟',
+        'faq.a3': 'بمجرد شحن طلبك، ستتلقى رقم تتبع عبر البريد الإلكتروني أو الرسائل القصيرة.',
+        'faq.q4': 'هل توفرون شحن دولي؟',
+        'faq.a4': 'حاليًا، نقوم بالشحن داخل مصر فقط.',
+        'faq.q5': 'ما هي سياسة الإرجاع لديكم؟',
+        'faq.a5': 'يمكنك إرجاع العناصر خلال 14 يومًا من الاستلام، بشرط أن تكون غير مستخدمة وفي عبوتها الأصلية.',
 
         // Admin Dashboard
         'admin.dashboard.title': 'لوحة التحكم',

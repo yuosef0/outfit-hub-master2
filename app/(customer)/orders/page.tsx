@@ -124,15 +124,15 @@ export default function OrdersPage() {
     };
 
     const getStatusText = (status: OrderStatus) => {
-        const statusTexts: Record<OrderStatus, { en: string; ar: string }> = {
-            'reserved': { en: 'Reserved', ar: 'محجوز' },
-            'confirmed': { en: 'Confirmed', ar: 'مؤكد' },
-            'ready': { en: 'Ready for Pickup', ar: 'جاهز للاستلام' },
-            'completed': { en: 'Completed', ar: 'مكتمل' },
-            'cancelled': { en: 'Cancelled', ar: 'ملغي' },
-            'expired': { en: 'Expired', ar: 'منتهي' },
+        const statusKeys: Record<OrderStatus, string> = {
+            'reserved': 'orders.reserved',
+            'confirmed': 'orders.confirmed',
+            'ready': 'orders.ready',
+            'completed': 'orders.delivered',
+            'cancelled': 'orders.cancelled',
+            'expired': 'orders.expired',
         };
-        return language === 'ar' ? statusTexts[status].ar : statusTexts[status].en;
+        return t(statusKeys[status]);
     };
 
     const pendingOrders = orders.filter(order =>
@@ -177,7 +177,7 @@ export default function OrdersPage() {
                             : 'border-transparent text-text-light-secondary hover:text-text-light-primary'
                             }`}
                     >
-                        {language === 'ar' ? 'كل الطلبات' : 'All Orders'} ({orders.length})
+                        {t('orders.allOrders')} ({orders.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('pending')}
@@ -186,7 +186,7 @@ export default function OrdersPage() {
                             : 'border-transparent text-text-light-secondary hover:text-text-light-primary'
                             }`}
                     >
-                        {language === 'ar' ? 'قيد الانتظار' : 'Pending'} ({pendingOrders.length})
+                        {t('orders.pendingTab')} ({pendingOrders.length})
                     </button>
                 </div>
             </div>
@@ -202,7 +202,7 @@ export default function OrdersPage() {
                             {t('orders.noOrders')}
                         </h2>
                         <p className="text-text-light-secondary text-center mb-6">
-                            {language === 'ar' ? 'لا توجد طلبات حتى الآن' : 'You have no orders yet'}
+                            {t('orders.noOrdersYet')}
                         </p>
                         <Link
                             href="/"
@@ -265,7 +265,7 @@ export default function OrdersPage() {
                                                 {/* Pickup Code Text */}
                                                 <div className="text-center">
                                                     <span className="text-xs text-text-light-secondary block mb-1">
-                                                        {language === 'ar' ? 'كود الاستلام' : 'Pickup Code'}
+                                                        {t('orders.pickupCode')}
                                                     </span>
                                                     <div className="flex items-center justify-center gap-2">
                                                         <span className="text-2xl font-bold text-primary tracking-[0.3em]">
@@ -284,7 +284,7 @@ export default function OrdersPage() {
 
                                                 {order.status === 'ready' && (
                                                     <p className="text-xs text-primary font-medium bg-primary/10 px-3 py-1.5 rounded-full">
-                                                        {language === 'ar' ? '🎉 طلبك جاهز للاستلام!' : '🎉 Your order is ready for pickup!'}
+                                                        {t('orders.readyForPickup')}
                                                     </p>
                                                 )}
                                             </div>
@@ -322,7 +322,7 @@ export default function OrdersPage() {
                                     {/* Total */}
                                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border-light">
                                         <span className="text-sm text-text-light-secondary">
-                                            {order.items?.length || 0} {language === 'ar' ? 'منتج' : 'items'}
+                                            {order.items?.length || 0} {t('orders.items')}
                                         </span>
                                         <span className="font-bold text-text-light-primary">
                                             {t('common.egp')} {order.total_amount.toFixed(2)}

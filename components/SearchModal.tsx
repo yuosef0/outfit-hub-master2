@@ -135,7 +135,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             </div>
                             <input
                                 className="w-full bg-card-light border-none rounded-xl py-3 pl-10 pr-10 text-base placeholder-text-light-secondary text-text-light-primary focus:ring-2 focus:ring-primary/50 transition-all shadow-sm"
-                                placeholder="Search products, categories, stores..."
+                                placeholder={t('search.placeholder')}
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -158,19 +158,19 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             onClick={() => setActiveTab('all')}
                             className={`flex flex-col items-center gap-2 pb-3 min-w-[3rem] border-b-[3px] text-sm whitespace-nowrap transition-colors ${activeTab === 'all' ? 'border-primary text-primary font-bold' : 'border-transparent text-text-light-secondary hover:text-text-light-primary font-medium'}`}
                         >
-                            All
+                            {t('search.all')}
                         </button>
                         <button
                             onClick={() => setActiveTab('products')}
                             className={`flex flex-col items-center gap-2 pb-3 min-w-[3rem] border-b-[3px] text-sm whitespace-nowrap transition-colors ${activeTab === 'products' ? 'border-primary text-primary font-bold' : 'border-transparent text-text-light-secondary hover:text-text-light-primary font-medium'}`}
                         >
-                            Products
+                            {t('search.products')}
                         </button>
                         <button
                             onClick={() => setActiveTab('stores')}
                             className={`flex flex-col items-center gap-2 pb-3 min-w-[3rem] border-b-[3px] text-sm whitespace-nowrap transition-colors ${activeTab === 'stores' ? 'border-primary text-primary font-bold' : 'border-transparent text-text-light-secondary hover:text-text-light-primary font-medium'}`}
                         >
-                            Stores
+                            {t('search.stores')}
                         </button>
                     </div>
                 </div>
@@ -186,7 +186,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             {/* Products Grid */}
                             {(activeTab === 'all' || activeTab === 'products') && products.length > 0 && (
                                 <div className="mb-8">
-                                    {(activeTab === 'all') && <h3 className="text-lg font-bold text-text-light-primary mb-4">Products</h3>}
+                                    {(activeTab === 'all') && <h3 className="text-lg font-bold text-text-light-primary mb-4">{t('search.products')}</h3>}
                                     <div className="grid grid-cols-2 gap-4 pb-4">
                                         {products.map((product) => (
                                             <div key={product.id} onClick={onClose} className="w-full">
@@ -196,7 +196,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                         id={product.id}
                                                         name={product.name}
                                                         price={product.price}
-                                                        storeName={product.stores?.name || 'Unknown Store'}
+                                                        storeName={product.stores?.name || t('search.unknownStore')}
                                                         imageUrl={product.image_urls?.[0]}
                                                     // category={product.category}
                                                     />
@@ -210,7 +210,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             {/* Stores Grid */}
                             {(activeTab === 'all' || activeTab === 'stores') && stores.length > 0 && (
                                 <div className="mb-8">
-                                    {(activeTab === 'all') && <h3 className="text-lg font-bold text-text-light-primary mb-4">Stores</h3>}
+                                    {(activeTab === 'all') && <h3 className="text-lg font-bold text-text-light-primary mb-4">{t('search.stores')}</h3>}
                                     <div className="flex flex-wrap gap-4 pb-4 justify-center sm:justify-start">
                                         {stores.map((store) => (
                                             <div key={store.id} onClick={onClose}>
@@ -236,7 +236,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             ) && (
                                     <div className="flex flex-col items-center justify-center py-20 text-text-light-secondary">
                                         <span className="material-symbols-outlined text-4xl mb-2">search_off</span>
-                                        <p>No results found for "{searchTerm}"</p>
+                                        <p>{t('search.noResults')} &quot;{searchTerm}&quot;</p>
                                     </div>
                                 )}
 
@@ -244,7 +244,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             {!searchTerm && (
                                 <div className="flex flex-col items-center justify-center py-20 text-text-light-secondary opacity-50">
                                     <span className="material-symbols-outlined text-4xl mb-2">search</span>
-                                    <p>Type to search...</p>
+                                    <p>{t('search.typeToSearch')}</p>
                                 </div>
                             )}
                         </>

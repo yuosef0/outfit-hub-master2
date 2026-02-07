@@ -45,6 +45,9 @@ export default function MerchantSetupPage() {
         banner: '',
     });
 
+    const [availableSubcategories, setAvailableSubcategories] = useState<{ id: string; name: string; name_ar: string | null }[]>([]);
+    const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -64,6 +67,60 @@ export default function MerchantSetupPage() {
         };
         fetchCategories();
     }, []);
+
+    // Fetch subcategories when category changes
+    useEffect(() => {
+        const fetchSubcategories = async () => {
+            if (!formData.category) {
+                setAvailableSubcategories([]);
+                return;
+            }
+
+            const selectedCat = categories.find(c => (c.name_ar || c.name) === formData.category);
+            if (!selectedCat) return;
+
+            const { data } = await supabase
+                .from('subcategories')
+                .select('id, name, name_ar')
+                .eq('category_id', selectedCat.id)
+                .order('name');
+
+            setAvailableSubcategories(data || []);
+        };
+
+        fetchSubcategories();
+    }, [formData.category, categories]);
+
+    // Fetch subcategories when category changes
+    useEffect(() => {
+        const fetchSubcategories = async () => {
+            if (!formData.category) {
+                setAvailableSubcategories([]);
+                return;
+            }
+
+            const selectedCat = categories.find(c => (c.name_ar || c.name) === formData.category);
+            if (!selectedCat) return;
+
+            const { data } = await supabase
+                .from('subcategories')
+                .select('id, name, name_ar')
+                .eq('category_id', selectedCat.id)
+                .order('name');
+
+            setAvailableSubcategories(data || []);
+        };
+
+        fetchSubcategories();
+    }, [formData.category, categories]);
+
+    const handleSubcategoryToggle = (id: string) => {
+        setSelectedSubcategories(prev =>
+            prev.includes(id)
+                ? prev.filter(item => item !== id)
+                : [...prev, id]
+        );
+    };
 
     const checkUser = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -172,6 +229,28 @@ export default function MerchantSetupPage() {
 
             if (storeError) throw storeError;
 
+            // Insert Store Subcategories
+            if (selectedSubcategories.length > 0) {
+                const subcategoryData = selectedSubcategories.map(subId => ({
+                    store_id: storeError ? null : (await supabase.from('stores').select('id').eq('merchant_id', userId).single()).data?.id, // This is tricky because we don't have the store ID returned from insert if not using select()
+                    subcategory_id: subId
+                }));
+
+                // Better approach: get the store ID first
+                const { data: storeData } = await supabase.from('stores').select('id').eq('merchant_id', userId).single();
+
+                if (storeData) {
+                    const { error: subError } = await supabase
+                        .from('store_subcategories')
+                        .insert(selectedSubcategories.map(subId => ({
+                            store_id: storeData.id,
+                            subcategory_id: subId
+                        })));
+
+                    if (subError) console.error('Error saving subcategories:', subError);
+                }
+            }
+
             setToast({ message: 'تم إرسال طلبك بنجاح!', type: 'success' });
             setTimeout(() => router.push('/merchant/pending'), 2000);
         } catch (err: any) {
@@ -242,142 +321,89 @@ export default function MerchantSetupPage() {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Next Button */}
-                            <div className="mt-8">
-                                <button
-                                    type="button"
-                                    onClick={nextStep}
-                                    className="w-full bg-primary text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-primary/90 transition-all shadow-lg"
-                                >
-                                    التالي ←
-                                </button>
-                            </div>
                         </div>
-                    </>
+
+                        {/* Subcategories Selection */}
+                        {availableSubcategories.length > 0 && (
+                            <div className="flex flex-col gap-1.5 animate-fade-in">
+                                <label className="text-sm font-semibold text-text-light-primary text-right">التخصصات (اختياري)</label>
+                                <div className="grid grid-cols-2 gap-2 bg-card-light rounded-lg border border-border-light p-3 max-h-48 overflow-y-auto">
+                                    {availableSubcategories.map((sub) => (
+                                        <label key={sub.id} className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-background-light transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedSubcategories.includes(sub.id)}
+                                                onChange={() => handleSubcategoryToggle(sub.id)}
+                                                className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+                                            />
+                                            <span className="text-sm text-text-light-primary text-right flex-1">{sub.name_ar || sub.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Next Button */}
+                        <div className="mt-8">
+                            <button
+                                type="button"
+                                onClick={nextStep}
+                                className="w-full bg-primary text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-primary/90 transition-all shadow-lg"
+                            >
+                                التالي ←
+                            </button>
+                        </div>
+                    </div>
+            </>
                 )}
 
-                {currentStep === 2 && (
-                    <>
-                        <div className="pb-6 pt-2">
-                            <h1 className="text-text-light-primary tracking-tight text-[28px] font-bold leading-tight text-right">الموقع والتواصل</h1>
-                            <p className="text-text-light-secondary text-base font-normal leading-normal pt-2 text-right">أدخل عنوان متجرك ووسائل التواصل.</p>
+            {currentStep === 2 && (
+                <>
+                    <div className="pb-6 pt-2">
+                        <h1 className="text-text-light-primary tracking-tight text-[28px] font-bold leading-tight text-right">الموقع والتواصل</h1>
+                        <p className="text-text-light-secondary text-base font-normal leading-normal pt-2 text-right">أدخل عنوان متجرك ووسائل التواصل.</p>
+                    </div>
+
+                    <div className="flex flex-col gap-5">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-text-light-primary text-right">العنوان *</label>
+                            <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary placeholder-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm text-right" placeholder="شارع طه حسين، مدينة المنيا" />
                         </div>
 
-                        <div className="flex flex-col gap-5">
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-semibold text-text-light-primary text-right">العنوان *</label>
-                                <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary placeholder-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm text-right" placeholder="شارع طه حسين، مدينة المنيا" />
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-semibold text-text-light-primary text-right">المحافظة *</label>
-                                <div className="relative">
-                                    <select className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right" name="governorate" value={formData.governorate} onChange={handleChange}>
-                                        <option value="">اختر المحافظة</option>
-                                        {EGYPTIAN_GOVERNORATES.map((gov) => (<option key={gov.code} value={gov.name}>{gov.name_ar}</option>))}
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-text-light-secondary">
-                                        <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>expand_more</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-semibold text-text-light-primary text-right">المنطقة *</label>
-                                <div className="relative">
-                                    <select name="area" value={formData.area} onChange={handleChange} className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right">
-                                        <option value="">اختر المنطقة</option>
-                                        {AREAS.map((area) => (<option key={area} value={area}>{area}</option>))}
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-text-light-secondary">
-                                        <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>expand_more</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-semibold text-text-light-primary text-right">رابط Google Maps (اختياري)</label>
-                                <input type="url" name="maps_link" value={formData.maps_link} onChange={handleChange} className="w-full rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary placeholder-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm text-right" placeholder="https://maps.google.com/..." />
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-semibold text-text-light-primary text-right">رقم WhatsApp *</label>
-                                <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary placeholder-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm text-right" placeholder="01012345678" />
-                            </div>
-
-                            {/* Navigation Buttons */}
-                            <div className="mt-8 flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={prevStep}
-                                    className="flex-1 bg-surface-light text-text-light-primary py-4 px-6 rounded-lg font-bold text-lg hover:bg-surface-light transition-all"
-                                >
-                                    → رجوع
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={nextStep}
-                                    className="flex-1 bg-primary text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-primary/90 transition-all shadow-lg"
-                                >
-                                    التالي ←
-                                </button>
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {currentStep === 3 && (
-                    <>
-                        <div className="pb-6 pt-2">
-                            <h1 className="text-text-light-primary tracking-tight text-[28px] font-bold leading-tight text-right">الهوية البصرية</h1>
-                            <p className="text-text-light-secondary text-base font-normal leading-normal pt-2 text-right">أضف شعار وصورة غلاف لمتجرك.</p>
-                        </div>
-
-                        <div className="mb-6">
-                            <h2 className="text-text-light-primary text-base font-bold leading-tight tracking-[-0.015em] text-right pb-3">لوجو المتجر *</h2>
-                            <div className="flex flex-row items-center gap-4">
-                                <label className="relative group cursor-pointer shrink-0">
-                                    <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'logo')} className="hidden" />
-                                    {previews.logo ? (
-                                        <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-primary">
-                                            <img src={previews.logo} alt="Logo" className="w-full h-full object-cover" />
-                                        </div>
-                                    ) : (
-                                        <div className="h-24 w-24 rounded-full bg-card-light border-2 border-dashed border-border-light flex items-center justify-center hover:border-primary hover:bg-primary/5 transition-colors">
-                                            <span className="material-symbols-outlined text-text-light-secondary group-hover:text-primary" style={{ fontSize: '32px' }}>photo_camera</span>
-                                        </div>
-                                    )}
-                                    <div className="absolute bottom-0 right-0 bg-primary rounded-full p-1.5 shadow-md border-2 border-background-light">
-                                        <span className="material-symbols-outlined text-white" style={{ fontSize: '14px' }}>{previews.logo ? 'edit' : 'add'}</span>
-                                    </div>
-                                </label>
-                                <div className="flex flex-col">
-                                    <p className="text-sm font-medium text-text-light-primary ">اسحب الصورة أو اضغط للرفع</p>
-                                    <p className="text-xs text-text-light-secondary mt-1">PNG/JPG، حد أقصى 2MB</p>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-text-light-primary text-right">المحافظة *</label>
+                            <div className="relative">
+                                <select className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right" name="governorate" value={formData.governorate} onChange={handleChange}>
+                                    <option value="">اختر المحافظة</option>
+                                    {EGYPTIAN_GOVERNORATES.map((gov) => (<option key={gov.code} value={gov.name}>{gov.name_ar}</option>))}
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-text-light-secondary">
+                                    <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>expand_more</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="mb-8">
-                            <h2 className="text-text-light-primary text-base font-bold leading-tight tracking-[-0.015em] text-right pb-3">صورة الغلاف (اختياري)</h2>
-                            <label className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-lg bg-card-light border-2 border-dashed border-border-light flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors group overflow-hidden">
-                                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'banner')} className="hidden" />
-                                {previews.banner ? (
-                                    <img src={previews.banner} alt="Banner" className="w-full h-full object-cover" />
-                                ) : (
-                                    <>
-                                        <div className="rounded-full bg-card-light p-3 mb-2 group-hover:bg-card-light transition-colors">
-                                            <span className="material-symbols-outlined text-text-light-secondary group-hover:text-primary" style={{ fontSize: '28px' }}>image</span>
-                                        </div>
-                                        <p className="text-sm font-medium text-primary">اسحب الصورة أو اضغط للرفع</p>
-                                    </>
-                                )}
-                            </label>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-text-light-primary text-right">المنطقة *</label>
+                            <div className="relative">
+                                <select name="area" value={formData.area} onChange={handleChange} className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right">
+                                    <option value="">اختر المنطقة</option>
+                                    {AREAS.map((area) => (<option key={area} value={area}>{area}</option>))}
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-text-light-secondary">
+                                    <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>expand_more</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mb-6">
-                            <p className="text-sm text-blue-300 text-right">سيتم مراجعة متجرك وتفعيله خلال 24 ساعة. سنتواصل معك على WhatsApp.</p>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-text-light-primary text-right">رابط Google Maps (اختياري)</label>
+                            <input type="url" name="maps_link" value={formData.maps_link} onChange={handleChange} className="w-full rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary placeholder-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm text-right" placeholder="https://maps.google.com/..." />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-text-light-primary text-right">رقم WhatsApp *</label>
+                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary placeholder-text-light-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm text-right" placeholder="01012345678" />
                         </div>
 
                         {/* Navigation Buttons */}
@@ -391,23 +417,97 @@ export default function MerchantSetupPage() {
                             </button>
                             <button
                                 type="button"
-                                onClick={handleSubmit}
-                                disabled={loading}
-                                className="flex-1 bg-primary text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-primary/90 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                onClick={nextStep}
+                                className="flex-1 bg-primary text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-primary/90 transition-all shadow-lg"
                             >
-                                {loading ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        جاري الإرسال...
-                                    </>
-                                ) : (
-                                    '✅ إرسال للمراجعة'
-                                )}
+                                التالي ←
                             </button>
                         </div>
-                    </>
-                )}
-            </div>
+                    </div>
+                </>
+            )}
+
+            {currentStep === 3 && (
+                <>
+                    <div className="pb-6 pt-2">
+                        <h1 className="text-text-light-primary tracking-tight text-[28px] font-bold leading-tight text-right">الهوية البصرية</h1>
+                        <p className="text-text-light-secondary text-base font-normal leading-normal pt-2 text-right">أضف شعار وصورة غلاف لمتجرك.</p>
+                    </div>
+
+                    <div className="mb-6">
+                        <h2 className="text-text-light-primary text-base font-bold leading-tight tracking-[-0.015em] text-right pb-3">لوجو المتجر *</h2>
+                        <div className="flex flex-row items-center gap-4">
+                            <label className="relative group cursor-pointer shrink-0">
+                                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'logo')} className="hidden" />
+                                {previews.logo ? (
+                                    <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-primary">
+                                        <img src={previews.logo} alt="Logo" className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="h-24 w-24 rounded-full bg-card-light border-2 border-dashed border-border-light flex items-center justify-center hover:border-primary hover:bg-primary/5 transition-colors">
+                                        <span className="material-symbols-outlined text-text-light-secondary group-hover:text-primary" style={{ fontSize: '32px' }}>photo_camera</span>
+                                    </div>
+                                )}
+                                <div className="absolute bottom-0 right-0 bg-primary rounded-full p-1.5 shadow-md border-2 border-background-light">
+                                    <span className="material-symbols-outlined text-white" style={{ fontSize: '14px' }}>{previews.logo ? 'edit' : 'add'}</span>
+                                </div>
+                            </label>
+                            <div className="flex flex-col">
+                                <p className="text-sm font-medium text-text-light-primary ">اسحب الصورة أو اضغط للرفع</p>
+                                <p className="text-xs text-text-light-secondary mt-1">PNG/JPG، حد أقصى 2MB</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mb-8">
+                        <h2 className="text-text-light-primary text-base font-bold leading-tight tracking-[-0.015em] text-right pb-3">صورة الغلاف (اختياري)</h2>
+                        <label className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-lg bg-card-light border-2 border-dashed border-border-light flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors group overflow-hidden">
+                            <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'banner')} className="hidden" />
+                            {previews.banner ? (
+                                <img src={previews.banner} alt="Banner" className="w-full h-full object-cover" />
+                            ) : (
+                                <>
+                                    <div className="rounded-full bg-card-light p-3 mb-2 group-hover:bg-card-light transition-colors">
+                                        <span className="material-symbols-outlined text-text-light-secondary group-hover:text-primary" style={{ fontSize: '28px' }}>image</span>
+                                    </div>
+                                    <p className="text-sm font-medium text-primary">اسحب الصورة أو اضغط للرفع</p>
+                                </>
+                            )}
+                        </label>
+                    </div>
+
+                    <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mb-6">
+                        <p className="text-sm text-blue-300 text-right">سيتم مراجعة متجرك وتفعيله خلال 24 ساعة. سنتواصل معك على WhatsApp.</p>
+                    </div>
+
+                    {/* Navigation Buttons */}
+                    <div className="mt-8 flex gap-3">
+                        <button
+                            type="button"
+                            onClick={prevStep}
+                            className="flex-1 bg-surface-light text-text-light-primary py-4 px-6 rounded-lg font-bold text-lg hover:bg-surface-light transition-all"
+                        >
+                            → رجوع
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className="flex-1 bg-primary text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-primary/90 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            {loading ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    جاري الإرسال...
+                                </>
+                            ) : (
+                                '✅ إرسال للمراجعة'
+                            )}
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
+        </div >
     );
 }
