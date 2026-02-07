@@ -11,9 +11,10 @@ const reviewUpdateSchema = z.object({
 // PUT /api/reviews/[id] - Update review
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const validatedData = reviewUpdateSchema.parse(body);
 
@@ -40,7 +41,7 @@ export async function PUT(
     const { data: review } = await supabaseServer
       .from('reviews')
       .select('customer_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!review || review.customer_id !== user.id) {
@@ -54,7 +55,7 @@ export async function PUT(
     const { data: updatedReview, error: updateError } = await supabaseServer
       .from('reviews')
       .update(validatedData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -80,9 +81,11 @@ export async function PUT(
 // DELETE /api/reviews/[id] - Delete review
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Get authorization
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
@@ -106,7 +109,7 @@ export async function DELETE(
     const { data: review } = await supabaseServer
       .from('reviews')
       .select('customer_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!review || review.customer_id !== user.id) {
@@ -120,7 +123,7 @@ export async function DELETE(
     const { error: deleteError } = await supabaseServer
       .from('reviews')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (deleteError) {
       return NextResponse.json(

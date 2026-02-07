@@ -28,8 +28,7 @@ import { Providers } from "@/components/Providers";
 import CartManager from "@/components/CartManager";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
-// ... existing imports
+import ScrollToTop from "@/components/ScrollToTop";
 
 export default function RootLayout({
     children,
@@ -54,6 +53,7 @@ export default function RootLayout({
                     <Footer />
                     <CartManager />
                     <BottomNav />
+                    <ScrollToTop />
                 </Providers>
             </body>
         </html>

@@ -10,9 +10,11 @@ const orderStatusSchema = z.object({
 // GET /api/orders/[id] - Get order details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Get authorization
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
@@ -35,7 +37,7 @@ export async function GET(
     const { data: order, error } = await supabaseServer
       .from('orders')
       .select('*, stores(name, logo_url, address), users(full_name, email, phone)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error || !order) {
@@ -80,7 +82,7 @@ export async function GET(
     const { data: items } = await supabaseServer
       .from('order_items')
       .select('*, products(name, image_urls, price)')
-      .eq('order_id', params.id);
+      .eq('order_id', id);
 
     return NextResponse.json({
       order,
@@ -97,9 +99,10 @@ export async function GET(
 // PUT /api/orders/[id] - Update order status
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const validatedData = orderStatusSchema.parse(body);
 
@@ -126,7 +129,7 @@ export async function PUT(
     const { data: order } = await supabaseServer
       .from('orders')
       .select('*, stores(merchant_id)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!order) {
@@ -156,7 +159,7 @@ export async function PUT(
     const { data: updatedOrder, error: updateError } = await supabaseServer
       .from('orders')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 

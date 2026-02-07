@@ -19,7 +19,8 @@ export function useCart() {
     getItemsByStore,
   } = useCartStore();
 
-  const { isAuthenticated } = useAuthStore();
+  const { user, session } = useAuthStore();
+  const isAuthenticated = !!user && !!session;
   const router = useRouter();
 
   /**

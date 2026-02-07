@@ -143,6 +143,8 @@ export interface Order {
         name: string;
         logo_url?: string;
         address?: string;
+        maps_link?: string;
+        phone?: string;
     };
     customer?: {
         id: string;

@@ -127,6 +127,16 @@ export async function middleware(request: NextRequest) {
       console.log('Merchant with active store - allowed');
     }
 
+    // Merchant should not access customer pages - redirect to merchant dashboard
+    if (userRole === 'merchant' && store?.is_active && !pathname.startsWith('/merchant')) {
+      const merchantAllowedPaths = ['/login', '/signup', '/auth/', '/select-governorate', '/debug'];
+      const isMerchantAllowed = merchantAllowedPaths.some(p => pathname === p || pathname.startsWith(p));
+      if (!isMerchantAllowed) {
+        console.log('Merchant accessing customer page - redirecting to dashboard');
+        return NextResponse.redirect(new URL('/merchant/dashboard', request.url));
+      }
+    }
+
     // If logged in and trying to access login or signup page, redirect to appropriate dashboard
     if (pathname === '/login' || pathname === '/signup') {
       if (userRole === 'merchant') {

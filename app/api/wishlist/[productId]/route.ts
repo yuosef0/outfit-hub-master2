@@ -5,9 +5,11 @@ import { supabaseServer } from '@/lib/supabaseServer';
 // DELETE /api/wishlist/[productId] - Remove from wishlist
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
+    const { productId } = await params;
+
     // Get authorization
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
@@ -32,7 +34,7 @@ export async function DELETE(
       .from('wishlist')
       .delete()
       .eq('customer_id', user.id)
-      .eq('product_id', params.productId);
+      .eq('product_id', productId);
 
     if (deleteError) {
       return NextResponse.json(

@@ -15,13 +15,15 @@ const storeUpdateSchema = z.object({
 // GET /api/stores/[id] - Get store details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const { data: store, error } = await supabase
       .from('stores')
       .select('*, users(full_name, email)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error || !store) {
@@ -35,14 +37,14 @@ export async function GET(
     const { data: products } = await supabase
       .from('products')
       .select('*')
-      .eq('store_id', params.id)
+      .eq('store_id', id)
       .eq('is_active', true);
 
     // Get store reviews
     const { data: reviews } = await supabase
       .from('reviews')
       .select('*, users(full_name, avatar_url)')
-      .eq('store_id', params.id);
+      .eq('store_id', id);
 
     return NextResponse.json({
       store,
@@ -60,9 +62,10 @@ export async function GET(
 // PUT /api/stores/[id] - Update store
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const validatedData = storeUpdateSchema.parse(body);
 
@@ -89,7 +92,7 @@ export async function PUT(
     const { data: store } = await supabaseServer
       .from('stores')
       .select('merchant_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!store || store.merchant_id !== user.id) {
@@ -106,7 +109,7 @@ export async function PUT(
         ...validatedData,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 

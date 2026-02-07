@@ -19,6 +19,7 @@ export default function Header() {
     const { language, setLanguage, t } = useLanguage();
     const { openCart } = useCartUI();
     const [cartCount, setCartCount] = useState(0);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     const supabase = useMemo(
@@ -38,6 +39,21 @@ export default function Header() {
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    // Track auth state
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setIsAuthenticated(!!user);
+        };
+        checkAuth();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setIsAuthenticated(!!session?.user);
+        });
+
+        return () => subscription.unsubscribe();
+    }, [supabase]);
 
     useEffect(() => {
         const fetchUserGovernorate = async () => {
@@ -108,7 +124,7 @@ export default function Header() {
 
     return (
         <>
-            <header className="relative z-50 bg-background-light/95 backdrop-blur-md">
+            <header className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md">
                 <div className="relative flex items-center px-4 py-3 justify-between">
                     {/* Left - Menu Button */}
                     <div className="flex items-center gap-1">
@@ -281,6 +297,32 @@ export default function Header() {
                         <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>person</span>
                         <span className="text-sm font-medium">{t('nav.profile')}</span>
                     </Link>
+
+                    <div className="h-px bg-border-light my-2" />
+
+                    {/* Login/Logout */}
+                    {isAuthenticated ? (
+                        <button
+                            onClick={async () => {
+                                await supabase.auth.signOut();
+                                setMenuOpen(false);
+                                window.location.href = '/login';
+                            }}
+                            className="px-3 py-3 flex items-center gap-3 rounded-lg text-red-400 hover:bg-red-900/20 transition-colors"
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>logout</span>
+                            <span className="text-sm font-medium">{t('auth.logout')}</span>
+                        </button>
+                    ) : (
+                        <Link
+                            href="/login"
+                            className="px-3 py-3 flex items-center gap-3 rounded-lg text-primary hover:bg-card-light transition-colors"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>login</span>
+                            <span className="text-sm font-medium">{t('auth.login')}</span>
+                        </Link>
+                    )}
                 </nav>
             </div>
 

@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 interface UseFetchOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: any;
-  headers?: HeadersInit;
+  headers?: Record<string, string>;
   requireAuth?: boolean;
   autoFetch?: boolean;
 }
@@ -45,7 +45,7 @@ export function useFetch<T = any>(
 
     try {
       // Build headers
-      const headers: HeadersInit = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         ...customHeaders,
       };

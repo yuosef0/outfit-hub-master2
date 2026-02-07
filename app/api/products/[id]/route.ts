@@ -6,13 +6,15 @@ import { productSchema } from '@/lib/validators';
 // GET /api/products/[id] - Get single product
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const { data: product, error } = await supabase
       .from('products')
       .select('*, stores(id, name, logo_url, address, maps_link)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error || !product) {
@@ -26,7 +28,7 @@ export async function GET(
     const { data: reviews } = await supabase
       .from('reviews')
       .select('*, users(full_name, avatar_url)')
-      .eq('product_id', params.id);
+      .eq('product_id', id);
 
     return NextResponse.json({
       product,
@@ -43,9 +45,10 @@ export async function GET(
 // PUT /api/products/[id] - Update product
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const validatedData = productSchema.partial().parse(body);
 
@@ -72,7 +75,7 @@ export async function PUT(
     const { data: product } = await supabaseServer
       .from('products')
       .select('*, stores!inner(merchant_id)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!product || product.stores.merchant_id !== user.id) {
@@ -90,7 +93,7 @@ export async function PUT(
         image_urls: body.image_urls,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -116,9 +119,11 @@ export async function PUT(
 // DELETE /api/products/[id] - Delete product
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Get authorization
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
@@ -142,7 +147,7 @@ export async function DELETE(
     const { data: product } = await supabaseServer
       .from('products')
       .select('*, stores!inner(merchant_id)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!product || product.stores.merchant_id !== user.id) {
@@ -156,7 +161,7 @@ export async function DELETE(
     const { error: deleteError } = await supabaseServer
       .from('products')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (deleteError) {
       return NextResponse.json(

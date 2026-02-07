@@ -1,10 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import Toast from '@/components/Toast';
-import type { CartItem, Product } from '@/lib/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import type { CartItem, Product, Coupon } from '@/lib/types';
+
+interface AppliedCoupon {
+    coupon: Coupon;
+    discount: number; // calculated discount amount
+}
 
 interface GroupedCartItems {
     [storeId: string]: {
@@ -19,20 +25,26 @@ interface GroupedCartItems {
 
 export default function CheckoutPage() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [cartItems, setCartItems] = useState<(CartItem & { products: Product })[]>([]);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    // Coupon state: per-store coupon codes and applied coupons
+    const [couponCodes, setCouponCodes] = useState<{ [storeId: string]: string }>({});
+    const [appliedCoupons, setAppliedCoupons] = useState<{ [storeId: string]: AppliedCoupon }>({});
+    const [couponLoading, setCouponLoading] = useState<{ [storeId: string]: boolean }>({});
 
     const [formData, setFormData] = useState({
         customer_name: '',
         customer_phone: '',
     });
 
-    const supabase = createBrowserClient(
+    const supabase = useMemo(() => createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    ), []);
 
     useEffect(() => {
         fetchCart();
@@ -107,6 +119,88 @@ export default function CheckoutPage() {
         return acc;
     }, {} as GroupedCartItems);
 
+    // Calculate store total after coupon discount
+    const getStoreTotal = (storeId: string, subtotal: number) => {
+        const coupon = appliedCoupons[storeId];
+        if (!coupon) return subtotal;
+        return Math.max(0, subtotal - coupon.discount);
+    };
+
+    const applyCoupon = async (storeId: string) => {
+        const code = couponCodes[storeId]?.trim();
+        if (!code) return;
+
+        setCouponLoading(prev => ({ ...prev, [storeId]: true }));
+
+        try {
+            const { data: coupon, error } = await supabase
+                .from('coupons')
+                .select('*')
+                .eq('store_id', storeId)
+                .eq('code', code.toUpperCase())
+                .eq('is_active', true)
+                .maybeSingle();
+
+            if (error || !coupon) {
+                setToast({ message: t('checkout.couponInvalid'), type: 'error' });
+                return;
+            }
+
+            // Check expiry
+            if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+                setToast({ message: t('checkout.couponExpired'), type: 'error' });
+                return;
+            }
+
+            // Check usage limit
+            if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
+                setToast({ message: t('checkout.couponMaxUses'), type: 'error' });
+                return;
+            }
+
+            const storeSubtotal = groupedItems[storeId]?.total || 0;
+
+            // Check minimum order
+            if (coupon.min_order_amount && storeSubtotal < coupon.min_order_amount) {
+                setToast({
+                    message: `${t('checkout.couponMinOrder')} ${coupon.min_order_amount} ${t('common.egp')}`,
+                    type: 'error',
+                });
+                return;
+            }
+
+            // Calculate discount
+            let discount = 0;
+            if (coupon.discount_type === 'percentage') {
+                discount = storeSubtotal * (coupon.discount_value / 100);
+            } else {
+                discount = coupon.discount_value;
+            }
+            discount = Math.min(discount, storeSubtotal);
+
+            setAppliedCoupons(prev => ({
+                ...prev,
+                [storeId]: { coupon, discount },
+            }));
+
+            setToast({ message: t('checkout.couponApplied'), type: 'success' });
+        } catch (err) {
+            console.error('Coupon error:', err);
+            setToast({ message: t('common.error'), type: 'error' });
+        } finally {
+            setCouponLoading(prev => ({ ...prev, [storeId]: false }));
+        }
+    };
+
+    const removeCoupon = (storeId: string) => {
+        setAppliedCoupons(prev => {
+            const next = { ...prev };
+            delete next[storeId];
+            return next;
+        });
+        setCouponCodes(prev => ({ ...prev, [storeId]: '' }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -125,10 +219,16 @@ export default function CheckoutPage() {
 
             // Create an order for each store
             for (const [storeId, group] of Object.entries(groupedItems)) {
-                const commission = group.total * 0.03; // 3% commission
+                const appliedCoupon = appliedCoupons[storeId];
+                const finalTotal = getStoreTotal(storeId, group.total);
+                const commission = finalTotal * 0.03; // 3% commission on discounted amount
                 const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
                 const expiresAt = new Date();
                 expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours expiry
+
+                const notes = appliedCoupon
+                    ? `Coupon: ${appliedCoupon.coupon.code} (-${appliedCoupon.discount.toFixed(2)})`
+                    : undefined;
 
                 const orderData = {
                     customer_id: user.id,
@@ -138,7 +238,7 @@ export default function CheckoutPage() {
                     store_id: storeId,
                     pickup_code: pickupCode,
                     status: 'reserved',
-                    total_amount: group.total,
+                    total_amount: finalTotal,
                     commission_amount: commission,
                     items: group.items.map(item => ({
                         product_id: item.product_id,
@@ -147,6 +247,7 @@ export default function CheckoutPage() {
                         quantity: item.quantity,
                         price: item.products.price,
                     })),
+                    notes,
                     expires_at: expiresAt.toISOString(),
                 };
 
@@ -158,6 +259,14 @@ export default function CheckoutPage() {
 
                 if (error) throw error;
                 orderIds.push(order.id);
+
+                // Increment coupon usage
+                if (appliedCoupon) {
+                    await supabase
+                        .from('coupons')
+                        .update({ current_uses: appliedCoupon.coupon.current_uses + 1 })
+                        .eq('id', appliedCoupon.coupon.id);
+                }
             }
 
             // Clear cart
@@ -177,7 +286,7 @@ export default function CheckoutPage() {
                 hint: error.hint,
                 full: JSON.stringify(error, null, 2)
             });
-            setToast({ message: error.message || error.details || 'حدث خطأ أثناء إنشاء الطلب', type: 'error' });
+            setToast({ message: error.message || error.details || t('common.error'), type: 'error' });
         } finally {
             setSubmitting(false);
         }
@@ -188,13 +297,13 @@ export default function CheckoutPage() {
             <div className="min-h-screen bg-background-light flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-text-light-secondary">جاري التحميل...</p>
+                    <p className="text-text-light-secondary">{t('common.loading')}</p>
                 </div>
             </div>
         );
     }
 
-    const grandTotal = Object.values(groupedItems).reduce((sum, group) => sum + group.total, 0);
+    const grandTotal = Object.entries(groupedItems).reduce((sum, [storeId, group]) => sum + getStoreTotal(storeId, group.total), 0);
 
     return (
         <div className="min-h-screen bg-background-light pb-24">
@@ -211,11 +320,11 @@ export default function CheckoutPage() {
                             <span className="material-symbols-outlined text-text-light-secondary">arrow_back</span>
                         </button>
                         <div>
-                            <h1 className="text-xl font-bold text-text-light-primary ">
-                                🛒 إتمام الطلب
+                            <h1 className="text-xl font-bold text-text-light-primary">
+                                {t('checkout.title')}
                             </h1>
                             <p className="text-text-light-secondary text-sm">
-                                أكمل بياناتك لتأكيد الطلب
+                                {t('checkout.subtitle')}
                             </p>
                         </div>
                     </div>
@@ -228,31 +337,31 @@ export default function CheckoutPage() {
                     <div className="bg-card-light rounded-xl p-5 border border-border-light">
                         <h2 className="text-lg font-bold text-text-light-primary mb-4 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">person</span>
-                            بيانات العميل
+                            {t('checkout.customerInfo')}
                         </h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-text-light-primary mb-2 text-right">
-                                    الاسم الكامل *
+                                <label className="block text-sm font-medium text-text-light-primary mb-2">
+                                    {t('checkout.fullName')} *
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.customer_name}
                                     onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary focus:ring-2 focus:ring-primary focus:border-transparent text-right"
-                                    placeholder="أدخل اسمك الكامل"
+                                    className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    placeholder={t('checkout.namePlaceholder')}
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-text-light-primary mb-2 text-right">
-                                    رقم الهاتف *
+                                <label className="block text-sm font-medium text-text-light-primary mb-2">
+                                    {t('checkout.phone')} *
                                 </label>
                                 <input
                                     type="tel"
                                     value={formData.customer_phone}
                                     onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary focus:ring-2 focus:ring-primary focus:border-transparent text-right"
+                                    className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary focus:ring-2 focus:ring-primary focus:border-transparent"
                                     placeholder="01XXXXXXXXX"
                                     required
                                 />
@@ -336,10 +445,64 @@ export default function CheckoutPage() {
                                 ))}
                             </div>
 
+                            {/* Coupon Input */}
+                            <div className="pt-3 border-t border-border-light">
+                                {appliedCoupons[storeId] ? (
+                                    <div className="flex items-center justify-between p-3 bg-green-900/20 border border-green-800/30 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-green-400 text-base">local_offer</span>
+                                            <span className="text-sm font-bold text-green-400">{appliedCoupons[storeId].coupon.code}</span>
+                                            <span className="text-xs text-green-400/80">
+                                                (-{appliedCoupons[storeId].discount.toFixed(2)} {t('common.egp')})
+                                            </span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeCoupon(storeId)}
+                                            className="text-red-400 hover:text-red-300 transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-base">close</span>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={couponCodes[storeId] || ''}
+                                            onChange={(e) => setCouponCodes(prev => ({ ...prev, [storeId]: e.target.value }))}
+                                            placeholder={t('checkout.couponPlaceholder')}
+                                            className="flex-1 px-3 py-2 rounded-lg border border-border-light bg-background-light text-text-light-primary text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => applyCoupon(storeId)}
+                                            disabled={couponLoading[storeId] || !couponCodes[storeId]?.trim()}
+                                            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-light transition-colors disabled:opacity-50"
+                                        >
+                                            {couponLoading[storeId] ? '...' : t('checkout.couponApply')}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Store Total */}
-                            <div className="pt-3 border-t border-border-light flex justify-between items-center">
-                                <span className="font-bold text-text-light-primary ">الإجمالي:</span>
-                                <span className="text-xl font-bold text-primary">{group.total.toFixed(2)} ج.م</span>
+                            <div className="pt-3 flex flex-col gap-1">
+                                {appliedCoupons[storeId] && (
+                                    <>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-text-light-secondary">{t('checkout.subtotal')}:</span>
+                                            <span className="text-text-light-secondary">{group.total.toFixed(2)} {t('common.egp')}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-green-400">{t('checkout.discount')}:</span>
+                                            <span className="text-green-400">-{appliedCoupons[storeId].discount.toFixed(2)} {t('common.egp')}</span>
+                                        </div>
+                                    </>
+                                )}
+                                <div className="flex justify-between items-center">
+                                    <span className="font-bold text-text-light-primary">{t('checkout.total')}:</span>
+                                    <span className="text-xl font-bold text-primary">{getStoreTotal(storeId, group.total).toFixed(2)} {t('common.egp')}</span>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -347,18 +510,18 @@ export default function CheckoutPage() {
                     {/* Grand Total & Submit */}
                     <div className="bg-gradient-to-r from-primary to-green-600 text-white rounded-xl p-5">
                         <div className="flex justify-between items-center mb-4">
-                            <span className="text-lg font-bold">المجموع الكلي:</span>
-                            <span className="text-2xl font-bold">{grandTotal.toFixed(2)} ج.م</span>
+                            <span className="text-lg font-bold">{t('checkout.grandTotal')}:</span>
+                            <span className="text-2xl font-bold">{grandTotal.toFixed(2)} {t('common.egp')}</span>
                         </div>
                         <button
                             type="submit"
                             disabled={submitting}
                             className="w-full bg-card-light text-primary hover:bg-card-light font-bold py-4 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {submitting ? 'جاري التأكيد...' : 'تأكيد الطلب'}
+                            {submitting ? t('checkout.processing') : t('checkout.confirmOrder')}
                         </button>
                         <p className="text-sm text-white/80 text-center mt-3">
-                            💰 الدفع نقداً عند الاستلام من المتجر
+                            {t('checkout.cashOnPickup')}
                         </p>
                     </div>
                 </form>

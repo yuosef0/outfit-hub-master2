@@ -3,8 +3,9 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter, usePathname } from 'next/navigation';
-import { MerchantNavigation } from '@/components/Navigation';
 import { LoadingScreen } from '@/components/LoadingSpinner';
+import MerchantHeader from '@/components/merchant/MerchantHeader';
+import MerchantBottomNav from '@/components/merchant/MerchantBottomNav';
 
 export default function MerchantLayout({
  children,
@@ -59,13 +60,14 @@ export default function MerchantLayout({
  return <LoadingScreen message="Redirecting..."/>;
  }
 
- // Render merchant pages with navigation
+ // Render merchant pages with header and bottom nav
  return (
- <div className="flex min-h-screen bg-background-light">
- <MerchantNavigation />
- <main className="flex-1 lg:mr-64 min-h-screen">
+ <div className="min-h-screen bg-background-light">
+ <MerchantHeader />
+ <main className="pb-24">
  {children}
  </main>
+ <MerchantBottomNav />
  </div>
  );
 }

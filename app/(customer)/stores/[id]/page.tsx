@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import type { Store, Product } from '@/lib/types';
+import type { Store, Product, StoreReview } from '@/lib/types';
 import WishlistButton from '@/components/WishlistButton';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
@@ -33,6 +33,9 @@ export default function StoreProfilePage() {
     const [followersCount, setFollowersCount] = useState(0);
     const [followLoading, setFollowLoading] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [reviews, setReviews] = useState<StoreReview[]>([]);
+    const [avgRating, setAvgRating] = useState<number>(0);
+    const [reviewsCount, setReviewsCount] = useState<number>(0);
 
     const supabase = useMemo(
         () =>
@@ -121,6 +124,52 @@ export default function StoreProfilePage() {
 
         if (storeId) {
             fetchCategories();
+        }
+    }, [storeId, supabase]);
+
+    // Fetch reviews for this store
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('store_reviews')
+                    .select('*')
+                    .eq('store_id', storeId)
+                    .order('created_at', { ascending: false });
+
+                if (!error && data) {
+                    // Fetch customer info separately (no FK on customer_id)
+                    const customerIds = [...new Set(data.map(r => r.customer_id))];
+                    let customerMap: Record<string, { id: string; full_name?: string; avatar_url?: string }> = {};
+                    if (customerIds.length > 0) {
+                        const { data: customers } = await supabase
+                            .from('users')
+                            .select('id, full_name, avatar_url')
+                            .in('id', customerIds);
+                        if (customers) {
+                            customers.forEach(c => { customerMap[c.id] = c; });
+                        }
+                    }
+
+                    const reviewsWithCustomer = data.map(r => ({
+                        ...r,
+                        customer: customerMap[r.customer_id] || null,
+                    }));
+
+                    setReviews(reviewsWithCustomer);
+                    setReviewsCount(data.length);
+                    if (data.length > 0) {
+                        const avg = data.reduce((sum, r) => sum + r.rating, 0) / data.length;
+                        setAvgRating(Math.round(avg * 10) / 10);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+            }
+        };
+
+        if (storeId) {
+            fetchReviews();
         }
     }, [storeId, supabase]);
 
@@ -293,8 +342,8 @@ export default function StoreProfilePage() {
                             )}
                             <div className="flex items-center gap-1 text-amber-500">
                                 <span className="material-symbols-outlined text-[16px] fill-current">star</span>
-                                <span className="font-bold text-text-light-primary">4.8</span>
-                                <span className="text-text-light-secondary font-normal">(1.2k {t('store.reviews')})</span>
+                                <span className="font-bold text-text-light-primary">{avgRating > 0 ? avgRating : '-'}</span>
+                                <span className="text-text-light-secondary font-normal">({reviewsCount} {t('store.reviews')})</span>
                             </div>
                             <div className="flex items-center gap-1 text-primary">
                                 <span className="material-symbols-outlined text-[16px]">group</span>
@@ -319,7 +368,12 @@ export default function StoreProfilePage() {
  }
  `}</style>
                     {store.address && (
-                        <div className="flex items-center gap-2 pl-1 pr-3 py-1.5 bg-card-light/50 rounded-lg border border-transparent hover:border-border-light transition-colors cursor-pointer shrink-0">
+                        <a
+                            href={store.maps_link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 pl-1 pr-3 py-1.5 bg-card-light/50 rounded-lg border border-transparent hover:border-border-light transition-colors cursor-pointer shrink-0"
+                        >
                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                                 <span className="material-symbols-outlined text-[18px]">location_on</span>
                             </div>
@@ -327,7 +381,7 @@ export default function StoreProfilePage() {
                                 <span className="text-xs font-semibold text-text-light-primary">{store.address}</span>
                                 <span className="text-[10px] text-text-light-secondary">{t('store.viewOnMap')}</span>
                             </div>
-                        </div>
+                        </a>
                     )}
                     {store.phone && (
                         <div className="flex items-center gap-2 pl-1 pr-3 py-1.5 bg-card-light/50 rounded-lg border border-transparent hover:border-border-light transition-colors cursor-pointer shrink-0">
@@ -501,9 +555,101 @@ export default function StoreProfilePage() {
                 )}
 
                 {activeTab === 'Reviews' && (
-                    <div className="text-center py-12">
-                        <span className="material-symbols-outlined text-6xl text-border-light mb-4">rate_review</span>
-                        <p className="text-text-light-secondary">{t('store.noReviews')}</p>
+                    <div>
+                        {/* Rating Summary */}
+                        {reviewsCount > 0 && (
+                            <div className="bg-card-light rounded-xl p-5 border border-border-light mb-5">
+                                <div className="flex items-center gap-4">
+                                    <div className="text-center">
+                                        <p className="text-4xl font-bold text-text-light-primary">{avgRating}</p>
+                                        <div className="flex items-center gap-0.5 mt-1 justify-center">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <span
+                                                    key={star}
+                                                    className={`material-symbols-outlined text-[18px] ${star <= Math.round(avgRating) ? 'text-amber-500 filled fill' : 'text-border-light'}`}
+                                                >
+                                                    star
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <p className="text-xs text-text-light-secondary mt-1">
+                                            {t('reviews.basedOn')} {reviewsCount} {t('reviews.customerReviews')}
+                                        </p>
+                                    </div>
+                                    <div className="flex-1 space-y-1.5">
+                                        {[5, 4, 3, 2, 1].map((star) => {
+                                            const count = reviews.filter(r => Math.round(r.rating) === star).length;
+                                            const pct = reviewsCount > 0 ? (count / reviewsCount) * 100 : 0;
+                                            return (
+                                                <div key={star} className="flex items-center gap-2">
+                                                    <span className="text-xs text-text-light-secondary w-3">{star}</span>
+                                                    <div className="flex-1 bg-surface-light rounded-full h-2">
+                                                        <div className="bg-amber-500 rounded-full h-2 transition-all" style={{ width: `${pct}%` }} />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Reviews List */}
+                        {reviews.length > 0 ? (
+                            <div className="space-y-4">
+                                {reviews.map((review) => (
+                                    <div key={review.id} className="bg-card-light rounded-xl p-4 border border-border-light">
+                                        <div className="flex items-start gap-3">
+                                            {review.customer?.avatar_url ? (
+                                                <img src={review.customer.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                    <span className="material-symbols-outlined text-primary text-base">person</span>
+                                                </div>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between">
+                                                    <p className="font-semibold text-text-light-primary text-sm">
+                                                        {review.customer?.full_name || (language === 'ar' ? 'عميل' : 'Customer')}
+                                                    </p>
+                                                    <span className="text-xs text-text-light-secondary">
+                                                        {new Date(review.created_at).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            year: 'numeric',
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-0.5 mt-1">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <span
+                                                            key={star}
+                                                            className={`material-symbols-outlined text-[14px] ${star <= review.rating ? 'text-amber-500 filled fill' : 'text-border-light'}`}
+                                                        >
+                                                            star
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                {review.comment && (
+                                                    <p className="text-sm text-text-light-secondary mt-2">{review.comment}</p>
+                                                )}
+                                                {review.merchant_reply && (
+                                                    <div className="mt-3 p-3 bg-surface-light rounded-lg border-l-2 border-primary">
+                                                        <p className="text-xs font-semibold text-primary mb-1">{t('reviews.merchantReply')}</p>
+                                                        <p className="text-sm text-text-light-secondary">{review.merchant_reply}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12">
+                                <span className="material-symbols-outlined text-6xl text-border-light mb-4">rate_review</span>
+                                <p className="text-text-light-secondary">{t('store.noReviews')}</p>
+                            </div>
+                        )}
                     </div>
                 )}
             </main>
