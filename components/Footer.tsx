@@ -14,8 +14,8 @@ export default function Footer() {
         setMounted(true);
     }, []);
 
-    // Hide Footer on merchant pages
-    if (pathname.startsWith('/merchant')) {
+    // Hide Footer on merchant and admin pages
+    if (pathname.startsWith('/merchant') || pathname.startsWith('/admin')) {
         return null;
     }
 

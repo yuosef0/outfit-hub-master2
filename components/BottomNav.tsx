@@ -56,8 +56,8 @@ export default function BottomNav() {
     const [activeKey, setActiveKey] = useState<string>('home');
     const { t } = useLanguage();
 
-    // Hide BottomNav on merchant pages
-    if (pathname.startsWith('/merchant')) {
+    // Hide BottomNav on merchant and admin pages
+    if (pathname.startsWith('/merchant') || pathname.startsWith('/admin')) {
         return null;
     }
 

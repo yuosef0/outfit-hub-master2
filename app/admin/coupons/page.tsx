@@ -111,7 +111,7 @@ export default function AdminCouponsPage() {
     };
 
     return (
-        <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+        <div className="p-4 max-w-3xl mx-auto">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-text-light-primary">{t('admin.couponManagement')}</h1>
                 <button

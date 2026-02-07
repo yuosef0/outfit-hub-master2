@@ -8,8 +8,8 @@ export default function ScrollToTop() {
     const pathname = usePathname();
     const [visible, setVisible] = useState(false);
 
-    // Hide on merchant pages
-    if (pathname.startsWith('/merchant')) {
+    // Hide on merchant and admin pages
+    if (pathname.startsWith('/merchant') || pathname.startsWith('/admin')) {
         return null;
     }
 

@@ -121,7 +121,7 @@ export default function AdminGovernoratesPage() {
     const activeCount = governorates.filter(g => g.is_active).length;
 
     return (
-        <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+        <div className="p-4 max-w-3xl mx-auto">
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-text-light-primary">{t('admin.governorateManagement')}</h1>
@@ -199,40 +199,42 @@ export default function AdminGovernoratesPage() {
             ) : (
                 <div className="space-y-2">
                     {governorates.map((gov) => (
-                        <div key={gov.id} className="bg-card-light rounded-xl p-4 border border-border-light flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className={`material-symbols-outlined ${gov.is_active ? 'text-green-400' : 'text-text-light-secondary'}`} style={{ fontSize: '20px' }}>
-                                    location_on
-                                </span>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="text-sm font-bold text-text-light-primary">{gov.name}</h3>
-                                        <span className="text-sm text-text-light-secondary" dir="rtl">{gov.name_ar}</span>
-                                        <span className="text-[10px] bg-background-light px-1.5 py-0.5 rounded border border-border-light text-text-light-secondary font-mono">{gov.code}</span>
+                        <div key={gov.id} className="bg-card-light rounded-xl p-3 border border-border-light">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <span className={`material-symbols-outlined shrink-0 ${gov.is_active ? 'text-green-400' : 'text-text-light-secondary'}`} style={{ fontSize: '20px' }}>
+                                        location_on
+                                    </span>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                            <h3 className="text-sm font-bold text-text-light-primary">{gov.name}</h3>
+                                            <span className="text-sm text-text-light-secondary" dir="rtl">{gov.name_ar}</span>
+                                            <span className="text-[10px] bg-background-light px-1 py-0.5 rounded border border-border-light text-text-light-secondary font-mono">{gov.code}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => toggleActive(gov)}
-                                    disabled={updatingId === gov.id || gov.id.startsWith('fallback-')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${
-                                        gov.is_active
-                                            ? 'bg-green-900/20 text-green-400'
-                                            : 'bg-card-light text-text-light-secondary border border-border-light'
-                                    }`}
-                                >
-                                    {updatingId === gov.id ? '...' : gov.is_active ? t('admin.active') : t('admin.inactive')}
-                                </button>
-                                {!gov.id.startsWith('fallback-') && (
+                                <div className="flex items-center gap-1.5 shrink-0">
                                     <button
-                                        onClick={() => handleDelete(gov.id)}
-                                        className="p-1 rounded text-red-400 hover:bg-red-900/20"
+                                        onClick={() => toggleActive(gov)}
+                                        disabled={updatingId === gov.id || gov.id.startsWith('fallback-')}
+                                        className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-colors disabled:opacity-50 ${
+                                            gov.is_active
+                                                ? 'bg-green-900/20 text-green-400'
+                                                : 'bg-card-light text-text-light-secondary border border-border-light'
+                                        }`}
                                     >
-                                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                                        {updatingId === gov.id ? '...' : gov.is_active ? t('admin.active') : t('admin.inactive')}
                                     </button>
-                                )}
+                                    {!gov.id.startsWith('fallback-') && (
+                                        <button
+                                            onClick={() => handleDelete(gov.id)}
+                                            className="p-1 rounded text-red-400 hover:bg-red-900/20"
+                                        >
+                                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}

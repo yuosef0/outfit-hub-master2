@@ -8,8 +8,8 @@ export default function CartManager() {
  const pathname = usePathname();
  const { isCartOpen, closeCart } = useCartUI();
 
- // Hide CartManager on merchant pages
- if (pathname.startsWith('/merchant')) {
+ // Hide CartManager on merchant and admin pages
+ if (pathname.startsWith('/merchant') || pathname.startsWith('/admin')) {
  return null;
  }
 

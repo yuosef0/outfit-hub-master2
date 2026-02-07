@@ -33,8 +33,8 @@ export default function Header() {
         []
     );
 
-    // Hide Header on merchant pages
-    if (pathname.startsWith('/merchant')) {
+    // Hide Header on merchant and admin pages (they have their own headers)
+    if (pathname.startsWith('/merchant') || pathname.startsWith('/admin')) {
         return null;
     }
 
