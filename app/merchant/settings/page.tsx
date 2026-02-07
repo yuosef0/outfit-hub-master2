@@ -50,20 +50,24 @@ export default function MerchantSettingsPage() {
     const logoInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
 
-    const CATEGORIES = [
-        'ملابس رجالي',
-        'ملابس نسائي',
-        'ملابس أطفال',
-        'أحذية',
-        'إكسسوارات',
-        'ملابس رياضية',
-        'ملابس تقليدية',
-        'حقائب',
-    ];
+
+
+    const [categories, setCategories] = useState<{ id: string; name: string; name_ar: string }[]>([]);
 
     useEffect(() => {
         checkAuth();
+        fetchCategories();
     }, []);
+
+    const fetchCategories = async () => {
+        const { data } = await supabase
+            .from('categories')
+            .select('id, name, name_ar')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true });
+
+        if (data) setCategories(data);
+    };
 
     const checkAuth = async () => {
         try {
@@ -416,9 +420,9 @@ export default function MerchantSettingsPage() {
                                     required
                                 >
                                     <option value="">اختر الفئة</option>
-                                    {CATEGORIES.map((cat) => (
-                                        <option key={cat} value={cat}>
-                                            {cat}
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.name_ar || cat.name}>
+                                            {cat.name_ar || cat.name}
                                         </option>
                                     ))}
                                 </select>

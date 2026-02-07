@@ -1,7 +1,7 @@
 ﻿import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import BottomNav from '@/components/BottomNav';
+
 
 
 import { Playfair_Display } from "next/font/google";
@@ -25,10 +25,7 @@ export const metadata: Metadata = {
 };
 
 import { Providers } from "@/components/Providers";
-import CartManager from "@/components/CartManager";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import ScrollToTop from "@/components/ScrollToTop";
+import MainLayoutWrapper from "@/components/MainLayoutWrapper";
 
 export default function RootLayout({
     children,
@@ -48,12 +45,9 @@ export default function RootLayout({
                 suppressHydrationWarning
             >
                 <Providers>
-                    <Header />
-                    {children}
-                    <Footer />
-                    <CartManager />
-                    <BottomNav />
-                    <ScrollToTop />
+                    <MainLayoutWrapper>
+                        {children}
+                    </MainLayoutWrapper>
                 </Providers>
             </body>
         </html>

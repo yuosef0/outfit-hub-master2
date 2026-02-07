@@ -6,16 +6,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import Toast from '@/components/Toast';
 import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
 
-const CATEGORIES = [
-    'ملابس رجالي',
-    'ملابس حريمي',
-    'ملابس رجالي وحريمي',
-    'ملابس أطفال',
-    'أحذية',
-    'شنط وحقائب',
-    'إكسسوارات',
-    'أخرى',
-];
+
 
 const AREAS = [
     'مدينة المنيا',
@@ -59,8 +50,19 @@ export default function MerchantSetupPage() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    const [categories, setCategories] = useState<{ id: string; name: string; name_ar: string }[]>([]);
+
     useEffect(() => {
-        checkUser();
+        const fetchCategories = async () => {
+            const { data } = await supabase
+                .from('categories')
+                .select('id, name, name_ar')
+                .eq('is_active', true)
+                .order('display_order', { ascending: true });
+
+            if (data) setCategories(data);
+        };
+        fetchCategories();
     }, []);
 
     const checkUser = async () => {
@@ -233,7 +235,7 @@ export default function MerchantSetupPage() {
                                 <div className="relative">
                                     <select className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right" name="category" value={formData.category} onChange={handleChange}>
                                         <option value="">اختر الفئة</option>
-                                        {CATEGORIES.map((cat) => (<option key={cat} value={cat}>{cat}</option>))}
+                                        {categories.map((cat) => (<option key={cat.id} value={cat.name_ar || cat.name}>{cat.name_ar || cat.name}</option>))}
                                     </select>
                                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-text-light-secondary">
                                         <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>expand_more</span>

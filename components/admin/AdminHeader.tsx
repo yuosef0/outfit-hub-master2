@@ -56,6 +56,8 @@ export default function AdminHeader() {
         { href: '/admin/customers', icon: 'people', labelKey: 'admin.customers' },
         { href: '/admin/commissions', icon: 'payments', labelKey: 'admin.commissions' },
         { href: '/admin/coupons', icon: 'local_offer', labelKey: 'admin.coupons' },
+        { href: '/admin/slider', icon: 'collections', labelKey: 'admin.slider' },
+        { href: '/admin/categories', icon: 'category', labelKey: 'admin.categories' },
         { href: '/admin/governorates', icon: 'location_on', labelKey: 'admin.governorates' },
     ];
 

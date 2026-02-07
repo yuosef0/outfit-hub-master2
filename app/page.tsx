@@ -14,6 +14,7 @@ export default function HomePage() {
     const [featuredStores, setFeaturedStores] = useState<Store[]>([]);
     const [newArrivals, setNewArrivals] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { user } = useAuthStore();
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,35 +38,47 @@ export default function HomePage() {
                     .from('categories')
                     .select('*')
                     .eq('is_active', true)
-                    .order('display_order', { ascending: true })
-                    .limit(6);
+                    .order('display_order', { ascending: true });
 
                 if (categoriesData) setCategories(categoriesData);
 
-                // Fetch featured stores (first 4)
-                const { data: storesData } = await supabase
+                // Fetch featured stores (first 4) - Filtered by Governorate
+                let storesQuery = supabase
                     .from('stores')
                     .select('*')
                     .eq('is_active', true)
                     .order('created_at', { ascending: false })
                     .limit(4);
 
+                if (user?.governorate) {
+                    storesQuery = storesQuery.eq('governorate', user.governorate);
+                }
+
+                const { data: storesData } = await storesQuery;
+
                 if (storesData) setFeaturedStores(storesData);
 
-                // Fetch new arrivals (latest 6 products with store info)
-                const { data: productsData } = await supabase
+                // Fetch new arrivals (latest 6 products with store info) - Filtered by Store Governorate
+                let productsQuery = supabase
                     .from('products')
                     .select(`
- *,
- stores:store_id (
- id,
- name,
- logo_url
- )
- `)
+                        *,
+                        stores:store_id!inner (
+                            id,
+                            name,
+                            logo_url,
+                            governorate
+                        )
+                    `)
                     .eq('is_active', true)
                     .order('created_at', { ascending: false })
                     .limit(6);
+
+                if (user?.governorate) {
+                    productsQuery = productsQuery.eq('stores.governorate', user.governorate);
+                }
+
+                const { data: productsData } = await productsQuery;
 
                 if (productsData) setNewArrivals(productsData);
             } catch (error) {
@@ -76,7 +89,7 @@ export default function HomePage() {
         };
 
         fetchData();
-    }, []);
+    }, [user?.governorate]);
 
     // Auto-rotate slider every 3 seconds
     useEffect(() => {

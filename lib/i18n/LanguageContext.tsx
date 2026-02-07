@@ -438,6 +438,8 @@ const translations: Record<Language, Record<string, string>> = {
         'admin.coupons': 'Global Coupons',
         'admin.governorates': 'Governorates',
         'admin.logout': 'Logout',
+        'admin.slider': 'Slider Management',
+        'admin.categories': 'Categories',
 
         // Admin Dashboard
         'admin.dashboard.title': 'Dashboard',
@@ -959,6 +961,8 @@ const translations: Record<Language, Record<string, string>> = {
         'admin.coupons': 'كوبونات عامة',
         'admin.governorates': 'المحافظات',
         'admin.logout': 'تسجيل الخروج',
+        'admin.slider': 'إدارة السلايدر',
+        'admin.categories': 'الفئات',
 
         // Admin Dashboard
         'admin.dashboard.title': 'لوحة التحكم',
