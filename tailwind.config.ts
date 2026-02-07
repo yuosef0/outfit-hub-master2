@@ -46,6 +46,9 @@ const config: Config = {
         "cream": "#F5E6D3",
         "cream-light": "#FFF3E6",
         "cream-dark": "#E8D5B7",
+
+        // Text/icon color on primary green backgrounds
+        "on-primary": "#FFFFFF",
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],

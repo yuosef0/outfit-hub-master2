@@ -225,21 +225,7 @@ export default function StoreProfilePage() {
 
     return (
         <div className="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-background-light shadow-xl overflow-hidden transition-colors duration-200 pb-20">
-            {/* Top App Bar */}
-            <div className="sticky top-0 z-50 flex items-center bg-background-light/95 backdrop-blur-md p-4 justify-between border-b border-border-light">
-                <button
-                    onClick={() => router.back()}
-                    className="text-[#0d121b] flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-surface-light transition-colors"
-                >
-                    <span className="material-symbols-outlined text-text-light-primary text-[24px]">arrow_back</span>
-                </button>
-                <h2 className="text-text-light-primary text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center truncate px-2">{store.name}</h2>
-                <div className="flex w-10 items-center justify-end">
-                    <button className="text-[#0d121b] flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-surface-light transition-colors">
-                        <span className="material-symbols-outlined text-text-light-primary text-[24px]">more_vert</span>
-                    </button>
-                </div>
-            </div>
+
 
             {/* Store Header Area */}
             <div className="flex flex-col w-full relative">

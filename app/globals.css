@@ -27,6 +27,7 @@
   --color-cream: #F5E6D3;
   --color-cream-light: #FFF3E6;
   --color-cream-dark: #E8D5B7;
+  --color-on-primary: #FFFFFF;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
 }
@@ -49,6 +50,37 @@
     --color-cream: #1F4030;
     --color-cream-light: #2D5A43;
     --color-cream-dark: #0F1713;
+    --color-on-primary: #F5E6D3;
+  }
+
+  /* Cream text & icons on solid green backgrounds in light mode */
+  [class~="bg-primary"],
+  [class~="bg-primary-light"],
+  [class~="bg-primary-dark"],
+  [class~="bg-accent-green"],
+  [class~="bg-cream"] {
+    color: #F5E6D3;
+  }
+
+  [class~="bg-primary"] .material-symbols-outlined,
+  [class~="bg-primary-light"] .material-symbols-outlined,
+  [class~="bg-primary-dark"] .material-symbols-outlined,
+  [class~="bg-accent-green"] .material-symbols-outlined,
+  [class~="bg-cream"] .material-symbols-outlined {
+    color: #F5E6D3;
+  }
+
+  /* Override text-primary inside dark backgrounds */
+  [class~="bg-primary"] [class~="text-primary"],
+  [class~="bg-cream"] [class~="text-primary"] {
+    color: #F5E6D3;
+  }
+
+  /* Hover variants — only apply when actually hovered */
+  .hover\:bg-primary:hover,
+  .hover\:bg-primary\/90:hover,
+  .hover\:bg-primary-light:hover {
+    color: #F5E6D3;
   }
 }
 

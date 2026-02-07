@@ -68,6 +68,7 @@ export interface Product {
         name: string;
         logo_url?: string;
         address?: string;
+        maps_link?: string;
     };
 }
 
@@ -122,6 +123,9 @@ export interface OrderItem {
 export interface Order {
     id: string;
     customer_id: string;
+    customer_name?: string;
+    customer_phone?: string;
+    customer_email?: string;
     store_id: string;
     pickup_code: string;
     status: OrderStatus;

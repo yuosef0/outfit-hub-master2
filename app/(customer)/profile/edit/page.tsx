@@ -120,7 +120,7 @@ export default function EditProfilePage() {
             )}
 
             {/* Header */}
-            <div className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md border-b border-border-light">
+            <div className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md border-t border-border-light">
                 <div className="flex items-center justify-between px-4 py-3">
                     <button
                         onClick={() => router.back()}
