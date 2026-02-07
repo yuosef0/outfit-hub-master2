@@ -49,8 +49,8 @@ export const useCartStore = create<CartState>()(
           const existingItemIndex = state.items.findIndex(
             (item) =>
               item.productId === newItem.productId &&
-              item.color === newItem.color &&
-              item.size === newItem.size
+              (item.color || '') === (newItem.color || '') &&
+              (item.size || '') === (newItem.size || '')
           );
 
           if (existingItemIndex > -1) {
@@ -63,7 +63,7 @@ export const useCartStore = create<CartState>()(
           // Add new item
           const cartItem: CartItem = {
             ...newItem,
-            id: `${newItem.productId}-${newItem.color}-${newItem.size}-${Date.now()}`,
+            id: `${newItem.productId}-${newItem.color || 'none'}-${newItem.size || 'none'}-${Date.now()}`,
           };
 
           return { items: [...state.items, cartItem] };

@@ -20,7 +20,8 @@ export default function ProductDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [selectedSize, setSelectedSize] = useState('M');
+    const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
     const supabase = useMemo(
@@ -40,12 +41,25 @@ export default function ProductDetailPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user || !product) return;
 
-        const { data } = await supabase
+        let query = supabase
             .from('cart_items')
             .select('id')
             .eq('user_id', user.id)
-            .eq('product_id', product.id)
-            .maybeSingle();
+            .eq('product_id', product.id);
+
+        if (selectedSize) {
+            query = query.eq('size', selectedSize);
+        } else {
+            query = query.is('size', null);
+        }
+
+        if (selectedColor) {
+            query = query.eq('color', selectedColor);
+        } else {
+            query = query.is('color', null);
+        }
+
+        const { data } = await query.maybeSingle();
 
         setIsInCart(!!data);
         setCartItemId(data?.id || null);
@@ -103,7 +117,7 @@ export default function ProductDetailPage() {
         if (product) {
             checkCartStatus();
         }
-    }, [product]);
+    }, [product, selectedSize, selectedColor]); // Re-check when selection changes
 
     const nextImage = () => {
         const images = product?.image_urls;
@@ -253,6 +267,47 @@ export default function ProductDetailPage() {
                             </span>
                         </div>
 
+                        {/* Selectors */}
+                        {product.sizes && product.sizes.length > 0 && (
+                            <div className="mb-4">
+                                <span className="text-sm font-medium text-text-light-primary mb-3 block">{t('product.size')}</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {product.sizes.map((size) => (
+                                        <button
+                                            key={size}
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`h-10 min-w-[40px] px-3 rounded-lg border text-sm font-medium transition-all ${selectedSize === size
+                                                ? 'border-primary bg-primary text-white'
+                                                : 'border-border-light bg-card-light text-text-light-secondary hover:border-primary/50'
+                                                }`}
+                                        >
+                                            {size}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {product.colors && product.colors.length > 0 && (
+                            <div className="mb-4">
+                                <span className="text-sm font-medium text-text-light-primary mb-3 block">{t('product.color')}</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {product.colors.map((color) => (
+                                        <button
+                                            key={color}
+                                            onClick={() => setSelectedColor(color)}
+                                            className={`h-10 px-4 rounded-lg border text-sm font-medium transition-all ${selectedColor === color
+                                                ? 'border-primary bg-primary text-white'
+                                                : 'border-border-light bg-card-light text-text-light-secondary hover:border-primary/50'
+                                                }`}
+                                        >
+                                            {color}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Quantity */}
                         <div>
                             <span className="text-sm font-medium text-text-light-primary mb-3 block">{t('common.quantity')}</span>
@@ -312,7 +367,9 @@ export default function ProductDetailPage() {
                                                 .insert({
                                                     user_id: user.id,
                                                     product_id: product.id,
-                                                    quantity: quantity
+                                                    quantity: quantity,
+                                                    size: selectedSize || null,
+                                                    color: selectedColor || null
                                                 })
                                                 .select()
                                                 .single();

@@ -186,7 +186,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             <div className={`relative w-full max-w-md h-full bg-background-light shadow-2xl flex flex-col transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
                 {/* Header */}
-                <header className="sticky top-0 z-50 bg-background-light/95 /95 backdrop-blur-md border-b border-border-light transition-colors shrink-0">
+                <header className="sticky top-0 z-50 bg-background-light/95 /95 backdrop-blur-md transition-colors shrink-0">
                     <div className="flex items-center justify-between px-4 h-14">
                         <button
                             onClick={onClose}
@@ -263,6 +263,50 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                     {item.products.category && (
                                                         <p className="text-xs font-medium text-text-light-secondary mt-1.5">{item.products.category}</p>
                                                     )}
+                                                    {(item.size || item.color) && (
+                                                        <div className="flex gap-2 mt-2">
+                                                            {item.size && (
+                                                                <span className="text-xs bg-surface-light px-2 py-1 rounded text-text-light-secondary">
+                                                                    {t('product.size')}: {item.size}
+                                                                </span>
+                                                            )}
+                                                            {item.color && (
+                                                                <span className="text-xs bg-surface-light px-2 py-1 rounded text-text-light-secondary flex items-center gap-1">
+                                                                    {t('product.color')}:
+                                                                    <span
+                                                                        className="w-3 h-3 rounded-full border border-border-light inline-block"
+                                                                        style={{ backgroundColor: item.color }}
+                                                                    ></span>
+                                                                    {/* If color is a name, display it. Use hex for circle. 
+                                                                        Since we store color name or hex? The prompt implies mixed usage or name.
+                                                                        Let's assume the stored value is the ONE selected. 
+                                                                        If I store "Red", I can't easily show hex unless I look it up.
+                                                                        However, product page stores `selectedColor` which comes from `product.colors` (names? or objects?).
+                                                                        In `new/page.tsx`, `colors` are stored as `{name, hex}` objects in `selectedColors` state, 
+                                                                        BUT `productData.colors` sent to DB is that array of objects?
+                                                                        Wait, `products.colors` is `text[]` in DB?
+                                                                        In `add_variants_to_cart.sql`: `colors TEXT[]`.
+                                                                        In `new/page.tsx`: `productData.colors = selectedColors`. `selectedColors` is `{name, hex}[]`.
+                                                                        Supabase might stringify JSON if column is text[]? Or is it JSONB?
+                                                                        `products.colors` is `text[]`. 
+                                                                        If I send JSON objects to a text[] column, it might be weird.
+                                                                        Let's check `lib/types.ts`: `colors?: string[];`. 
+                                                                        So `productData.colors` should be strings. 
+                                                                        In `new/page.tsx`, I saw: `productData.colors = selectedColors`. 
+                                                                        If `selectedColors` is objects, this might be saving `[{"name":"Red","hex":"#F00"}]` as string representation?
+                                                                        Or is it failing?
+                                                                        If the user meant sending just names?
+                                                                        Actually, looking at `new/page.tsx`, `selectedColors` is `{name: string, hex: string}[]`.
+                                                                        If I insert that into `text[]`, it might error or cast to string.
+                                                                        
+                                                                        Let's assume for now we perform a safe display: display the value as text. 
+                                                                        If it looks like a hex code (starts with #), render a box.
+                                                                    */}
+                                                                    {item.color}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="flex items-end justify-between mt-3">
                                                     <span className="font-bold text-base text-primary">{t('common.egp')} {item.products.price.toFixed(2)}</span>
@@ -321,7 +365,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                 {/* Footer (Actions) */}
                 {cartItems.length > 0 && (
-                    <div className="mt-auto border-t border-border-light p-4 pb-8 bg-background-light">
+                    <div className="mt-auto p-4 pb-8 bg-background-light">
                         <div className="w-full space-y-4">
                             <div className="flex justify-between items-center">
                                 <span className="text-sm font-medium text-text-light-secondary">{t('cart.subtotal')} ({totalItems} {totalItems === 1 ? t('cart.item') : t('cart.items')})</span>

@@ -56,6 +56,8 @@ export interface Product {
     category?: string;
     gender_filter?: string;
     image_urls?: string[];
+    sizes?: string[];
+    colors?: string[];
     stock_quantity: number;
     is_active: boolean;
     created_at: string;
@@ -95,6 +97,8 @@ export interface CartItem {
     user_id: string;
     product_id: string;
     quantity: number;
+    size?: string;
+    color?: string;
     created_at: string;
     updated_at: string;
     // For joined queries
