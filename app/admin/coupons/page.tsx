@@ -112,11 +112,11 @@ export default function AdminCouponsPage() {
 
     return (
         <div className="p-4 max-w-3xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <h1 className="text-2xl font-bold text-text-light-primary">{t('admin.couponManagement')}</h1>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors w-full sm:w-auto justify-center"
                 >
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
                         {showForm ? 'close' : 'add'}
@@ -220,15 +220,14 @@ export default function AdminCouponsPage() {
                 <div className="space-y-3">
                     {coupons.map((coupon) => (
                         <div key={coupon.id} className="bg-card-light rounded-xl p-4 border border-border-light">
-                            <div className="flex items-center justify-between gap-3">
-                                <div className="min-w-0">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="min-w-0 w-full sm:w-auto">
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="text-sm font-bold text-primary font-mono">{coupon.code}</span>
-                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                            coupon.is_active
+                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${coupon.is_active
                                                 ? 'bg-green-900/20 text-green-400'
                                                 : 'bg-red-900/20 text-red-400'
-                                        }`}>
+                                            }`}>
                                             {coupon.is_active ? t('admin.active') : t('admin.inactive')}
                                         </span>
                                     </div>
@@ -246,14 +245,13 @@ export default function AdminCouponsPage() {
                                         </p>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
                                     <button
                                         onClick={() => toggleCoupon(coupon.id, coupon.is_active)}
-                                        className={`px-2 py-1 rounded text-xs font-medium ${
-                                            coupon.is_active
+                                        className={`px-2 py-1 rounded text-xs font-medium ${coupon.is_active
                                                 ? 'bg-red-900/20 text-red-400'
                                                 : 'bg-green-900/20 text-green-400'
-                                        }`}
+                                            }`}
                                     >
                                         {coupon.is_active ? t('admin.deactivate') : t('admin.activate')}
                                     </button>

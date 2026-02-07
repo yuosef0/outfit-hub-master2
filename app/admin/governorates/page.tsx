@@ -122,7 +122,7 @@ export default function AdminGovernoratesPage() {
 
     return (
         <div className="p-4 max-w-3xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-text-light-primary">{t('admin.governorateManagement')}</h1>
                     <p className="text-xs text-text-light-secondary mt-1">
@@ -131,7 +131,7 @@ export default function AdminGovernoratesPage() {
                 </div>
                 <button
                     onClick={() => setShowAdd(!showAdd)}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors w-full sm:w-auto justify-center"
                 >
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
                         {showAdd ? 'close' : 'add'}
@@ -200,12 +200,12 @@ export default function AdminGovernoratesPage() {
                 <div className="space-y-2">
                     {governorates.map((gov) => (
                         <div key={gov.id} className="bg-card-light rounded-xl p-3 border border-border-light">
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-2 min-w-0 w-full sm:w-auto">
                                     <span className={`material-symbols-outlined shrink-0 ${gov.is_active ? 'text-green-400' : 'text-text-light-secondary'}`} style={{ fontSize: '20px' }}>
                                         location_on
                                     </span>
-                                    <div className="min-w-0">
+                                    <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-1.5 flex-wrap">
                                             <h3 className="text-sm font-bold text-text-light-primary">{gov.name}</h3>
                                             <span className="text-sm text-text-light-secondary" dir="rtl">{gov.name_ar}</span>
@@ -214,15 +214,14 @@ export default function AdminGovernoratesPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 shrink-0">
+                                <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto justify-end">
                                     <button
                                         onClick={() => toggleActive(gov)}
                                         disabled={updatingId === gov.id || gov.id.startsWith('fallback-')}
-                                        className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-colors disabled:opacity-50 ${
-                                            gov.is_active
+                                        className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-colors disabled:opacity-50 ${gov.is_active
                                                 ? 'bg-green-900/20 text-green-400'
                                                 : 'bg-card-light text-text-light-secondary border border-border-light'
-                                        }`}
+                                            }`}
                                     >
                                         {updatingId === gov.id ? '...' : gov.is_active ? t('admin.active') : t('admin.inactive')}
                                     </button>
