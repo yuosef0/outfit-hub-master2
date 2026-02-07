@@ -114,13 +114,17 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
-    // Admin can access any page freely
-    if (userRole === 'admin') {
-      // If admin tries to access login/signup, redirect to admin dashboard
+    // Admin should not access non-admin pages - redirect to admin dashboard
+    if (userRole === 'admin' && !pathname.startsWith('/admin')) {
+      const adminAllowedPaths = ['/login', '/signup', '/auth/', '/debug'];
+      const isAdminAllowed = adminAllowedPaths.some(p => pathname === p || pathname.startsWith(p));
+      if (!isAdminAllowed) {
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      }
+      // If on login/signup, redirect to admin dashboard
       if (pathname === '/login' || pathname === '/signup') {
         return NextResponse.redirect(new URL('/admin/dashboard', request.url));
       }
-      return response;
     }
 
     // Merchant routes - handle access
