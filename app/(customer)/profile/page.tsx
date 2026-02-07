@@ -96,7 +96,7 @@ export default function ProfilePage() {
     return (
         <div className="bg-background-light min-h-screen flex flex-col pb-24">
             {/* Top App Bar */}
-            <div className="sticky top-0 z-50 bg-background-light/80 /80 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-border-light">
+            <div className="sticky top-0 z-50 bg-background-light/80 /80 backdrop-blur-md px-4 py-3 flex items-center justify-between">
                 <button
                     onClick={() => router.back()}
                     className="flex items-center justify-center p-2 rounded-full hover:bg-card-light transition-colors"

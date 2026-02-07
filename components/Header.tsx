@@ -108,7 +108,7 @@ export default function Header() {
 
     return (
         <>
-            <header className="relative z-50 border-b bg-background-light/95 backdrop-blur-md border-border-light">
+            <header className="relative z-50 bg-background-light/95 backdrop-blur-md">
                 <div className="relative flex items-center px-4 py-3 justify-between">
                     {/* Left - Menu Button */}
                     <div className="flex items-center gap-1">

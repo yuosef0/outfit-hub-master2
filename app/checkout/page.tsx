@@ -201,7 +201,7 @@ export default function CheckoutPage() {
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
             {/* Header */}
-            <div className="bg-card-light border-b border-border-light sticky top-0 z-10">
+            <div className="bg-card-light sticky top-0 z-10">
                 <div className="px-4 py-4">
                     <div className="flex items-center gap-3">
                         <button

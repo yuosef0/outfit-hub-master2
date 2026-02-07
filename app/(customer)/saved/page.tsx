@@ -113,7 +113,7 @@ export default function SavedPage() {
     return (
         <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-20 bg-background-light text-text-light-primary">
             {/* Header */}
-            <div className="sticky top-0 z-50 bg-background-light/95 /95 backdrop-blur-sm border-b border-border-light/50/50 p-4">
+            <div className="sticky top-0 z-50 bg-background-light/95 /95 backdrop-blur-sm p-4">
                 <h1 className="text-2xl font-bold text-text-light-primary">{t('wishlist.saved')}</h1>
             </div>
 
