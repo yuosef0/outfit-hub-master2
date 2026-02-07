@@ -594,8 +594,8 @@ export default function NewProductPage() {
                                 التصنيف العام (للبحث والفلترة العامة) *
                             </label>
                             <select
-                                name="system_category_id"
-                                value={formData.system_category_id || ''}
+                                name="category_id"
+                                value={formData.category_id || ''}
                                 onChange={handleChange}
                                 required
                                 className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
