@@ -28,29 +28,39 @@ function DiscoverStoresContent() {
         []
     );
 
-    // Fetch stores from database
+    // Fetch stores filtered by customer's governorate
     useEffect(() => {
         const fetchStores = async () => {
             try {
-                console.log('Fetching stores from database...');
-                const { data, error } = await supabase
+                // Get customer's governorate
+                let userGov: string | null = null;
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('governorate')
+                        .eq('id', user.id)
+                        .single();
+                    userGov = userData?.governorate || null;
+                }
+
+                let query = supabase
                     .from('stores')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                console.log('Stores query result:', { data, error });
-
-                if (error) {
-                    console.error('Supabase error:', error);
-                    throw error;
+                // Filter by governorate if customer has one set
+                if (userGov) {
+                    query = query.eq('governorate', userGov);
                 }
 
+                const { data, error } = await query;
+
+                if (error) throw error;
+
                 if (data) {
-                    console.log(`Found ${data.length} stores`);
                     setStores(data);
                     setFilteredStores(data);
-                } else {
-                    console.log('No data returned from query');
                 }
             } catch (error) {
                 console.error('Error fetching stores:', error);

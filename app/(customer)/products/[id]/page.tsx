@@ -169,24 +169,6 @@ export default function ProductDetailPage() {
                 />
             )}
 
-            {/* Sticky Navigation Bar */}
-            <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-surface-light/90 backdrop-blur-md border-b border-border-light">
-                <button
-                    onClick={() => router.back()}
-                    className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-card-light transition-colors"
-                >
-                    <span className="material-symbols-outlined text-text-light-primary">arrow_back</span>
-                </button>
-                <div className="flex items-center gap-2">
-                    <button className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-card-light transition-colors">
-                        <span className="material-symbols-outlined text-text-light-primary">share</span>
-                    </button>
-                    <button className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-card-light transition-colors">
-                        <span className="material-symbols-outlined text-text-light-primary">shopping_bag</span>
-                    </button>
-                </div>
-            </header>
-
             {/* Scrollable Content */}
             <main className="flex-1 overflow-y-auto pb-32 hide-scrollbar">
                 <style jsx>{`

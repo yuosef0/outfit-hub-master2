@@ -20,6 +20,7 @@ interface GroupedCartItems {
         mapsLink?: string;
         items: (CartItem & { products: Product })[];
         total: number;
+        commissionRate?: number;
     };
 }
 
@@ -81,7 +82,8 @@ export default function CheckoutPage() {
  name,
  logo_url,
  address,
- maps_link
+ maps_link,
+ commission_rate
  )
  `)
                 .in('id', productIds);
@@ -112,6 +114,7 @@ export default function CheckoutPage() {
                 mapsLink: item.products.stores?.maps_link,
                 items: [],
                 total: 0,
+                commissionRate: item.products.stores?.commission_rate ?? 0.03,
             };
         }
         acc[storeId].items.push(item);
@@ -133,13 +136,27 @@ export default function CheckoutPage() {
         setCouponLoading(prev => ({ ...prev, [storeId]: true }));
 
         try {
-            const { data: coupon, error } = await supabase
+            // Try store-specific coupon first
+            let { data: coupon, error } = await supabase
                 .from('coupons')
                 .select('*')
                 .eq('store_id', storeId)
                 .eq('code', code.toUpperCase())
                 .eq('is_active', true)
                 .maybeSingle();
+
+            // If no store coupon found, try global coupon (store_id is null)
+            if (!coupon) {
+                const { data: globalCoupon } = await supabase
+                    .from('coupons')
+                    .select('*')
+                    .is('store_id', null)
+                    .eq('code', code.toUpperCase())
+                    .eq('is_active', true)
+                    .maybeSingle();
+
+                coupon = globalCoupon;
+            }
 
             if (error || !coupon) {
                 setToast({ message: t('checkout.couponInvalid'), type: 'error' });
@@ -221,7 +238,8 @@ export default function CheckoutPage() {
             for (const [storeId, group] of Object.entries(groupedItems)) {
                 const appliedCoupon = appliedCoupons[storeId];
                 const finalTotal = getStoreTotal(storeId, group.total);
-                const commission = finalTotal * 0.03; // 3% commission on discounted amount
+                const storeCommissionRate = group.commissionRate ?? 0.03;
+                const commission = finalTotal * storeCommissionRate;
                 const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
                 const expiresAt = new Date();
                 expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours expiry

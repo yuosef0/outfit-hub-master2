@@ -24,12 +24,38 @@ export default function CustomerHome() {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const { data, error } = await supabase
+                // Get customer's governorate to filter products
+                let storeIds: string[] | null = null;
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('governorate')
+                        .eq('id', user.id)
+                        .single();
+
+                    if (userData?.governorate) {
+                        const { data: govStores } = await supabase
+                            .from('stores')
+                            .select('id')
+                            .eq('governorate', userData.governorate);
+                        if (govStores && govStores.length > 0) {
+                            storeIds = govStores.map(s => s.id);
+                        }
+                    }
+                }
+
+                let query = supabase
                     .from('products')
                     .select('*')
                     .order('created_at', { ascending: false })
                     .limit(10);
 
+                if (storeIds) {
+                    query = query.in('store_id', storeIds);
+                }
+
+                const { data, error } = await query;
                 if (error) throw error;
                 setNewArrivals(data || []);
             } catch (error) {

@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
+import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
 
 export default function SignUpPage() {
  const router = useRouter();
@@ -18,6 +19,7 @@ export default function SignUpPage() {
  const [isLoading, setIsLoading] = useState(false);
  const [error, setError] = useState<string | null>(null);
  const [role, setRole] = useState<'customer' | 'merchant'>('customer');
+ const [governorate, setGovernorate] = useState('');
 
  const supabase = useMemo(
  () =>
@@ -43,6 +45,11 @@ export default function SignUpPage() {
 
  if (password.length < 8 || !/\d/.test(password)) {
  setError('Password must be 8+ characters and contain at least 1 number');
+ return;
+ }
+
+ if (role === 'customer' && !governorate) {
+ setError('Please select your governorate');
  return;
  }
 
@@ -78,6 +85,7 @@ export default function SignUpPage() {
  role: role,
  full_name: fullName,
  phone: phone ? `+20${phone}` : null,
+ governorate: role === 'customer' ? governorate : null,
  updated_at: new Date().toISOString()
  }, {
  onConflict: 'id'
@@ -250,6 +258,30 @@ export default function SignUpPage() {
  </div>
  </label>
  </div>
+
+ {/* Governorate (customers only) */}
+ {role === 'customer' && (
+ <div className="flex w-full flex-wrap items-end gap-4">
+ <label className="flex flex-col w-full flex-1">
+ <p className="text-text-light-primary text-base font-medium leading-normal pb-2">
+ Governorate (المحافظة)
+ </p>
+ <select
+ className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary focus:outline-0 focus:ring-0 border border-border-light bg-background-light focus:border-primary h-14 placeholder:text-text-light-secondary p-[15px] text-base font-normal leading-normal"
+ value={governorate}
+ onChange={(e) => setGovernorate(e.target.value)}
+ required
+ >
+ <option value="">Select your governorate</option>
+ {EGYPTIAN_GOVERNORATES.map((gov) => (
+ <option key={gov.code} value={gov.name}>
+ {gov.name} - {gov.name_ar}
+ </option>
+ ))}
+ </select>
+ </label>
+ </div>
+ )}
 
  {/* Password */}
  <div className="flex w-full flex-wrap items-end gap-4">

@@ -83,22 +83,51 @@ export async function middleware(request: NextRequest) {
 
   // If user is authenticated, check role-based access
   if (user) {
-    // Get store info once (to determine role and check status)
+    // Get user profile to check role
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    // Get store info (to determine merchant status and check store activation)
     const { data: store } = await supabase
       .from('stores')
       .select('id, is_active')
       .eq('merchant_id', user.id)
       .maybeSingle();
 
-    const userRole = store ? 'merchant' : 'customer';
+    let userRole: 'admin' | 'merchant' | 'customer' = 'customer';
+    if (profile?.role === 'admin') {
+      userRole = 'admin';
+    } else if (store) {
+      userRole = 'merchant';
+    }
 
     console.log('Middleware - User:', user.id, 'Role:', userRole, 'Path:', pathname);
+
+    // Admin routes - only admin can access
+    if (pathname.startsWith('/admin')) {
+      if (userRole !== 'admin') {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+      return response;
+    }
+
+    // Admin can access any page freely
+    if (userRole === 'admin') {
+      // If admin tries to access login/signup, redirect to admin dashboard
+      if (pathname === '/login' || pathname === '/signup') {
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      }
+      return response;
+    }
 
     // Merchant routes - handle access
     if (pathname.startsWith('/merchant')) {
       // Allow setup and pending pages for merchants (they don't need a store yet or can have inactive store)
       if (pathname === '/merchant/setup' || pathname === '/merchant/pending') {
-        if (userRole !== 'merchant') {
+        if (userRole !== 'merchant' && profile?.role !== 'merchant') {
           console.log('Non-merchant trying to access setup/pending - redirecting to home');
           return NextResponse.redirect(new URL('/', request.url));
         }

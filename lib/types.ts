@@ -69,6 +69,7 @@ export interface Product {
         logo_url?: string;
         address?: string;
         maps_link?: string;
+        commission_rate?: number;
     };
 }
 

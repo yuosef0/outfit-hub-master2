@@ -8,11 +8,13 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { SearchModal } from '@/components/SearchModal';
 import { useCartUI } from '@/context/CartUIContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
+import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
 
 export default function Header() {
     const pathname = usePathname();
-    const [userGovernorate, setUserGovernorate] = useState<string>('Cairo, Egypt');
+    const [userGovernorate, setUserGovernorate] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
+    const [isUpdatingGov, setIsUpdatingGov] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -58,7 +60,6 @@ export default function Header() {
     useEffect(() => {
         const fetchUserGovernorate = async () => {
             try {
-                // Use the memoized client
                 const { data: { user } } = await supabase.auth.getUser();
 
                 if (user) {
@@ -69,7 +70,7 @@ export default function Header() {
                         .single();
 
                     if (userData?.governorate) {
-                        setUserGovernorate(`${userData.governorate}, Egypt`);
+                        setUserGovernorate(userData.governorate);
                     }
                 }
             } catch (error) {
@@ -81,6 +82,24 @@ export default function Header() {
 
         fetchUserGovernorate();
     }, [supabase]);
+
+    const handleGovernorateChange = async (newGov: string) => {
+        setIsUpdatingGov(true);
+        setUserGovernorate(newGov);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await supabase
+                    .from('users')
+                    .update({ governorate: newGov })
+                    .eq('id', user.id);
+            }
+        } catch (error) {
+            console.error('Error updating governorate:', error);
+        } finally {
+            setIsUpdatingGov(false);
+        }
+    };
 
     // Fetch cart count
     useEffect(() => {
@@ -202,11 +221,30 @@ export default function Header() {
                         </button>
                     </div>
 
-                    {/* Location */}
-                    <div className="flex items-center gap-2 text-text-light-secondary text-sm">
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>location_on</span>
-                        <span>{isLoading ? 'Loading...' : userGovernorate}</span>
-                    </div>
+                    {/* Governorate Selector */}
+                    {isAuthenticated && (
+                        <div className="flex items-center gap-2 text-text-light-secondary text-sm">
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>location_on</span>
+                            {isLoading ? (
+                                <span>Loading...</span>
+                            ) : (
+                                <select
+                                    value={userGovernorate}
+                                    onChange={(e) => handleGovernorateChange(e.target.value)}
+                                    className="bg-transparent border-none text-text-light-secondary text-sm focus:outline-none focus:ring-0 cursor-pointer p-0 pr-5 appearance-none"
+                                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center' }}
+                                    disabled={isUpdatingGov}
+                                >
+                                    <option value="">Select governorate</option>
+                                    {EGYPTIAN_GOVERNORATES.map((gov) => (
+                                        <option key={gov.code} value={gov.name}>
+                                            {gov.name} - {gov.name_ar}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Menu Items */}
