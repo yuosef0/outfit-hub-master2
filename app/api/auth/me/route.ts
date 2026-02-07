@@ -26,6 +26,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get user profile data including governorate
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('governorate')
+      .eq('id', user.id)
+      .single();
+
     // Check if user has a store (is a merchant)
     const { data: store } = await supabase
       .from('stores')
@@ -39,6 +46,7 @@ export async function GET(request: NextRequest) {
       email: user.email,
       full_name: user.user_metadata?.full_name || store?.name || '',
       role: store ? 'merchant' : 'customer',
+      governorate: userProfile?.governorate || user.user_metadata?.governorate || null,
     };
 
     return NextResponse.json({

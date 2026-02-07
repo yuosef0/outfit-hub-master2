@@ -9,6 +9,7 @@ import { SearchModal } from '@/components/SearchModal';
 import { useCartUI } from '@/context/CartUIContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
+import { useAuthStore } from '@/store/authStore';
 
 export default function Header() {
     const pathname = usePathname();
@@ -23,6 +24,18 @@ export default function Header() {
     const [cartCount, setCartCount] = useState(0);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+    const { user, updateGovernorate, fetchUser, loading } = useAuthStore();
+
+    // Local state for governorate to allow immediate UI updates while saving
+    // Initialize with user's governorate if available
+    const [localGovernorate, setLocalGovernorate] = useState<string>('');
+
+    // Sync local state when user loads/changes
+    useEffect(() => {
+        if (user?.governorate) {
+            setLocalGovernorate(user.governorate);
+        }
+    }, [user?.governorate]);
 
     const supabase = useMemo(
         () =>
@@ -40,62 +53,25 @@ export default function Header() {
 
     useEffect(() => {
         setMounted(true);
+        // Ensure we have latest user data
+        fetchUser();
     }, []);
 
     // Track auth state
     useEffect(() => {
-        const checkAuth = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setIsAuthenticated(!!user);
-        };
-        checkAuth();
+        setIsAuthenticated(!!user);
+    }, [user]);
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setIsAuthenticated(!!session?.user);
-        });
-
-        return () => subscription.unsubscribe();
-    }, [supabase]);
-
-    useEffect(() => {
-        const fetchUserGovernorate = async () => {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-
-                if (user) {
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('governorate')
-                        .eq('id', user.id)
-                        .single();
-
-                    if (userData?.governorate) {
-                        setUserGovernorate(userData.governorate);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching governorate:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchUserGovernorate();
-    }, [supabase]);
-
+    // Handle governorate change
     const handleGovernorateChange = async (newGov: string) => {
+        setLocalGovernorate(newGov); // Immediate UI update
         setIsUpdatingGov(true);
-        setUserGovernorate(newGov);
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                await supabase
-                    .from('users')
-                    .update({ governorate: newGov })
-                    .eq('id', user.id);
-            }
+            await updateGovernorate(newGov);
         } catch (error) {
             console.error('Error updating governorate:', error);
+            // Revert if error (optional, but good UX)
+            if (user?.governorate) setLocalGovernorate(user.governorate);
         } finally {
             setIsUpdatingGov(false);
         }
@@ -225,11 +201,11 @@ export default function Header() {
                     {isAuthenticated && (
                         <div className="flex items-center gap-2 text-text-light-secondary text-sm">
                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>location_on</span>
-                            {isLoading ? (
+                            {loading ? (
                                 <span>Loading...</span>
                             ) : (
                                 <select
-                                    value={userGovernorate}
+                                    value={localGovernorate}
                                     onChange={(e) => handleGovernorateChange(e.target.value)}
                                     className="bg-transparent border-none text-text-light-secondary text-sm focus:outline-none focus:ring-0 cursor-pointer p-0 pr-5 appearance-none"
                                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center' }}

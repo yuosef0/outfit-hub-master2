@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import StoreWishlistButton from '@/components/StoreWishlistButton';
 import type { Store } from '@/lib/types';
+import { useAuthStore } from '@/store/authStore';
 
 function DiscoverStoresContent() {
     const searchParams = useSearchParams();
@@ -28,25 +29,24 @@ function DiscoverStoresContent() {
         []
     );
 
+    const { user, fetchUser } = useAuthStore();
+
+    // Ensure we have user data
+    useEffect(() => {
+        fetchUser();
+    }, []);
+
     // Fetch stores filtered by customer's governorate
     useEffect(() => {
         const fetchStores = async () => {
             try {
-                // Get customer's governorate
-                let userGov: string | null = null;
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('governorate')
-                        .eq('id', user.id)
-                        .single();
-                    userGov = userData?.governorate || null;
-                }
+                // Get customer's governorate from store
+                const userGov = user?.governorate || null;
 
                 let query = supabase
                     .from('stores')
                     .select('*')
+                    .eq('is_active', true)
                     .order('created_at', { ascending: false });
 
                 // Filter by governorate if customer has one set
@@ -70,7 +70,7 @@ function DiscoverStoresContent() {
         };
 
         fetchStores();
-    }, [supabase]);
+    }, [supabase, user?.governorate]);
 
     // Update active category when search params change
     useEffect(() => {

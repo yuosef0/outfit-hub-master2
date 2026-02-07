@@ -8,6 +8,7 @@ interface User {
   phone?: string;
   role: string;
   avatar_url?: string;
+  governorate?: string | null;
 }
 
 interface AuthState {
@@ -24,11 +25,12 @@ interface AuthState {
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
   setUser: (user: User | null) => void;
+  updateGovernorate: (governorate: string) => Promise<void>;
   clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null, // Initial state
   session: null,
   loading: false,
   error: null,
@@ -152,6 +154,27 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setUser: (user: User | null) => {
     set({ user });
+  },
+
+  updateGovernorate: async (governorate: string) => {
+    const { user } = get();
+    if (!user) return;
+
+    // Optimistic update
+    set({ user: { ...user, governorate } });
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ governorate })
+        .eq('id', user.id);
+
+      if (error) throw error;
+    } catch (error: any) {
+      // Revert on error
+      console.error('Error updating governorate:', error);
+      get().fetchUser(); // Re-fetch to sync with server
+    }
   },
 
   clearError: () => {
