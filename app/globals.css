@@ -5,30 +5,51 @@
   --font-display: var(--font-inter);
   --font-playfair: var(--font-playfair);
 
-  /* Outfit Hub Dark Theme - Logo-Inspired */
-  --color-primary: #2D5A43;           /* Outfit Green - from logo */
-  --color-primary-light: #3D7A5A;     /* Lighter green for hovers */
-  --color-primary-dark: #1F4030;      /* Darker green for pressed states */
-  --color-background-light: #0F1713;  /* Deep Forest Black */
+  /* Dark Theme (default) - Logo-Inspired */
+  --color-primary: #2D5A43;
+  --color-primary-light: #3D7A5A;
+  --color-primary-dark: #1F4030;
+  --color-background-light: #0F1713;
   --color-background-dark: #0F1713;
-  --color-text-light-primary: #E2E8E4;   /* Off-White - cool green tint */
-  --color-text-light-secondary: #8A9490; /* Muted green-gray */
+  --color-text-light-primary: #E2E8E4;
+  --color-text-light-secondary: #8A9490;
   --color-text-dark-primary: #E2E8E4;
   --color-text-dark-secondary: #8A9490;
-  --color-card-light: #1A2420;        /* Charcoal Green - cards/panels */
+  --color-card-light: #1A2420;
   --color-card-dark: #1A2420;
-  --color-border-light: #2A3B34;      /* Subtle green border */
+  --color-border-light: #2A3B34;
   --color-border-dark: #2A3B34;
-  --color-surface-light: #141C17;     /* Elevated surface */
+  --color-surface-light: #141C17;
   --color-surface-dark: #141C17;
-  --color-accent-green: #2D5A43;      /* Same as primary */
-  --color-accent-gold: #C5A377;       /* Muted Gold - from logo icon */
-  --color-accent-glow: #3D7A5A;      /* Glow variant */
-  --color-cream: #F5E6D3;            /* Warm cream for text */
+  --color-accent-green: #2D5A43;
+  --color-accent-gold: #C5A377;
+  --color-accent-glow: #3D7A5A;
+  --color-cream: #F5E6D3;
   --color-cream-light: #FFF3E6;
   --color-cream-dark: #E8D5B7;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
+}
+
+/* ========== LIGHT MODE ========== */
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-background-light: #FFF8F0;
+    --color-background-dark: #FFF8F0;
+    --color-text-light-primary: #0F1713;
+    --color-text-light-secondary: #4A6358;
+    --color-text-dark-primary: #0F1713;
+    --color-text-dark-secondary: #4A6358;
+    --color-card-light: #FFFFFF;
+    --color-card-dark: #FFFFFF;
+    --color-border-light: #D4CCBF;
+    --color-border-dark: #D4CCBF;
+    --color-surface-light: #F5EDE3;
+    --color-surface-dark: #F5EDE3;
+    --color-cream: #1F4030;
+    --color-cream-light: #2D5A43;
+    --color-cream-dark: #0F1713;
+  }
 }
 
 
@@ -103,10 +124,18 @@
     transition-duration: 150ms;
   }
 
-  /* Selection color */
+  /* Selection color - dark mode */
   ::selection {
     background-color: rgba(45, 90, 67, 0.4);
     color: #E2E8E4;
+  }
+
+  /* Selection color - light mode */
+  @media (prefers-color-scheme: light) {
+    ::selection {
+      background-color: rgba(45, 90, 67, 0.25);
+      color: #FFFFFF;
+    }
   }
 }
 
@@ -121,7 +150,7 @@
     padding-top: env(safe-area-inset-top);
   }
 
-  /* Glass morphism effect - deep forest green */
+  /* Glass morphism effect - dark mode */
   .glass {
     background: rgba(26, 36, 32, 0.6);
     backdrop-filter: blur(16px);
@@ -168,5 +197,42 @@
   .card-hover:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(45, 90, 67, 0.12);
+  }
+
+  /* Light mode utility overrides */
+  @media (prefers-color-scheme: light) {
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 204, 191, 0.5);
+    }
+
+    .glass-dark {
+      background: rgba(255, 248, 240, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 204, 191, 0.3);
+    }
+
+    .glow-primary {
+      box-shadow: 0 0 20px rgba(45, 90, 67, 0.15), 0 0 60px rgba(45, 90, 67, 0.05);
+    }
+
+    .glow-primary-hover:hover {
+      box-shadow: 0 0 30px rgba(45, 90, 67, 0.2), 0 0 80px rgba(45, 90, 67, 0.08);
+    }
+
+    .text-gradient-cream {
+      background: linear-gradient(135deg, #1F4030, #2D5A43);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 20px rgba(45, 90, 67, 0.06);
+    }
   }
 }

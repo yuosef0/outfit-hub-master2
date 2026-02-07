@@ -109,32 +109,15 @@ export default function Header() {
     return (
         <>
             <header className="relative z-50 border-b bg-background-light/95 backdrop-blur-md border-border-light">
-                <div className="flex items-center px-4 py-3 justify-between">
+                <div className="relative flex items-center px-4 py-3 justify-between">
                     {/* Left - Menu Button */}
-                    <button
-                        onClick={() => setMenuOpen(true)}
-                        className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-card-light transition-colors text-cream"
-                    >
-                        <span className="material-symbols-outlined" style={{ fontSize: '26px' }}>menu</span>
-                    </button>
-
-                    {/* Center - Brand Name */}
-                    <h1
-                        className="font-playfair text-cream text-xl font-black tracking-wide select-none"
-                        style={{ letterSpacing: '0.08em' }}
-                    >
-                        OutFit-Hub
-                    </h1>
-
-                    {/* Right - Search & Notifications */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                         <button
-                            onClick={() => setIsSearchOpen(true)}
+                            onClick={() => setMenuOpen(true)}
                             className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-card-light transition-colors text-cream"
                         >
-                            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>search</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: '26px' }}>menu</span>
                         </button>
-
                         <button
                             onClick={openCart}
                             className="relative flex items-center justify-center h-10 w-10 rounded-full hover:bg-card-light transition-colors text-cream"
@@ -146,6 +129,28 @@ export default function Header() {
                                 </span>
                             )}
                         </button>
+                    </div>
+
+                    {/* Center - Brand Name */}
+                    <div className="absolute left-1/2 transform -translate-x-1/2">
+                        <h1
+                            className="font-playfair text-cream text-xl font-black tracking-wide select-none whitespace-nowrap"
+                            style={{ letterSpacing: '0.08em' }}
+                        >
+                            OutFit-Hub
+                        </h1>
+                    </div>
+
+                    {/* Right - Search & Notifications */}
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setIsSearchOpen(true)}
+                            className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-card-light transition-colors text-cream"
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>search</span>
+                        </button>
+
+
 
                         <NotificationsDropdown />
                     </div>

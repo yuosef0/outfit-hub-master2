@@ -140,14 +140,14 @@ export default function BottomNav() {
                                 {/* Raised circle — only the center item */}
                                 {isCenter && (
                                     <div
-                                        className="absolute flex items-center justify-center w-[52px] h-[52px] rounded-full bg-primary shadow-lg shadow-primary/30 z-10"
+                                        className="absolute flex items-center justify-center w-[52px] h-[52px] rounded-full bg-cream shadow-lg shadow-cream/30 z-10"
                                         style={{ top: -6 }}
                                     >
-                                        <span className="material-symbols-outlined text-white text-[26px]">
+                                        <span className="material-symbols-outlined text-primary text-[26px]">
                                             {item.icon}
                                         </span>
                                         {item.key === 'cart' && cartCount > 0 && (
-                                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-primary">
+                                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-cream">
                                                 {cartCount > 9 ? '9+' : cartCount}
                                             </span>
                                         )}
@@ -172,7 +172,7 @@ export default function BottomNav() {
                                             )}
                                         </div>
                                     )}
-                                    <p className={`text-[10px] font-bold leading-none tracking-wide ${isCenter ? 'text-primary' : 'text-text-light-secondary'
+                                    <p className={`text-[10px] font-bold leading-none tracking-wide ${isCenter ? 'text-cream' : 'text-text-light-secondary'
                                         }`}>
                                         {t(item.labelKey)}
                                     </p>
