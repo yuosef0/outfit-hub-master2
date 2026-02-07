@@ -25,6 +25,7 @@ export default function AdminCategoriesPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [currentCategory, setCurrentCategory] = useState<Partial<Category>>({});
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [iconFile, setIconFile] = useState<File | null>(null);
 
     const supabase = useMemo(
         () => createBrowserClient(
@@ -54,19 +55,19 @@ export default function AdminCategoriesPage() {
         fetchCategories();
     }, [supabase]);
 
-    const handleImageUpload = async (file: File) => {
+    const handleFileUpload = async (file: File, bucket: string = 'categories') => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
         const filePath = `${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-            .from('categories')
+            .from(bucket)
             .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
-            .from('categories')
+            .from(bucket)
             .getPublicUrl(filePath);
 
         return publicUrl;
@@ -78,16 +79,21 @@ export default function AdminCategoriesPage() {
 
         try {
             let imageUrl = currentCategory.image_url;
+            let iconUrl = currentCategory.icon;
 
             if (imageFile) {
-                imageUrl = await handleImageUpload(imageFile);
+                imageUrl = await handleFileUpload(imageFile);
+            }
+
+            if (iconFile) {
+                iconUrl = await handleFileUpload(iconFile);
             }
 
             const categoryData = {
                 name: currentCategory.name,
                 name_ar: currentCategory.name_ar || null,
                 description: currentCategory.description || null,
-                icon: currentCategory.icon || null,
+                icon: iconUrl || null,
                 display_order: currentCategory.display_order || 0,
                 is_active: currentCategory.is_active !== undefined ? currentCategory.is_active : true,
                 image_url: imageUrl,
@@ -111,6 +117,7 @@ export default function AdminCategoriesPage() {
             setIsEditing(false);
             setCurrentCategory({});
             setImageFile(null);
+            setIconFile(null);
             fetchCategories();
         } catch (error) {
             console.error('Error saving category:', error);
@@ -119,7 +126,6 @@ export default function AdminCategoriesPage() {
             setSubmitting(false);
         }
     };
-
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this category?')) return;
 
@@ -319,14 +325,26 @@ export default function AdminCategoriesPage() {
                             {/* Icon & Order */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-text-light-primary mb-1">Icon (Material Symbol)</label>
-                                    <input
-                                        type="text"
-                                        value={currentCategory.icon || ''}
-                                        onChange={(e) => setCurrentCategory({ ...currentCategory, icon: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-lg bg-card-light border border-border-light focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-light-primary"
-                                        placeholder="e.g. checkroom"
-                                    />
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-light-primary mb-1">Icon (Upload)</label>
+                                        <div className="flex items-center gap-4">
+                                            {(iconFile || currentCategory.icon) && (
+                                                <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                                                    <img
+                                                        src={iconFile ? URL.createObjectURL(iconFile) : currentCategory.icon!}
+                                                        alt="Icon Preview"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            )}
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => setIconFile(e.target.files?.[0] || null)}
+                                                className="block w-full text-sm text-text-light-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-text-light-primary mb-1">Order</label>

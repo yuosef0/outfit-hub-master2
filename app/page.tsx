@@ -171,7 +171,7 @@ export default function HomePage() {
                 <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
                     Categories
                 </h3>
-                <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <div className="flex items-stretch p-4 gap-8">
                         {categories.length > 0 ? (
                             categories.map((category) => (
