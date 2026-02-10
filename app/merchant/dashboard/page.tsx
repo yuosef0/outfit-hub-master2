@@ -18,8 +18,6 @@ export default function MerchantDashboardPage() {
         totalProducts: 0,
         avgRating: 0,
         followersCount: 0,
-        salesChange: '+12%',
-        ordersChange: '+8%',
         newOrders: 0,
     });
 
@@ -223,9 +221,6 @@ export default function MerchantDashboardPage() {
                                     payments
                                 </span>
                             </div>
-                            <span className="text-xs font-medium text-green-400">
-                                {stats.salesChange} ↑
-                            </span>
                         </div>
                         <p className="text-2xl font-bold text-text-light-primary ">
                             {stats.totalSales.toFixed(0)}
@@ -243,9 +238,6 @@ export default function MerchantDashboardPage() {
                                     shopping_bag
                                 </span>
                             </div>
-                            <span className="text-xs font-medium text-primary">
-                                {stats.ordersChange} ↑
-                            </span>
                         </div>
                         <p className="text-2xl font-bold text-text-light-primary ">
                             {stats.totalOrders}
