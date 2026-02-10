@@ -57,7 +57,7 @@ export default function StoreProfilePage() {
                     .maybeSingle();
 
                 if (error) throw error;
-                if (!data) {
+                if (!data || !data.is_active || data.is_visible === false) {
                     setStore(null);
                     return;
                 }

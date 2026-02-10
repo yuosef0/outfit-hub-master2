@@ -49,6 +49,7 @@ function DiscoverStoresContent() {
                     .from('stores')
                     .select('*')
                     .eq('is_active', true)
+                    .eq('is_visible', true)
                     .order('created_at', { ascending: false });
 
                 // Filter by governorate if customer has one set

@@ -91,7 +91,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 // Fetch stores for 'all' or 'stores'
                 if (activeTab === 'all' || activeTab === 'stores') {
                     promises.push(
-                        fetch(`/api/stores?search=${encodeURIComponent(searchTerm)}&is_active=true`)
+                        fetch(`/api/stores?search=${encodeURIComponent(searchTerm)}&is_active=true&is_visible=true`)
                             .then(res => res.json())
                             .then(data => setStores(data.stores || []))
                     );

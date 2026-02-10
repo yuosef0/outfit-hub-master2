@@ -38,7 +38,9 @@ export default function CustomerHome() {
                         const { data: govStores } = await supabase
                             .from('stores')
                             .select('id')
-                            .eq('governorate', userData.governorate);
+                            .eq('governorate', userData.governorate)
+                            .eq('is_active', true)
+                            .eq('is_visible', true);
                         if (govStores && govStores.length > 0) {
                             storeIds = govStores.map(s => s.id);
                         }

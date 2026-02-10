@@ -42,6 +42,7 @@ export interface Store {
     category?: string;
     subscription_plan: string;
     is_active: boolean;
+    is_visible: boolean;
     governorate?: string;
     points_balance: number;
     created_at: string;

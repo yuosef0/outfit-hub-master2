@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const isActive = searchParams.get('is_active');
+    const isVisible = searchParams.get('is_visible');
 
     let query = supabase
       .from('stores')
@@ -29,6 +30,10 @@ export async function GET(request: NextRequest) {
 
     if (isActive !== null) {
       query = query.eq('is_active', isActive === 'true');
+    }
+
+    if (isVisible !== null) {
+      query = query.eq('is_visible', isVisible === 'true');
     }
 
     const search = searchParams.get('search');

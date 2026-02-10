@@ -11,6 +11,7 @@ interface StoreWithMerchant {
     area: string | null;
     governorate: string | null;
     is_active: boolean;
+    is_visible: boolean;
     created_at: string;
     logo_url: string | null;
     merchant_id: string;
@@ -40,7 +41,7 @@ export default function AdminStoresPage() {
         try {
             const { data, error } = await supabase
                 .from('stores')
-                .select('id, name, category, area, governorate, is_active, created_at, logo_url, merchant_id')
+                .select('id, name, category, area, governorate, is_active, is_visible, created_at, logo_url, merchant_id')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -90,6 +91,26 @@ export default function AdminStoresPage() {
             );
         } catch (error) {
             console.error('Error toggling store status:', error);
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
+    const toggleStoreVisibility = async (storeId: string, currentVisibility: boolean) => {
+        setUpdatingId(storeId);
+        try {
+            const { error } = await supabase
+                .from('stores')
+                .update({ is_visible: !currentVisibility })
+                .eq('id', storeId);
+
+            if (error) throw error;
+
+            setStores(prev =>
+                prev.map(s => s.id === storeId ? { ...s, is_visible: !currentVisibility } : s)
+            );
+        } catch (error) {
+            console.error('Error toggling store visibility:', error);
         } finally {
             setUpdatingId(null);
         }
@@ -168,7 +189,7 @@ export default function AdminStoresPage() {
                                         )}
                                     </div>
                                     <div className="min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
+                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                                             <h3 className="text-sm font-bold text-text-light-primary truncate">{store.name}</h3>
                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                                 store.is_active
@@ -176,6 +197,16 @@ export default function AdminStoresPage() {
                                                     : 'bg-red-900/20 text-red-400'
                                             }`}>
                                                 {store.is_active ? t('admin.active') : t('admin.inactive')}
+                                            </span>
+                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex items-center gap-0.5 ${
+                                                store.is_visible !== false
+                                                    ? 'bg-blue-900/20 text-blue-400'
+                                                    : 'bg-orange-900/20 text-orange-400'
+                                            }`}>
+                                                <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>
+                                                    {store.is_visible !== false ? 'visibility' : 'visibility_off'}
+                                                </span>
+                                                {store.is_visible !== false ? t('admin.stores.visible') : t('admin.stores.hidden')}
                                             </span>
                                         </div>
                                         <p className="text-xs text-text-light-secondary">{store.merchant_name} &middot; {store.merchant_email}</p>
@@ -193,17 +224,30 @@ export default function AdminStoresPage() {
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={() => toggleStoreStatus(store.id, store.is_active)}
-                                    disabled={updatingId === store.id}
-                                    className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${
-                                        store.is_active
-                                            ? 'bg-red-900/20 text-red-400 hover:bg-red-900/30'
-                                            : 'bg-green-900/20 text-green-400 hover:bg-green-900/30'
-                                    }`}
-                                >
-                                    {updatingId === store.id ? '...' : store.is_active ? t('admin.deactivate') : t('admin.activate')}
-                                </button>
+                                <div className="flex flex-col gap-1.5 shrink-0">
+                                    <button
+                                        onClick={() => toggleStoreVisibility(store.id, store.is_visible !== false)}
+                                        disabled={updatingId === store.id}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${
+                                            store.is_visible !== false
+                                                ? 'bg-orange-900/20 text-orange-400 hover:bg-orange-900/30'
+                                                : 'bg-blue-900/20 text-blue-400 hover:bg-blue-900/30'
+                                        }`}
+                                    >
+                                        {updatingId === store.id ? '...' : store.is_visible !== false ? t('admin.stores.hide') : t('admin.stores.show')}
+                                    </button>
+                                    <button
+                                        onClick={() => toggleStoreStatus(store.id, store.is_active)}
+                                        disabled={updatingId === store.id}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${
+                                            store.is_active
+                                                ? 'bg-red-900/20 text-red-400 hover:bg-red-900/30'
+                                                : 'bg-green-900/20 text-green-400 hover:bg-green-900/30'
+                                        }`}
+                                    >
+                                        {updatingId === store.id ? '...' : store.is_active ? t('admin.deactivate') : t('admin.activate')}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}

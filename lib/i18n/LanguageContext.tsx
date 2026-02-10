@@ -272,6 +272,14 @@ const translations: Record<Language, Record<string, string>> = {
         'merchant.completedOrders': 'Completed',
         'merchant.cancelledOrders': 'Cancelled',
 
+        // Merchant Store Visibility
+        'merchant.storeVisibility': 'Store Visibility',
+        'merchant.storeVisible': 'Your store is visible to customers',
+        'merchant.storeHidden': 'Your store is hidden from customers',
+        'merchant.hideStoreWarning': 'When hidden, your store and products will not appear in search results or listings.',
+        'merchant.visible': 'Visible',
+        'merchant.hidden': 'Hidden',
+
         // Merchant Analytics
         'merchant.analytics.title': 'Analytics',
         'merchant.analytics.subtitle': 'Analyze your store performance',
@@ -587,6 +595,12 @@ const translations: Record<Language, Record<string, string>> = {
         'admin.stores.noStores': 'No stores found',
         'admin.stores.activated': 'Store activated successfully',
         'admin.stores.deactivated': 'Store deactivated successfully',
+        'admin.stores.visible': 'Visible',
+        'admin.stores.hidden': 'Hidden',
+        'admin.stores.hide': 'Hide',
+        'admin.stores.show': 'Show',
+        'admin.stores.storeHidden': 'Store hidden successfully',
+        'admin.stores.storeShown': 'Store shown successfully',
 
         // Admin Customers
         'admin.customers.title': 'Customer Management',
@@ -907,6 +921,14 @@ const translations: Record<Language, Record<string, string>> = {
         'merchant.completedOrders': 'مكتملة',
         'merchant.cancelledOrders': 'ملغية',
 
+        // Merchant Store Visibility
+        'merchant.storeVisibility': 'ظهور المتجر',
+        'merchant.storeVisible': 'متجرك ظاهر للعملاء',
+        'merchant.storeHidden': 'متجرك مخفي عن العملاء',
+        'merchant.hideStoreWarning': 'عند الإخفاء، لن يظهر متجرك ومنتجاتك في نتائج البحث أو القوائم.',
+        'merchant.visible': 'ظاهر',
+        'merchant.hidden': 'مخفي',
+
         // Merchant Analytics
         'merchant.analytics.title': 'التحليلات',
         'merchant.analytics.subtitle': 'تحليل أداء متجرك ومبيعاتك',
@@ -1222,6 +1244,12 @@ const translations: Record<Language, Record<string, string>> = {
         'admin.stores.noStores': 'لا توجد متاجر',
         'admin.stores.activated': 'تم تفعيل المتجر بنجاح',
         'admin.stores.deactivated': 'تم إلغاء تفعيل المتجر',
+        'admin.stores.visible': 'ظاهر',
+        'admin.stores.hidden': 'مخفي',
+        'admin.stores.hide': 'إخفاء',
+        'admin.stores.show': 'إظهار',
+        'admin.stores.storeHidden': 'تم إخفاء المتجر بنجاح',
+        'admin.stores.storeShown': 'تم إظهار المتجر بنجاح',
 
         // Admin Customers
         'admin.customers.title': 'إدارة العملاء',
@@ -1296,15 +1324,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         const savedLang = localStorage.getItem('language') as Language;
         if (savedLang && (savedLang === 'en' || savedLang === 'ar')) {
             setLanguageState(savedLang);
+            document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.lang = savedLang;
+        } else {
+            // Default is 'ar'
+            document.documentElement.dir = 'rtl';
+            document.documentElement.lang = 'ar';
         }
-        // Always keep LTR direction
-        document.documentElement.dir = 'ltr';
     }, []);
 
     const setLanguage = (lang: Language) => {
         setLanguageState(lang);
         localStorage.setItem('language', lang);
-        // Keep LTR direction always
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
         document.documentElement.lang = lang;
     };
 
@@ -1312,8 +1344,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         return translations[language][key] || key;
     };
 
-    // Always LTR
-    const dir = 'ltr' as const;
+    const dir: 'ltr' | 'rtl' = language === 'ar' ? 'rtl' : 'ltr';
 
     return (
         <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>
