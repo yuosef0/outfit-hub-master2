@@ -169,7 +169,7 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                // Categories Section
+                {/* Categories Section */}
                 <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
                     Categories
                 </h3>
