@@ -7,6 +7,8 @@ import { createBrowserClient } from '@supabase/ssr';
 import type { Store, Product, StoreReview } from '@/lib/types';
 import WishlistButton from '@/components/WishlistButton';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import ReviewModal from '@/components/ReviewModal';
+import Toast from '@/components/Toast';
 
 interface StoreCategory {
     id: string;
@@ -45,6 +47,58 @@ export default function StoreProfilePage() {
             ),
         []
     );
+
+    const [reviewModalData, setReviewModalData] = useState<{ orderId: string; storeId: string; storeName: string } | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    const handleRateClick = async () => {
+        if (!currentUserId || !store) return;
+
+        try {
+            // 1. Get completed orders for this store
+            const { data: orders, error: ordersError } = await supabase
+                .from('orders')
+                .select('id')
+                .eq('customer_id', currentUserId)
+                .eq('store_id', store.id)
+                .eq('status', 'completed')
+                .order('created_at', { ascending: false });
+
+            if (ordersError) throw ordersError;
+
+            if (!orders || orders.length === 0) {
+                setToast({ message: t('reviews.noEligibleOrders') || 'You need to complete an order from this store to rate it.', type: 'error' });
+                return;
+            }
+
+            // 2. Get existing reviews for these orders
+            const { data: reviews, error: reviewsError } = await supabase
+                .from('store_reviews')
+                .select('order_id')
+                .in('order_id', orders.map(o => o.id));
+
+            if (reviewsError) throw reviewsError;
+
+            const reviewedOrderIds = new Set(reviews?.map(r => r.order_id));
+
+            // 3. Find first unreviewed order
+            const unreviewedOrder = orders.find(o => !reviewedOrderIds.has(o.id));
+
+            if (unreviewedOrder) {
+                setReviewModalData({
+                    orderId: unreviewedOrder.id,
+                    storeId: store.id,
+                    storeName: store.name,
+                });
+            } else {
+                setToast({ message: t('reviews.allOrdersReviewed') || 'You have already reviewed all your orders from this store.', type: 'info' });
+            }
+
+        } catch (error) {
+            console.error('Error checking eligibility:', error);
+            setToast({ message: t('common.error') || 'An error occurred', type: 'error' });
+        }
+    };
 
     // Fetch store data
     useEffect(() => {
@@ -342,6 +396,15 @@ export default function StoreProfilePage() {
                                     <span>{t('store.follow')}</span>
                                 </>
                             )}
+                        </button>
+
+                        {/* Rate Button */}
+                        <button
+                            onClick={handleRateClick}
+                            className="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-semibold shadow-sm transition-all active:scale-95 h-10 mb-2 bg-amber-500 hover:bg-amber-600 text-white ml-2"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">star</span>
+                            <span>{t('reviews.rate') || 'Rate'}</span>
                         </button>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -663,6 +726,30 @@ export default function StoreProfilePage() {
                     </div>
                 )}
             </main>
+            {/* Review Modal */}
+            {reviewModalData && (
+                <ReviewModal
+                    isOpen={!!reviewModalData}
+                    onClose={() => setReviewModalData(null)}
+                    storeId={reviewModalData.storeId}
+                    storeName={reviewModalData.storeName}
+                    orderId={reviewModalData.orderId}
+                    onSuccess={() => {
+                        setReviewModalData(null);
+                        setToast({ message: t('reviews.success') || 'Review submitted successfully', type: 'success' });
+                        // Refresh reviews
+                        window.location.reload();
+                    }}
+                />
+            )}
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 }

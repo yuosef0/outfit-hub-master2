@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Order, OrderStatus } from '@/lib/types';
+import ReviewModal from '@/components/ReviewModal';
 
 export default function OrdersPage() {
     const router = useRouter();
@@ -14,11 +15,7 @@ export default function OrdersPage() {
     const [activeTab, setActiveTab] = useState<'all' | 'pending'>('all');
     const { t, language } = useLanguage();
     const [reviewedOrders, setReviewedOrders] = useState<Set<string>>(new Set());
-    const [reviewModal, setReviewModal] = useState<{ orderId: string; storeId: string; storeName: string } | null>(null);
-    const [reviewRating, setReviewRating] = useState(5);
-    const [reviewComment, setReviewComment] = useState('');
-    const [reviewSubmitting, setReviewSubmitting] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [reviewModalData, setReviewModalData] = useState<{ orderId: string; storeId: string; storeName: string } | null>(null);
 
     const supabase = useMemo(
         () =>
@@ -55,7 +52,6 @@ export default function OrdersPage() {
 
                 if (error) throw error;
                 setOrders(data || []);
-                setCurrentUserId(user.id);
 
                 // Fetch which orders have already been reviewed
                 const { data: existingReviews } = await supabase
@@ -76,31 +72,10 @@ export default function OrdersPage() {
         fetchOrders();
     }, [supabase, router]);
 
-    const submitReview = async () => {
-        if (!reviewModal || !currentUserId) return;
-        setReviewSubmitting(true);
-
-        try {
-            const { error } = await supabase
-                .from('store_reviews')
-                .insert({
-                    store_id: reviewModal.storeId,
-                    customer_id: currentUserId,
-                    order_id: reviewModal.orderId,
-                    rating: reviewRating,
-                    comment: reviewComment.trim() || null,
-                });
-
-            if (error) throw error;
-
-            setReviewedOrders(prev => new Set([...prev, reviewModal.orderId]));
-            setReviewModal(null);
-            setReviewRating(5);
-            setReviewComment('');
-        } catch (error) {
-            console.error('Error submitting review:', error);
-        } finally {
-            setReviewSubmitting(false);
+    const handleReviewSuccess = () => {
+        if (reviewModalData) {
+            setReviewedOrders(prev => new Set([...prev, reviewModalData.orderId]));
+            setReviewModalData(null);
         }
     };
 
@@ -350,7 +325,7 @@ export default function OrdersPage() {
                                 {order.status === 'completed' && !reviewedOrders.has(order.id) && (
                                     <div className="px-4 pb-4">
                                         <button
-                                            onClick={() => setReviewModal({
+                                            onClick={() => setReviewModalData({
                                                 orderId: order.id,
                                                 storeId: order.store_id,
                                                 storeName: order.stores?.name || '',
@@ -379,60 +354,15 @@ export default function OrdersPage() {
             </main>
 
             {/* Review Modal */}
-            {reviewModal && (
-                <>
-                    <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm" onClick={() => setReviewModal(null)} />
-                    <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[101] bg-card-light rounded-2xl border border-border-light p-6 max-w-md mx-auto shadow-xl">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-text-light-primary">{t('reviews.rateStore')}</h3>
-                            <button onClick={() => setReviewModal(null)} className="p-1 hover:bg-surface-light rounded-full">
-                                <span className="material-symbols-outlined text-text-light-secondary">close</span>
-                            </button>
-                        </div>
-
-                        <p className="text-sm text-text-light-secondary mb-4">{reviewModal.storeName}</p>
-
-                        {/* Star Rating */}
-                        <div className="mb-4">
-                            <p className="text-sm font-medium text-text-light-primary mb-2">{t('reviews.yourRating')}</p>
-                            <div className="flex items-center gap-2">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        key={star}
-                                        type="button"
-                                        onClick={() => setReviewRating(star)}
-                                        className="transition-transform hover:scale-110"
-                                    >
-                                        <span className={`material-symbols-outlined text-[32px] ${star <= reviewRating ? 'text-amber-500 filled fill' : 'text-border-light'}`}>
-                                            star
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Comment */}
-                        <div className="mb-5">
-                            <p className="text-sm font-medium text-text-light-primary mb-2">{t('reviews.yourComment')}</p>
-                            <textarea
-                                value={reviewComment}
-                                onChange={(e) => setReviewComment(e.target.value)}
-                                rows={3}
-                                className="w-full px-3 py-2 rounded-lg border border-border-light bg-background-light text-text-light-primary text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-                                placeholder={t('reviews.writeReview')}
-                            />
-                        </div>
-
-                        {/* Submit */}
-                        <button
-                            onClick={submitReview}
-                            disabled={reviewSubmitting}
-                            className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-light transition-colors disabled:opacity-50"
-                        >
-                            {reviewSubmitting ? '...' : t('reviews.submit')}
-                        </button>
-                    </div>
-                </>
+            {reviewModalData && (
+                <ReviewModal
+                    isOpen={!!reviewModalData}
+                    onClose={() => setReviewModalData(null)}
+                    storeId={reviewModalData.storeId}
+                    storeName={reviewModalData.storeName}
+                    orderId={reviewModalData.orderId}
+                    onSuccess={handleReviewSuccess}
+                />
             )}
         </div>
     );
