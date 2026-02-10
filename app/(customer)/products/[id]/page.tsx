@@ -349,6 +349,16 @@ export default function ProductDetailPage() {
                             </div>
                             <button
                                 onClick={async () => {
+                                    // Validation
+                                    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+                                        setToast({ message: t('product.selectSize') || 'Please select a size', type: 'error' });
+                                        return;
+                                    }
+                                    if (product.colors && product.colors.length > 0 && !selectedColor) {
+                                        setToast({ message: t('product.selectColor') || 'Please select a color', type: 'error' });
+                                        return;
+                                    }
+
                                     const { data: { user } } = await supabase.auth.getUser();
                                     if (!user) {
                                         setToast({ message: t('msg.loginRequired'), type: 'error' });

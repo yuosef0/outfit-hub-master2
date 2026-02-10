@@ -178,7 +178,10 @@ export default function ProfilePage() {
                         </button>
 
                         {/* My Reviews */}
-                        <button className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors last:border-0 group">
+                        <button
+                            onClick={() => router.push('/reviews')}
+                            className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors last:border-0 group"
+                        >
                             <div className="w-10 h-10 rounded-lg bg-amber-900/20 flex items-center justify-center text-amber-500 shrink-0">
                                 <span className="material-symbols-outlined">rate_review</span>
                             </div>
@@ -193,7 +196,10 @@ export default function ProfilePage() {
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-text-light-secondary ml-2">{t('profile.preferences')}</h3>
                     <div className="bg-surface-light rounded-xl overflow-hidden shadow-sm border border-border-light">
                         {/* Notifications */}
-                        <button className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group">
+                        <button
+                            onClick={() => router.push('/notifications')}
+                            className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group"
+                        >
                             <div className="w-10 h-10 rounded-lg bg-purple-900/20 flex items-center justify-center text-purple-500 shrink-0">
                                 <span className="material-symbols-outlined">notifications</span>
                             </div>
@@ -233,7 +239,10 @@ export default function ProfilePage() {
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-text-light-secondary ml-2">{t('profile.supportLegal')}</h3>
                     <div className="bg-surface-light rounded-xl overflow-hidden shadow-sm border border-border-light">
                         {/* Help & Support */}
-                        <button className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group">
+                        <button
+                            onClick={() => router.push('/contact')}
+                            className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group"
+                        >
                             <div className="w-10 h-10 rounded-lg bg-card-light flex items-center justify-center text-text-light-secondary shrink-0">
                                 <span className="material-symbols-outlined">help</span>
                             </div>
@@ -242,7 +251,10 @@ export default function ProfilePage() {
                         </button>
 
                         {/* Terms & Conditions */}
-                        <button className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group">
+                        <button
+                            onClick={() => router.push('/terms')}
+                            className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group"
+                        >
                             <div className="w-10 h-10 rounded-lg bg-card-light flex items-center justify-center text-text-light-secondary shrink-0">
                                 <span className="material-symbols-outlined">description</span>
                             </div>
@@ -251,7 +263,10 @@ export default function ProfilePage() {
                         </button>
 
                         {/* Privacy Policy */}
-                        <button className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group">
+                        <button
+                            onClick={() => router.push('/privacy')}
+                            className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors border-b border-border-light last:border-0 group"
+                        >
                             <div className="w-10 h-10 rounded-lg bg-card-light flex items-center justify-center text-text-light-secondary shrink-0">
                                 <span className="material-symbols-outlined">lock</span>
                             </div>
@@ -260,7 +275,10 @@ export default function ProfilePage() {
                         </button>
 
                         {/* About Outfit Hub */}
-                        <button className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors last:border-0 group">
+                        <button
+                            onClick={() => router.push('/about')}
+                            className="w-full flex items-center gap-4 p-4 hover:bg-card-light transition-colors last:border-0 group"
+                        >
                             <div className="w-10 h-10 rounded-lg bg-card-light flex items-center justify-center text-text-light-secondary shrink-0">
                                 <span className="material-symbols-outlined">info</span>
                             </div>
