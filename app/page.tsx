@@ -81,8 +81,10 @@ export default function HomePage() {
                 const { data: productsData } = await productsQuery;
 
                 if (productsData) setNewArrivals(productsData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
+            } catch (error: any) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error fetching data:', error);
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -167,7 +169,7 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                {/* Categories Section */}
+                // Categories Section
                 <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
                     Categories
                 </h3>
@@ -180,10 +182,16 @@ export default function HomePage() {
                                     href={`/categories/${category.name.toLowerCase()}`}
                                     className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4 hover:opacity-80 transition-opacity"
                                 >
-                                    <div
-                                        className="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex flex-col self-center w-full"
-                                        style={{ backgroundImage: `url("${category.image_url || 'https://via.placeholder.com/150'}")` }}
-                                    />
+                                    {category.image_url ? (
+                                        <div
+                                            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex flex-col self-center w-full"
+                                            style={{ backgroundImage: `url("${category.image_url}")` }}
+                                        />
+                                    ) : (
+                                        <div className="aspect-square rounded-full flex items-center justify-center bg-card-dark w-full">
+                                            <span className="material-symbols-outlined text-4xl text-text-dark-secondary">category</span>
+                                        </div>
+                                    )}
                                     <p className="text-text-dark-primary text-base font-medium leading-normal">
                                         {category.name}
                                     </p>
@@ -208,10 +216,16 @@ export default function HomePage() {
                                     href={`/stores/${store.id}`}
                                     className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40 hover:opacity-80 transition-opacity"
                                 >
-                                    <div
-                                        className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
-                                        style={{ backgroundImage: `url("${store.logo_url || 'https://via.placeholder.com/300x200'}")` }}
-                                    />
+                                    {store.logo_url ? (
+                                        <div
+                                            className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
+                                            style={{ backgroundImage: `url("${store.logo_url}")` }}
+                                        />
+                                    ) : (
+                                        <div className="w-full aspect-video rounded-xl flex items-center justify-center bg-card-dark">
+                                            <span className="material-symbols-outlined text-4xl text-text-dark-secondary">store</span>
+                                        </div>
+                                    )}
                                     <div>
                                         <p className="text-text-dark-primary text-base font-medium leading-normal">
                                             {store.name}
@@ -240,15 +254,19 @@ export default function HomePage() {
                                 href={`/products/${product.id}`}
                                 className="flex flex-col gap-3 pb-3 group relative"
                             >
-                                <div
-                                    className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl relative overflow-hidden"
-                                    style={{
-                                        backgroundImage: `url("${product.image_urls && product.image_urls.length > 0
-                                            ? product.image_urls[0]
-                                            : 'https://via.placeholder.com/300x400'
-                                            }")`,
-                                    }}
-                                >
+                                <div className="w-full aspect-[3/4] rounded-xl relative overflow-hidden bg-card-dark">
+                                    {product.image_urls && product.image_urls.length > 0 ? (
+                                        <div
+                                            className="w-full h-full bg-center bg-no-repeat bg-cover"
+                                            style={{
+                                                backgroundImage: `url("${product.image_urls[0]}")`,
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <span className="material-symbols-outlined text-4xl text-text-dark-secondary">image</span>
+                                        </div>
+                                    )}
                                     <div className="absolute top-2 right-2">
                                         <WishlistButton productId={product.id} className="!bg-card-dark" />
                                     </div>
