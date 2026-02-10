@@ -19,6 +19,8 @@ export default function EditProfilePage() {
     const [phone, setPhone] = useState('');
     const [governorate, setGovernorate] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const supabase = useMemo(
         () =>
@@ -60,6 +62,46 @@ export default function EditProfilePage() {
         fetchProfile();
     }, [supabase, router]);
 
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            setUploading(true);
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user || !event.target.files || event.target.files.length === 0) {
+                return;
+            }
+
+            const file = event.target.files[0];
+            const fileExt = file.name.split('.').pop();
+            const filePath = `${user.id}-${Math.random()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file);
+
+            if (uploadError) {
+                throw uploadError;
+            }
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            setAvatarUrl(publicUrl);
+            setToast({
+                message: language === 'ar' ? 'تم رفع الصورة بنجاح' : 'Image uploaded successfully',
+                type: 'success'
+            });
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            setToast({
+                message: language === 'ar' ? 'حدث خطأ أثناء رفع الصورة' : 'Error uploading image',
+                type: 'error'
+            });
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const handleSave = async () => {
         setIsSaving(true);
         try {
@@ -72,6 +114,7 @@ export default function EditProfilePage() {
                     full_name: fullName,
                     phone: phone,
                     governorate: governorate,
+                    avatar_url: avatarUrl,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', user.id);
@@ -159,9 +202,27 @@ export default function EditProfilePage() {
                                 </div>
                             )}
                         </div>
-                        <button className="text-primary font-semibold text-sm">
-                            {language === 'ar' ? 'تغيير الصورة' : 'Change Photo'}
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="text-primary font-semibold text-sm disabled:opacity-50"
+                        >
+                            {uploading ? (
+                                <span className="flex items-center gap-2">
+                                    <span className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                                    {language === 'ar' ? 'جاري الرفع...' : 'Uploading...'}
+                                </span>
+                            ) : (
+                                language === 'ar' ? 'تغيير الصورة' : 'Change Photo'
+                            )}
                         </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            accept="image/*"
+                            className="hidden"
+                        />
                     </div>
 
                     {/* Full Name */}
