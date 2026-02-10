@@ -433,10 +433,10 @@ export default function StoreProfilePage() {
                         {/* Rate Button */}
                         <button
                             onClick={handleRateClick}
-                            className="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-semibold shadow-sm transition-all active:scale-95 h-10 mb-2 bg-amber-500 hover:bg-amber-600 text-white ml-2"
+                            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold shadow-sm transition-all active:scale-95 h-9 mb-2 bg-primary hover:bg-primary/90 text-white ml-2"
                         >
-                            <span className="material-symbols-outlined text-[18px]">star</span>
-                            <span>{t('reviews.rate') || 'Rate'}</span>
+                            <span className="material-symbols-outlined text-[16px]">star</span>
+                            <span>{language === 'ar' ? 'تقييم' : 'Review'}</span>
                         </button>
                     </div>
                     <div className="flex flex-col gap-1">
