@@ -10,6 +10,9 @@ interface ReviewModalProps {
     storeId: string;
     storeName: string;
     orderId: string;
+    initialRating?: number;
+    initialComment?: string;
+    isEditing?: boolean;
     onSuccess: () => void;
 }
 
@@ -19,11 +22,14 @@ export default function ReviewModal({
     storeId,
     storeName,
     orderId,
+    initialRating = 5,
+    initialComment = '',
+    isEditing = false,
     onSuccess
 }: ReviewModalProps) {
     const { t } = useLanguage();
-    const [rating, setRating] = useState(5);
-    const [comment, setComment] = useState('');
+    const [rating, setRating] = useState(initialRating);
+    const [comment, setComment] = useState(initialComment);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const supabase = createBrowserClient(
@@ -37,15 +43,29 @@ export default function ReviewModal({
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { error } = await supabase
-                .from('store_reviews')
-                .insert({
-                    store_id: storeId,
-                    customer_id: user.id,
-                    order_id: orderId,
-                    rating: rating,
-                    comment: comment.trim() || null,
-                });
+            const reviewData = {
+                store_id: storeId,
+                customer_id: user.id,
+                order_id: orderId,
+                rating: rating,
+                comment: comment.trim() || null,
+            };
+
+            let error;
+
+            if (isEditing) {
+                const { error: updateError } = await supabase
+                    .from('store_reviews')
+                    .update(reviewData)
+                    .eq('order_id', orderId)
+                    .eq('customer_id', user.id);
+                error = updateError;
+            } else {
+                const { error: insertError } = await supabase
+                    .from('store_reviews')
+                    .insert(reviewData);
+                error = insertError;
+            }
 
             if (error) throw error;
             onSuccess();
@@ -64,7 +84,9 @@ export default function ReviewModal({
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
             <div className="relative bg-card-light rounded-2xl border border-border-light p-6 w-full max-w-md shadow-xl animate-scale-up">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-text-light-primary">{t('reviews.rateStore')}</h3>
+                    <h3 className="text-lg font-bold text-text-light-primary">
+                        {isEditing ? (t('reviews.editReview') || 'Edit Review') : t('reviews.rateStore')}
+                    </h3>
                     <button onClick={onClose} className="p-1 hover:bg-surface-light rounded-full transition-colors">
                         <span className="material-symbols-outlined text-text-light-secondary">close</span>
                     </button>

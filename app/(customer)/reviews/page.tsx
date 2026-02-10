@@ -6,12 +6,16 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { StoreReview } from '@/lib/types';
 import Link from 'next/link';
+import ReviewModal from '@/components/ReviewModal';
+import Toast from '@/components/Toast';
 
 export default function MyReviewsPage() {
     const router = useRouter();
     const { t, language } = useLanguage();
     const [reviews, setReviews] = useState<(StoreReview & { stores: { name: string; logo_url: string | null } })[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [editingReview, setEditingReview] = useState<(StoreReview & { stores: { name: string } }) | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     const supabase = useMemo(
         () =>
@@ -55,6 +59,11 @@ export default function MyReviewsPage() {
 
         fetchReviews();
     }, [supabase, router]);
+
+    // Refresh handler
+    const handleRefresh = () => {
+        window.location.reload();
+    };
 
     if (isLoading) {
         return (
@@ -125,6 +134,13 @@ export default function MyReviewsPage() {
                                         })}
                                     </p>
                                 </div>
+                                <button
+                                    onClick={() => setEditingReview(review)}
+                                    className="ml-auto p-2 bg-surface-light hover:bg-primary/10 rounded-full transition-colors text-text-light-secondary hover:text-primary"
+                                    title={t('common.edit') || 'Edit'}
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                                </button>
                             </div>
 
                             <div className="flex items-center gap-1 mb-2">
@@ -154,6 +170,33 @@ export default function MyReviewsPage() {
                     ))
                 )}
             </main>
+
+            {/* Edit Review Modal */}
+            {editingReview && (
+                <ReviewModal
+                    isOpen={!!editingReview}
+                    onClose={() => setEditingReview(null)}
+                    storeId={editingReview.store_id || ''}
+                    storeName={editingReview.stores?.name || ''}
+                    orderId={editingReview.order_id || ''}
+                    initialRating={editingReview.rating}
+                    initialComment={editingReview.comment || ''}
+                    isEditing={true}
+                    onSuccess={() => {
+                        setEditingReview(null);
+                        setToast({ message: t('reviews.successUpdated') || 'Review updated successfully', type: 'success' });
+                        handleRefresh();
+                    }}
+                />
+            )}
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 }
