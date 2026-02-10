@@ -79,6 +79,7 @@ export default function MerchantHeader() {
         { href: '/merchant/reviews', icon: 'star', labelKey: 'merchant.reviews' },
         { href: '/merchant/coupons', icon: 'local_offer', labelKey: 'merchant.coupons' },
         { href: '/merchant/settings', icon: 'settings', labelKey: 'merchant.settings' },
+        { href: '/merchant/social-media', icon: 'share', labelKey: 'merchant.socialMedia', labelAr: 'وسائل التواصل', labelEn: 'Social Media' },
     ];
 
     return (
@@ -201,7 +202,12 @@ export default function MerchantHeader() {
                             onClick={() => setMenuOpen(false)}
                         >
                             <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>{item.icon}</span>
-                            <span className="text-sm font-medium">{t(item.labelKey)}</span>
+                            <span className="font-medium">
+                                {language === 'ar'
+                                    ? (item.labelAr || t(item.labelKey))
+                                    : (item.labelEn || t(item.labelKey))
+                                }
+                            </span>
                         </Link>
                     ))}
 

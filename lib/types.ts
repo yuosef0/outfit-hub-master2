@@ -39,6 +39,10 @@ export interface Store {
     address: string;
     phone?: string;
     maps_link?: string;
+    facebook_link?: string;
+    instagram_link?: string;
+    tiktok_link?: string;
+    whatsapp_number?: string;
     category?: string;
     subscription_plan: string;
     is_active: boolean;

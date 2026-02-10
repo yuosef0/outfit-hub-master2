@@ -508,6 +508,52 @@ export default function StoreProfilePage() {
                             <span className="text-[10px] text-text-light-secondary">{t('store.openUntil')} 9 PM</span>
                         </div>
                     </div>
+
+                    {/* Social Media Links */}
+                    {store.facebook_link && (
+                        <a
+                            href={store.facebook_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-[#1877F2] hover:bg-[#1877F2] hover:text-white transition-colors shrink-0"
+                            title="Facebook"
+                        >
+                            <i className="fa-brands fa-facebook-f text-lg font-bold" style={{ fontFamily: 'sans-serif' }}>f</i>
+                        </a>
+                    )}
+                    {store.instagram_link && (
+                        <a
+                            href={store.instagram_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-pink-50 text-[#E4405F] hover:bg-[#E4405F] hover:text-white transition-colors shrink-0"
+                            title="Instagram"
+                        >
+                            <i className="fa-brands fa-instagram text-lg font-bold" style={{ fontFamily: 'sans-serif' }}>Ig</i>
+                        </a>
+                    )}
+                    {store.tiktok_link && (
+                        <a
+                            href={store.tiktok_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 text-black hover:bg-black hover:text-white transition-colors shrink-0"
+                            title="TikTok"
+                        >
+                            <span className="font-bold text-xs">Tk</span>
+                        </a>
+                    )}
+                    {store.whatsapp_number && (
+                        <a
+                            href={`https://wa.me/${store.whatsapp_number}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors shrink-0"
+                            title="WhatsApp"
+                        >
+                            <span className="material-symbols-outlined text-lg">chat</span>
+                        </a>
+                    )}
                 </div>
             </div>
 
