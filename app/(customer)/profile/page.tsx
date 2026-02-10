@@ -109,7 +109,7 @@ export default function ProfilePage() {
             {/* Profile Header */}
             <div className="px-4 pt-6 pb-6">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="relative group cursor-pointer">
+                    <div className="relative group cursor-pointer" onClick={() => router.push('/profile/edit')}>
                         {user.avatar_url ? (
                             <div
                                 className="w-28 h-28 rounded-full bg-cover bg-center border-4 border-card-light shadow-md"
