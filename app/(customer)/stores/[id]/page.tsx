@@ -48,7 +48,14 @@ export default function StoreProfilePage() {
         []
     );
 
-    const [reviewModalData, setReviewModalData] = useState<{ orderId: string; storeId: string; storeName: string } | null>(null);
+    const [reviewModalData, setReviewModalData] = useState<{
+        orderId: string;
+        storeId: string;
+        storeName: string;
+        initialRating?: number;
+        initialComment?: string;
+        isEditing?: boolean;
+    } | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
     const handleRateClick = async () => {
@@ -89,9 +96,34 @@ export default function StoreProfilePage() {
                     orderId: unreviewedOrder.id,
                     storeId: store.id,
                     storeName: store.name,
+                    isEditing: false
                 });
+            } else if (reviews && reviews.length > 0) {
+                // If all orders are reviewed, allow editing the most recent review
+                // We need to find the review corresponding to one of the orders
+                const latestReview = reviews[0]; // reviews are already fetched, but let's make sure we have the details
+
+                // We need to fetch full review details since we only selected order_id before
+                const { data: fullReview, error: fullReviewError } = await supabase
+                    .from('store_reviews')
+                    .select('*')
+                    .eq('order_id', latestReview.order_id)
+                    .single();
+
+                if (fullReviewError) throw fullReviewError;
+
+                if (fullReview) {
+                    setReviewModalData({
+                        orderId: fullReview.order_id!, // Non-null assertion safe because we queried by it
+                        storeId: store.id,
+                        storeName: store.name,
+                        initialRating: fullReview.rating,
+                        initialComment: fullReview.comment || '',
+                        isEditing: true
+                    });
+                }
             } else {
-                setToast({ message: t('reviews.allOrdersReviewed') || 'You have already reviewed all your orders from this store.', type: 'info' });
+                setToast({ message: t('reviews.noEligibleOrders') || 'You have not placed any orders from this store yet.', type: 'info' });
             }
 
         } catch (error) {
@@ -734,9 +766,12 @@ export default function StoreProfilePage() {
                     storeId={reviewModalData.storeId}
                     storeName={reviewModalData.storeName}
                     orderId={reviewModalData.orderId}
+                    initialRating={reviewModalData.initialRating}
+                    initialComment={reviewModalData.initialComment}
+                    isEditing={reviewModalData.isEditing}
                     onSuccess={() => {
                         setReviewModalData(null);
-                        setToast({ message: t('reviews.success') || 'Review submitted successfully', type: 'success' });
+                        setToast({ message: reviewModalData.isEditing ? (t('reviews.successUpdated') || 'Review updated successfully') : (t('reviews.success') || 'Review submitted successfully'), type: 'success' });
                         // Refresh reviews
                         window.location.reload();
                     }}
