@@ -399,7 +399,7 @@ export default function CouponsPage() {
             {/* Create Coupon Modal */}
             {showCreateModal && (
                 <div
-                    className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[200]"
                     onClick={() => setShowCreateModal(false)}
                 >
                     <div
