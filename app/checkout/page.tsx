@@ -264,6 +264,8 @@ export default function CheckoutPage() {
                         product_image: item.products.image_urls?.[0],
                         quantity: item.quantity,
                         price: item.products.price,
+                        size: item.size,
+                        color: item.color,
                     })),
                     notes,
                     expires_at: expiresAt.toISOString(),
