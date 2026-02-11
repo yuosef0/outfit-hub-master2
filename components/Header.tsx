@@ -8,7 +8,6 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { SearchModal } from '@/components/SearchModal';
 import { useCartUI } from '@/context/CartUIContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
-import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
 
 export default function Header() {
@@ -25,6 +24,7 @@ export default function Header() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const { user, updateGovernorate, fetchUser, loading } = useAuthStore();
+    const [governorates, setGovernorates] = useState<any[]>([]);
 
     // Local state for governorate to allow immediate UI updates while saving
     // Initialize with user's governorate if available
@@ -56,6 +56,25 @@ export default function Header() {
         // Ensure we have latest user data
         fetchUser();
     }, []);
+
+    // Fetch active governorates
+    useEffect(() => {
+        const fetchGovernorates = async () => {
+            try {
+                const { data } = await supabase
+                    .from('governorates')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name', { ascending: true });
+
+                setGovernorates(data || []);
+            } catch (error) {
+                console.error('Error fetching governorates:', error);
+            }
+        };
+
+        fetchGovernorates();
+    }, [supabase]);
 
     // Track auth state
     useEffect(() => {
@@ -212,7 +231,7 @@ export default function Header() {
                                     disabled={isUpdatingGov}
                                 >
                                     <option value="">{t('header.selectGovernorate')}</option>
-                                    {EGYPTIAN_GOVERNORATES.map((gov) => (
+                                    {governorates.map((gov) => (
                                         <option key={gov.code} value={gov.name}>
                                             {gov.name} - {gov.name_ar}
                                         </option>
