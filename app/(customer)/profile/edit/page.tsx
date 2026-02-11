@@ -3,23 +3,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
+import { useAuthStore } from '@/store/authStore';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
-import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
 import Toast from '@/components/Toast';
 
 export default function EditProfilePage() {
     const router = useRouter();
-    const { t, language } = useLanguage();
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const { language, t } = useLanguage();
+    const { user, fetchUser } = useAuthStore();
 
     // Form state
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
     const [governorate, setGovernorate] = useState('');
+    const [governorates, setGovernorates] = useState<any[]>([]);
     const [avatarUrl, setAvatarUrl] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const supabase = useMemo(
@@ -30,6 +32,25 @@ export default function EditProfilePage() {
             ),
         []
     );
+
+    // Fetch active governorates
+    useEffect(() => {
+        const fetchGovernorates = async () => {
+            try {
+                const { data } = await supabase
+                    .from('governorates')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name', { ascending: true });
+
+                setGovernorates(data || []);
+            } catch (error) {
+                console.error('Error fetching governorates:', error);
+            }
+        };
+
+        fetchGovernorates();
+    }, [supabase]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -266,7 +287,7 @@ export default function EditProfilePage() {
                             <option value="">
                                 {language === 'ar' ? 'اختر المحافظة' : 'Select Governorate'}
                             </option>
-                            {EGYPTIAN_GOVERNORATES.map((gov) => (
+                            {governorates.map((gov) => (
                                 <option key={gov.code} value={gov.code}>
                                     {language === 'ar' ? gov.name_ar : gov.name}
                                 </option>
