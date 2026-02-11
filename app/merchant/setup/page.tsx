@@ -56,6 +56,7 @@ export default function MerchantSetupPage() {
     const [categories, setCategories] = useState<{ id: string; name: string; name_ar: string }[]>([]);
 
     useEffect(() => {
+        checkUser();
         const fetchCategories = async () => {
             const { data } = await supabase
                 .from('categories')
@@ -212,38 +213,44 @@ export default function MerchantSetupPage() {
                 bannerUrl = publicUrl;
             }
 
-            const { error: storeError } = await supabase.from('stores').insert({
-                merchant_id: userId,
-                name: formData.name,
-                description: formData.description,
-                category: formData.category,
-                address: formData.address,
-                governorate: formData.governorate,
-                area: formData.area,
-                phone: formData.phone,
-                maps_link: formData.maps_link || null,
-                logo_url: logoUrl,
-                banner_url: bannerUrl,
-                is_active: false,
+            // Get auth token for API call
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) throw new Error('غير مسجل دخول');
+
+            // Create store via API (bypasses RLS)
+            const response = await fetch('/api/stores', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    description: formData.description,
+                    category: formData.category,
+                    address: formData.address,
+                    governorate: formData.governorate,
+                    area: formData.area,
+                    phone: formData.phone,
+                    maps_link: formData.maps_link || undefined,
+                    logo_url: logoUrl,
+                    banner_url: bannerUrl,
+                }),
             });
 
-            if (storeError) throw storeError;
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'حدث خطأ أثناء إنشاء المتجر');
 
             // Insert Store Subcategories
-            if (selectedSubcategories.length > 0) {
-                // Get the store ID first
-                const { data: storeData } = await supabase.from('stores').select('id').eq('merchant_id', userId).single();
+            if (selectedSubcategories.length > 0 && result.store?.id) {
+                const { error: subError } = await supabase
+                    .from('store_subcategories')
+                    .insert(selectedSubcategories.map(subId => ({
+                        store_id: result.store.id,
+                        subcategory_id: subId
+                    })));
 
-                if (storeData) {
-                    const { error: subError } = await supabase
-                        .from('store_subcategories')
-                        .insert(selectedSubcategories.map(subId => ({
-                            store_id: storeData.id,
-                            subcategory_id: subId
-                        })));
-
-                    if (subError) console.error('Error saving subcategories:', subError);
-                }
+                if (subError) console.error('Error saving subcategories:', subError);
             }
 
             setToast({ message: 'تم إرسال طلبك بنجاح!', type: 'success' });

@@ -7,9 +7,13 @@ const storeSchema = z.object({
   name: z.string().min(3),
   description: z.string().optional(),
   address: z.string().min(5),
-  maps_link: z.string().url().optional(),
+  maps_link: z.string().optional(),
   category: z.string(),
-  logo_url: z.string().url().optional(),
+  logo_url: z.string().optional(),
+  banner_url: z.string().optional().nullable(),
+  governorate: z.string().optional(),
+  area: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 // GET /api/stores - Get all stores
@@ -106,7 +110,16 @@ export async function POST(request: NextRequest) {
     const { data: store, error: storeError } = await supabaseServer
       .from('stores')
       .insert({
-        ...validatedData,
+        name: validatedData.name,
+        description: validatedData.description,
+        address: validatedData.address,
+        maps_link: validatedData.maps_link || null,
+        category: validatedData.category,
+        logo_url: validatedData.logo_url || null,
+        banner_url: validatedData.banner_url || null,
+        governorate: validatedData.governorate || null,
+        area: validatedData.area || null,
+        phone: validatedData.phone || null,
         merchant_id: user.id,
         subscription_plan: 'basic',
         is_active: false, // Admin needs to activate
