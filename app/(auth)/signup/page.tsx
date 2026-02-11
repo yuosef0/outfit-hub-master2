@@ -22,6 +22,8 @@ export default function SignUpPage() {
     const [error, setError] = useState<string | null>(null);
     const [role, setRole] = useState<'customer' | 'merchant'>('customer');
     const [governorate, setGovernorate] = useState('');
+    const [district, setDistrict] = useState('');
+    const [districts, setDistricts] = useState<any[]>([]);
 
     const supabase = useMemo(
         () =>
@@ -31,6 +33,19 @@ export default function SignUpPage() {
             ),
         []
     );
+
+    // Fetch districts from database
+    React.useEffect(() => {
+        const fetchDistricts = async () => {
+            const { data } = await supabase
+                .from('districts')
+                .select('*')
+                .eq('is_active', true)
+                .order('name', { ascending: true });
+            if (data) setDistricts(data);
+        };
+        fetchDistricts();
+    }, [supabase]);
 
     const handleEmailSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,6 +125,7 @@ export default function SignUpPage() {
                         full_name: fullName,
                         phone: phone ? `+20${phone}` : null,
                         governorate: role === 'customer' ? governorate : null,
+                        district: role === 'customer' && district ? district : null,
                         updated_at: new Date().toISOString()
                     }, {
                         onConflict: 'id'
@@ -283,26 +299,53 @@ export default function SignUpPage() {
 
                     {/* Governorate (customers only) */}
                     {role === 'customer' && (
-                        <div className="flex w-full flex-wrap items-end gap-4">
-                            <label className="flex flex-col w-full flex-1">
-                                <p className="text-text-light-primary text-base font-medium leading-normal pb-2">
-                                    {t('auth.governorate')}
-                                </p>
-                                <select
-                                    className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary focus:outline-0 focus:ring-0 border border-border-light bg-background-light focus:border-primary h-14 placeholder:text-text-light-secondary p-[15px] text-base font-normal leading-normal"
-                                    value={governorate}
-                                    onChange={(e) => setGovernorate(e.target.value)}
-                                    required
-                                >
-                                    <option value="">{t('auth.selectGovernorate')}</option>
-                                    {EGYPTIAN_GOVERNORATES.map((gov) => (
-                                        <option key={gov.code} value={gov.name}>
-                                            {gov.name} - {gov.name_ar}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-                        </div>
+                        <>
+                            <div className="flex w-full flex-wrap items-end gap-4">
+                                <label className="flex flex-col w-full flex-1">
+                                    <p className="text-text-light-primary text-base font-medium leading-normal pb-2">
+                                        {t('auth.governorate')}
+                                    </p>
+                                    <select
+                                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary focus:outline-0 focus:ring-0 border border-border-light bg-background-light focus:border-primary h-14 placeholder:text-text-light-secondary p-[15px] text-base font-normal leading-normal"
+                                        value={governorate}
+                                        onChange={(e) => { setGovernorate(e.target.value); setDistrict(''); }}
+                                        required
+                                    >
+                                        <option value="">{t('auth.selectGovernorate')}</option>
+                                        {EGYPTIAN_GOVERNORATES.map((gov) => (
+                                            <option key={gov.code} value={gov.code}>
+                                                {gov.name_ar}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                            </div>
+
+                            {/* District (customers only, shown after governorate) */}
+                            {governorate && (
+                                <div className="flex w-full flex-wrap items-end gap-4">
+                                    <label className="flex flex-col w-full flex-1">
+                                        <p className="text-text-light-primary text-base font-medium leading-normal pb-2">
+                                            المركز
+                                        </p>
+                                        <select
+                                            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary focus:outline-0 focus:ring-0 border border-border-light bg-background-light focus:border-primary h-14 placeholder:text-text-light-secondary p-[15px] text-base font-normal leading-normal"
+                                            value={district}
+                                            onChange={(e) => setDistrict(e.target.value)}
+                                        >
+                                            <option value="">اختر المركز (اختياري)</option>
+                                            {districts
+                                                .filter(d => d.governorate_code === governorate)
+                                                .map((dist) => (
+                                                    <option key={dist.id} value={dist.name}>
+                                                        {dist.name_ar}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    </label>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {/* Password */}

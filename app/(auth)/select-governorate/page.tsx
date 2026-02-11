@@ -8,6 +8,8 @@ import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
 export default function SelectGovernoratePage() {
  const router = useRouter();
  const [governorate, setGovernorate] = useState('');
+ const [district, setDistrict] = useState('');
+ const [districts, setDistricts] = useState<any[]>([]);
  const [isLoading, setIsLoading] = useState(false);
  const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +33,19 @@ export default function SelectGovernoratePage() {
  }
  }, [router]);
 
+ // Fetch districts from database
+ useEffect(() => {
+ const fetchDistricts = async () => {
+ const { data } = await supabase
+ .from('districts')
+ .select('*')
+ .eq('is_active', true)
+ .order('name', { ascending: true });
+ if (data) setDistricts(data);
+ };
+ fetchDistricts();
+ }, [supabase]);
+
  const handleSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
 
@@ -50,10 +65,10 @@ export default function SelectGovernoratePage() {
  return;
  }
 
- // Update user's governorate
+ // Update user's governorate and district
  const { error: updateError } = await supabase
  .from('users')
- .update({ governorate })
+ .update({ governorate, district: district || null })
  .eq('id', user.id);
 
  if (updateError) throw updateError;
@@ -97,25 +112,52 @@ export default function SelectGovernoratePage() {
  <div className="flex w-full flex-wrap items-end gap-4 pb-4">
  <label className="flex flex-col w-full flex-1">
  <p className="text-text-light-primary text-base font-medium leading-normal pb-2">
- Governorate (المحافظة)
+ المحافظة
  </p>
  <div className="flex w-full flex-1 items-stretch rounded-lg">
  <select
  className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light bg-background-light focus:border-primary h-14 placeholder:text-[#4c669a] p-[15px] text-base font-normal leading-normal"
  value={governorate}
- onChange={(e) => setGovernorate(e.target.value)}
+ onChange={(e) => { setGovernorate(e.target.value); setDistrict(''); }}
  required
  >
- <option value="">Select your governorate</option>
+ <option value="">اختر المحافظة</option>
  {EGYPTIAN_GOVERNORATES.map((gov) => (
- <option key={gov.code} value={gov.name}>
- {gov.name} - {gov.name_ar}
+ <option key={gov.code} value={gov.code}>
+ {gov.name_ar}
  </option>
  ))}
  </select>
  </div>
  </label>
  </div>
+
+ {/* District Dropdown */}
+ {governorate && (
+ <div className="flex w-full flex-wrap items-end gap-4 pb-4">
+ <label className="flex flex-col w-full flex-1">
+ <p className="text-text-light-primary text-base font-medium leading-normal pb-2">
+ المركز
+ </p>
+ <div className="flex w-full flex-1 items-stretch rounded-lg">
+ <select
+ className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light bg-background-light focus:border-primary h-14 placeholder:text-[#4c669a] p-[15px] text-base font-normal leading-normal"
+ value={district}
+ onChange={(e) => setDistrict(e.target.value)}
+ >
+ <option value="">اختر المركز (اختياري)</option>
+ {districts
+ .filter(d => d.governorate_code === governorate)
+ .map((dist) => (
+ <option key={dist.id} value={dist.name}>
+ {dist.name_ar}
+ </option>
+ ))}
+ </select>
+ </div>
+ </label>
+ </div>
+ )}
 
  {/* Error Message */}
  {error && (
@@ -130,7 +172,7 @@ export default function SelectGovernoratePage() {
  disabled={isLoading}
  className="flex items-center justify-center text-center font-medium text-base h-14 mt-8 w-full rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
  >
- {isLoading ? 'Saving...' : 'Continue'}
+ {isLoading ? 'جاري الحفظ...' : 'متابعة'}
  </button>
  </form>
  </div>
