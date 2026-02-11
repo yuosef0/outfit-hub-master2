@@ -51,7 +51,8 @@ export default function AdminStoresPage() {
 
     const getGovernorateName = (code: string | null) => {
         if (!code) return null;
-        const gov = governorates.find(g => g.code === code);
+        // Try matching by code first (new format), then by English name (old format)
+        const gov = governorates.find(g => g.code === code) || governorates.find(g => g.name === code);
         return gov?.name_ar || code;
     };
 

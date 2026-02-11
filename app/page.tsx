@@ -42,7 +42,7 @@ export default function HomePage() {
 
                 if (categoriesData) setCategories(categoriesData);
 
-                // Fetch featured stores (first 4) - Filtered by Governorate
+                // Fetch featured stores (first 4) - Filtered by Governorate & District
                 let storesQuery = supabase
                     .from('stores')
                     .select('*')
@@ -53,13 +53,16 @@ export default function HomePage() {
 
                 if (user?.governorate) {
                     storesQuery = storesQuery.eq('governorate', user.governorate);
+                    if (user?.district) {
+                        storesQuery = storesQuery.eq('district', user.district);
+                    }
                 }
 
                 const { data: storesData } = await storesQuery;
 
                 if (storesData) setFeaturedStores(storesData);
 
-                // Fetch new arrivals (latest 6 products with store info) - Filtered by Store Governorate
+                // Fetch new arrivals (latest 6 products with store info) - Filtered by Store Governorate & District
                 let productsQuery = supabase
                     .from('products')
                     .select(`
@@ -68,7 +71,8 @@ export default function HomePage() {
                             id,
                             name,
                             logo_url,
-                            governorate
+                            governorate,
+                            district
                         )
                     `)
                     .eq('is_active', true)
@@ -77,6 +81,9 @@ export default function HomePage() {
 
                 if (user?.governorate) {
                     productsQuery = productsQuery.eq('stores.governorate', user.governorate);
+                    if (user?.district) {
+                        productsQuery = productsQuery.eq('stores.district', user.district);
+                    }
                 }
 
                 const { data: productsData } = await productsQuery;
@@ -92,7 +99,7 @@ export default function HomePage() {
         };
 
         fetchData();
-    }, [user?.governorate]);
+    }, [user?.governorate, user?.district]);
 
     // Auto-rotate slider every 3 seconds
     useEffect(() => {

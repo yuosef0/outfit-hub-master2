@@ -68,9 +68,12 @@ export default function CategoryDetailPage() {
                         .or(`category.ilike.%${categoryData.name}%,category.ilike.%${categoryData.name_ar}%`)
                         .order('created_at', { ascending: false });
 
-                    // Filter by governorate if user is logged in and has one selected
+                    // Filter by governorate and district if user is logged in and has them selected
                     if (user?.governorate) {
                         storesQuery = storesQuery.eq('governorate', user.governorate);
+                        if (user?.district) {
+                            storesQuery = storesQuery.eq('district', user.district);
+                        }
                     }
 
                     const { data: storesData, error } = await storesQuery;
@@ -91,7 +94,7 @@ export default function CategoryDetailPage() {
         if (slug) {
             fetchData();
         }
-    }, [slug, supabase, user?.governorate]);
+    }, [slug, supabase, user?.governorate, user?.district]);
 
     // Filter stores by search query AND subcategory
     useEffect(() => {
