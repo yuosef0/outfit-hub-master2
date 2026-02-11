@@ -11,6 +11,7 @@ DECLARE
     available_stock int;
     prod_name text;
     variant_id uuid;
+    has_variants boolean;
 BEGIN
     -- Loop through items in the JSON array
     FOR item IN SELECT * FROM jsonb_array_elements(NEW.items)
@@ -20,43 +21,58 @@ BEGIN
         item_size := item->>'size';
         item_color := item->>'color';
         
-        -- Get product name
-        SELECT name INTO prod_name FROM products WHERE id = prod_id;
+        -- Get product name and check if it has variants
+        SELECT name, EXISTS(SELECT 1 FROM product_variants WHERE product_id = prod_id) 
+        INTO prod_name, has_variants 
+        FROM products 
+        WHERE id = prod_id;
         
         IF prod_name IS NULL THEN
-            RAISE EXCEPTION 'Product with ID % not found', prod_id;
+            RAISE EXCEPTION 'المنتج غير موجود (ID: %)', prod_id;
         END IF;
         
-        -- Check if this is a variant-based product (has size or color)
-        IF item_size IS NOT NULL OR item_color IS NOT NULL THEN
-            -- Check variant stock
+        -- If product has variants, check variant stock
+        IF has_variants THEN
+            -- Find matching variant
+            -- Match both size and color, handling NULL values properly
             SELECT id, stock_quantity INTO variant_id, available_stock
             FROM product_variants
             WHERE product_id = prod_id
-              AND (size = item_size OR (size IS NULL AND item_size IS NULL))
-              AND (color = item_color OR (color IS NULL AND item_color IS NULL));
+              AND (
+                  (size IS NOT DISTINCT FROM item_size)
+                  AND (color IS NOT DISTINCT FROM item_color)
+              );
             
             IF variant_id IS NULL THEN
-                RAISE EXCEPTION 'عذراً، المقاس/اللون المطلوب غير متوفر للمنتج "%"', prod_name;
+                RAISE EXCEPTION 'عذراً، المقاس "%s" واللون "%s" غير متوفر للمنتج "%s"', 
+                    COALESCE(item_size, 'غير محدد'), 
+                    COALESCE(item_color, 'غير محدد'), 
+                    prod_name;
             END IF;
             
             IF available_stock < qty THEN
-                RAISE EXCEPTION 'عذراً، المخزون غير كافٍ للمنتج "%" (المقاس: %, اللون: %). المتوفر: %، المطلوب: %', 
-                    prod_name, COALESCE(item_size, 'غير محدد'), COALESCE(item_color, 'غير محدد'), available_stock, qty;
+                RAISE EXCEPTION 'عذراً، المخزون غير كافٍ للمنتج "%s" (المقاس: %s، اللون: %s). المتوفر: %s، المطلوب: %s', 
+                    prod_name, 
+                    COALESCE(item_size, 'غير محدد'), 
+                    COALESCE(item_color, 'غير محدد'), 
+                    available_stock, 
+                    qty;
             END IF;
             
             -- Deduct from variant stock
             UPDATE product_variants
             SET stock_quantity = stock_quantity - qty
             WHERE id = variant_id;
+            
         ELSE
-            -- Check product-level stock (no variants)
+            -- No variants, check product-level stock
             SELECT stock_quantity INTO available_stock
             FROM products
             WHERE id = prod_id;
 
             IF available_stock < qty THEN
-                RAISE EXCEPTION 'عذراً، المخزون غير كافٍ للمنتج "%". المتوفر: %، المطلوب: %', prod_name, available_stock, qty;
+                RAISE EXCEPTION 'عذراً، المخزون غير كافٍ للمنتج "%s". المتوفر: %s، المطلوب: %s', 
+                    prod_name, available_stock, qty;
             END IF;
 
             -- Deduct from product stock

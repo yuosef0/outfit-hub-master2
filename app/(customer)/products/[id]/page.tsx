@@ -35,6 +35,7 @@ export default function ProductDetailPage() {
 
     const [isInCart, setIsInCart] = useState(false);
     const [cartItemId, setCartItemId] = useState<string | null>(null);
+    const [availableStock, setAvailableStock] = useState<number>(0);
 
     // Check if product is in cart
     const checkCartStatus = async () => {
@@ -111,6 +112,37 @@ export default function ProductDetailPage() {
             fetchProduct();
         }
     }, [productId, supabase]);
+
+    // Fetch available stock for selected variant
+    useEffect(() => {
+        const fetchAvailableStock = async () => {
+            if (!product) return;
+
+            // Check if product has variants
+            const { data: variants } = await supabase
+                .from('product_variants')
+                .select('stock_quantity')
+                .eq('product_id', product.id);
+
+            if (variants && variants.length > 0) {
+                // Product has variants, find matching one
+                const { data: variant } = await supabase
+                    .from('product_variants')
+                    .select('stock_quantity')
+                    .eq('product_id', product.id)
+                    .eq('size', selectedSize || null)
+                    .eq('color', selectedColor || null)
+                    .maybeSingle();
+
+                setAvailableStock(variant?.stock_quantity || 0);
+            } else {
+                // No variants, use product-level stock
+                setAvailableStock(product.stock_quantity || 0);
+            }
+        };
+
+        fetchAvailableStock();
+    }, [product, selectedSize, selectedColor]);
 
     // Check cart status when product changes
     useEffect(() => {
@@ -330,8 +362,8 @@ export default function ProductDetailPage() {
                                 </button>
                                 <span className="w-10 text-center text-sm font-semibold text-text-light-primary">{quantity}</span>
                                 <button
-                                    onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
-                                    disabled={quantity >= product.stock_quantity}
+                                    onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
+                                    disabled={quantity >= availableStock}
                                     className="w-9 h-full flex items-center justify-center rounded-md bg-card-light shadow-sm text-text-light-primary hover:bg-card-light transition-all active:scale-95 disabled:opacity-50"
                                 >
                                     <span className="material-symbols-outlined text-lg">add</span>
