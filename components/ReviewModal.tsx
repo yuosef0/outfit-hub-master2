@@ -136,49 +136,6 @@ export default function ReviewModal({
                         {t('reviews.submit')}
                     </button>
                 </div>
-
-                <p className="text-sm text-text-light-secondary mb-4">{storeName}</p>
-
-                {/* Star Rating */}
-                <div className="mb-4">
-                    <p className="text-sm font-medium text-text-light-primary mb-2">{t('reviews.yourRating')}</p>
-                    <div className="flex items-center gap-2">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                                key={star}
-                                type="button"
-                                onClick={() => setRating(star)}
-                                className="transition-transform hover:scale-110 focus:outline-none"
-                            >
-                                <span className={`material-symbols-outlined text-[32px] ${star <= rating ? 'text-amber-500 filled fill' : 'text-border-light'}`}>
-                                    star
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Comment */}
-                <div className="mb-5">
-                    <p className="text-sm font-medium text-text-light-primary mb-2">{t('reviews.yourComment')}</p>
-                    <textarea
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        rows={3}
-                        className="w-full px-3 py-2 rounded-lg border border-border-light bg-background-light text-text-light-primary text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-                        placeholder={t('reviews.writeReview')}
-                    />
-                </div>
-
-                {/* Submit */}
-                <button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                    {isSubmitting && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                    {t('reviews.submit')}
-                </button>
             </div>
         </div>
     );

@@ -190,16 +190,24 @@ export default function MerchantSettingsPage() {
         setTogglingVisibility(true);
         try {
             const newVisible = !isVisible;
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('stores')
                 .update({ is_visible: newVisible })
-                .eq('id', store.id);
+                .eq('id', store.id)
+                .eq('merchant_id', (await supabase.auth.getUser()).data.user?.id)
+                .select('is_visible')
+                .single();
 
             if (error) throw error;
 
-            setIsVisible(newVisible);
+            if (!data) {
+                throw new Error('لم يتم تحديث حالة الظهور');
+            }
+
+            setIsVisible(data.is_visible);
+            setStore(prev => prev ? { ...prev, is_visible: data.is_visible } : null);
             setToast({
-                message: newVisible ? 'تم إظهار المتجر للعملاء' : 'تم إخفاء المتجر عن العملاء',
+                message: data.is_visible ? 'تم إظهار المتجر للعملاء' : 'تم إخفاء المتجر عن العملاء',
                 type: 'success'
             });
         } catch (error) {
@@ -315,6 +323,7 @@ export default function MerchantSettingsPage() {
                     maps_link: formData.maps_link.trim(),
                     logo_url: logoUrl,
                     banner_url: bannerUrl,
+                    is_visible: isVisible,
                 })
                 .eq('id', store!.id);
 

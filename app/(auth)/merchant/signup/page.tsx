@@ -33,6 +33,38 @@ export default function MerchantSignupPage() {
  setLoading(true);
  setError('');
 
+ // Phone validation: must be exactly 11 digits
+ if (!/^\d{11}$/.test(formData.phone)) {
+ setError('رقم الموبايل لازم يكون 11 رقم');
+ setLoading(false);
+ return;
+ }
+
+ // Password validation
+ if (formData.password.length < 8) {
+ setError('كلمة السر لازم تكون 8 حروف على الأقل');
+ setLoading(false);
+ return;
+ }
+
+ if (!/[A-Z]/.test(formData.password)) {
+ setError('كلمة السر لازم تحتوي على حرف كبير (A-Z)');
+ setLoading(false);
+ return;
+ }
+
+ if (!/\d/.test(formData.password)) {
+ setError('كلمة السر لازم تحتوي على رقم (0-9)');
+ setLoading(false);
+ return;
+ }
+
+ if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(formData.password)) {
+ setError('كلمة السر لازم تحتوي على رمز (!@#$%^&*)');
+ setLoading(false);
+ return;
+ }
+
  try {
  // Sign up the user
  const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -159,10 +191,13 @@ export default function MerchantSignupPage() {
  value={formData.password}
  onChange={handleChange}
  required
- minLength={6}
+ minLength={8}
  className="w-full px-4 py-3 rounded-lg border border-border-light bg-card-light text-text-light-primary focus:ring-2 focus:ring-primary focus:border-transparent"
  placeholder="••••••••"
  />
+ <p className="text-xs text-text-light-secondary mt-1">
+ كلمة السر لازم تكون 8 حروف على الأقل وتحتوي على حرف كبير ورقم ورمز
+ </p>
  </div>
 
  <div>
@@ -173,11 +208,18 @@ export default function MerchantSignupPage() {
  type="tel"
  name="phone"
  value={formData.phone}
- onChange={handleChange}
+ onChange={(e) => {
+ const val = e.target.value.replace(/\D/g, '');
+ if (val.length <= 11) setFormData({ ...formData, phone: val });
+ }}
  required
+ maxLength={11}
  className="w-full px-4 py-3 rounded-lg border border-border-light bg-card-light text-text-light-primary focus:ring-2 focus:ring-primary focus:border-transparent"
  placeholder="01012345678"
  />
+ <p className="text-xs text-text-light-secondary mt-1">
+ رقم الموبايل لازم يكون 11 رقم
+ </p>
  </div>
 
  <button

@@ -2,12 +2,18 @@ import { z } from 'zod';
 
 export const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6)
+  password: z.string().min(8)
 });
 
 export const signupSchema = loginSchema.extend({
   full_name: z.string().min(2),
-  role: z.enum(['customer', 'merchant']).default('customer')
+  phone: z.string().regex(/^\d{11}$/, 'رقم الهاتف لازم يكون 11 رقم').optional(),
+  role: z.enum(['customer', 'merchant']).default('customer'),
+  password: z.string()
+    .min(8, 'كلمة السر لازم تكون 8 حروف على الأقل')
+    .regex(/[A-Z]/, 'كلمة السر لازم تحتوي على حرف كبير')
+    .regex(/\d/, 'كلمة السر لازم تحتوي على رقم')
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/, 'كلمة السر لازم تحتوي على رمز'),
 });
 
 export const productSchema = z.object({

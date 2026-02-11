@@ -59,7 +59,11 @@ export default function StoreProfilePage() {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
     const handleRateClick = async () => {
-        if (!currentUserId || !store) return;
+        if (!store) return;
+        if (!currentUserId) {
+            router.push('/login?redirect=/stores/' + storeId);
+            return;
+        }
 
         try {
             // 1. Get completed orders for this store

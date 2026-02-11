@@ -40,18 +40,40 @@ export default function SignUpPage() {
             return;
         }
 
-        if (password !== confirmPassword) {
-            setError('Passwords do not match');
+        // Phone validation: must be exactly 11 digits
+        if (phone && !/^\d{11}$/.test(phone)) {
+            setError('رقم الهاتف لازم يكون 11 رقم');
             return;
         }
 
-        if (password.length < 8 || !/\d/.test(password)) {
-            setError('Password must be 8+ characters and contain at least 1 number');
+        if (password !== confirmPassword) {
+            setError('كلمة السر مش متطابقة');
+            return;
+        }
+
+        // Password validation: must contain uppercase, number, and symbol
+        if (password.length < 8) {
+            setError('كلمة السر لازم تكون 8 حروف على الأقل');
+            return;
+        }
+
+        if (!/[A-Z]/.test(password)) {
+            setError('كلمة السر لازم تحتوي على حرف كبير (A-Z)');
+            return;
+        }
+
+        if (!/\d/.test(password)) {
+            setError('كلمة السر لازم تحتوي على رقم (0-9)');
+            return;
+        }
+
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password)) {
+            setError('كلمة السر لازم تحتوي على رمز (!@#$%^&*)');
             return;
         }
 
         if (role === 'customer' && !governorate) {
-            setError('Please select your governorate');
+            setError('برجاء اختيار المحافظة');
             return;
         }
 
@@ -249,7 +271,11 @@ export default function SignUpPage() {
                                     placeholder={t('auth.enterPhone')}
                                     type="tel"
                                     value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        if (val.length <= 11) setPhone(val);
+                                    }}
+                                    maxLength={11}
                                 />
                             </div>
                         </label>
@@ -305,7 +331,7 @@ export default function SignUpPage() {
                                 </button>
                             </div>
                             <p className="text-xs text-text-light-secondary mt-2">
-                                {t('auth.passwordRequirements')}
+                                كلمة السر لازم تكون 8 حروف على الأقل وتحتوي على حرف كبير ورقم ورمز
                             </p>
                         </label>
                     </div>
