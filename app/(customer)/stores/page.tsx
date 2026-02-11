@@ -20,10 +20,6 @@ function DiscoverStoresContent() {
     const [filteredStores, setFilteredStores] = useState<Store[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [sortBy, setSortBy] = useState<'name' | 'newest'>('newest');
-    const [governorates, setGovernorates] = useState<any[]>([]);
-    const [districts, setDistricts] = useState<District[]>([]);
-    const [selectedGovernorate, setSelectedGovernorate] = useState<string>('');
-    const [selectedDistrict, setSelectedDistrict] = useState<string>('');
 
     const supabase = useMemo(
         () =>
@@ -41,31 +37,7 @@ function DiscoverStoresContent() {
         fetchUser();
     }, []);
 
-    // Fetch governorates and districts
-    useEffect(() => {
-        const fetchFilters = async () => {
-            try {
-                const { data: govData } = await supabase
-                    .from('governorates')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('name', { ascending: true });
 
-                const { data: distData } = await supabase
-                    .from('districts')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('name', { ascending: true });
-
-                setGovernorates(govData || []);
-                setDistricts(distData || []);
-            } catch (error) {
-                console.error('Error fetching filters:', error);
-            }
-        };
-
-        fetchFilters();
-    }, [supabase]);
 
     // Fetch all stores
     useEffect(() => {
@@ -104,23 +76,20 @@ function DiscoverStoresContent() {
     // Get unique categories from stores
     const categories = ['All', ...Array.from(new Set(stores.map(store => store.category).filter(Boolean)))];
 
-    // Get districts for selected governorate
-    const availableDistricts = selectedGovernorate
-        ? districts.filter(d => d.governorate_code === selectedGovernorate)
-        : [];
 
-    // Filter and sort stores
+
+    // Filter and sort stores based on user's location from sidebar
     useEffect(() => {
         let filtered = [...stores];
 
-        // Filter by governorate
-        if (selectedGovernorate) {
-            filtered = filtered.filter(store => store.governorate === selectedGovernorate);
-        }
+        // Filter by user's governorate from sidebar selection
+        if (user?.governorate) {
+            filtered = filtered.filter(store => store.governorate === user.governorate);
 
-        // Filter by district
-        if (selectedDistrict) {
-            filtered = filtered.filter(store => store.district === selectedDistrict);
+            // Further filter by district if user has selected one
+            if (user?.district) {
+                filtered = filtered.filter(store => store.district === user.district);
+            }
         }
 
         // Filter by category
@@ -146,7 +115,7 @@ function DiscoverStoresContent() {
         }
 
         setFilteredStores(filtered);
-    }, [activeCategory, searchQuery, sortBy, stores, selectedGovernorate, selectedDistrict]);
+    }, [activeCategory, searchQuery, sortBy, stores, user?.governorate, user?.district]);
 
     if (isLoading) {
         return (
@@ -178,38 +147,6 @@ function DiscoverStoresContent() {
                         />
                     </div>
 
-                    {/* Governorate and District Filters */}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                        <select
-                            value={selectedGovernorate}
-                            onChange={(e) => {
-                                setSelectedGovernorate(e.target.value);
-                                setSelectedDistrict(''); // Reset district when governorate changes
-                            }}
-                            className="px-3 py-2 rounded-lg bg-card-light border border-border-light text-text-light-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        >
-                            <option value="">كل المحافظات</option>
-                            {governorates.map((gov) => (
-                                <option key={gov.code} value={gov.code}>
-                                    {gov.name_ar}
-                                </option>
-                            ))}
-                        </select>
-
-                        <select
-                            value={selectedDistrict}
-                            onChange={(e) => setSelectedDistrict(e.target.value)}
-                            disabled={!selectedGovernorate}
-                            className="px-3 py-2 rounded-lg bg-card-light border border-border-light text-text-light-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <option value="">كل المراكز</option>
-                            {availableDistricts.map((dist) => (
-                                <option key={dist.id} value={dist.name}>
-                                    {dist.name_ar}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
                 </div>
 
                 {/* Filters & Sort */}
