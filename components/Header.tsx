@@ -37,7 +37,10 @@ export default function Header() {
         if (user?.governorate) {
             setLocalGovernorate(user.governorate);
         }
-    }, [user?.governorate]);
+        if (user?.district) {
+            setSelectedDistrict(user.district);
+        }
+    }, [user?.governorate, user?.district]);
 
     const supabase = useMemo(
         () =>
@@ -93,15 +96,28 @@ export default function Header() {
     // Handle governorate change
     const handleGovernorateChange = async (newGov: string) => {
         setLocalGovernorate(newGov); // Immediate UI update
+        setSelectedDistrict(''); // Reset district
         setIsUpdatingGov(true);
         try {
-            await updateGovernorate(newGov);
+            await updateGovernorate(newGov, ''); // Clear district when governorate changes
         } catch (error) {
             console.error('Error updating governorate:', error);
             // Revert if error (optional, but good UX)
             if (user?.governorate) setLocalGovernorate(user.governorate);
         } finally {
             setIsUpdatingGov(false);
+        }
+    };
+
+    // Handle district change
+    const handleDistrictChange = async (newDistrict: string) => {
+        setSelectedDistrict(newDistrict); // Immediate UI update
+        try {
+            await updateGovernorate(localGovernorate, newDistrict);
+        } catch (error) {
+            console.error('Error updating district:', error);
+            // Revert if error
+            if (user?.district) setSelectedDistrict(user.district);
         }
     };
 
@@ -259,7 +275,7 @@ export default function Header() {
                                     <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>place</span>
                                     <select
                                         value={selectedDistrict}
-                                        onChange={(e) => setSelectedDistrict(e.target.value)}
+                                        onChange={(e) => handleDistrictChange(e.target.value)}
                                         className="bg-transparent border-none text-text-light-secondary text-sm focus:outline-none focus:ring-0 cursor-pointer p-0 pr-5 appearance-none"
                                         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center' }}
                                     >

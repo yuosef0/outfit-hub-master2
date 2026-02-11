@@ -80,6 +80,7 @@ export default function EditProfilePage() {
                     setFullName(data.full_name || '');
                     setPhone(data.phone || '');
                     setGovernorate(data.governorate || '');
+                    setDistrict(data.district || '');
                     setAvatarUrl(data.avatar_url || '');
                 }
             } catch (error) {
@@ -144,6 +145,7 @@ export default function EditProfilePage() {
                     full_name: fullName,
                     phone: phone,
                     governorate: governorate,
+                    district: district || null,
                     avatar_url: avatarUrl,
                     updated_at: new Date().toISOString()
                 })

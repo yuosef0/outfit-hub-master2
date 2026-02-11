@@ -9,6 +9,7 @@ interface User {
   role: string;
   avatar_url?: string;
   governorate?: string | null;
+  district?: string | null;
 }
 
 interface AuthState {
@@ -25,7 +26,7 @@ interface AuthState {
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
   setUser: (user: User | null) => void;
-  updateGovernorate: (governorate: string) => Promise<void>;
+  updateGovernorate: (governorate: string, district?: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -156,17 +157,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user });
   },
 
-  updateGovernorate: async (governorate: string) => {
+  updateGovernorate: async (governorate: string, district?: string) => {
     const { user } = get();
     if (!user) return;
 
     // Optimistic update
-    set({ user: { ...user, governorate } });
+    set({ user: { ...user, governorate, district: district || null } });
 
     try {
       const { error } = await supabase
         .from('users')
-        .update({ governorate })
+        .update({ governorate, district: district || null })
         .eq('id', user.id);
 
       if (error) throw error;
