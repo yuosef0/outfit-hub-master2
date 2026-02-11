@@ -310,6 +310,7 @@ export default function MerchantSettingsPage() {
                     category: formData.category,
                     address: formData.address.trim(),
                     governorate: formData.governorate,
+                    district: formData.district || null,
                     phone: formData.phone.trim(),
                     maps_link: formData.maps_link.trim(),
                     logo_url: logoUrl,
