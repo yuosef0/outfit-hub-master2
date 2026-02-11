@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import StoreWishlistButton from '@/components/StoreWishlistButton';
-import type { Store } from '@/lib/types';
+import type { Store, District } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
@@ -13,7 +13,6 @@ function DiscoverStoresContent() {
     const searchParams = useSearchParams();
     const { t } = useLanguage();
     const initialCategory = searchParams.get('category');
-    console.log('Initial Category from URL:', initialCategory);
 
     const [activeCategory, setActiveCategory] = useState(initialCategory || 'All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -21,6 +20,10 @@ function DiscoverStoresContent() {
     const [filteredStores, setFilteredStores] = useState<Store[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [sortBy, setSortBy] = useState<'name' | 'newest'>('newest');
+    const [governorates, setGovernorates] = useState<any[]>([]);
+    const [districts, setDistricts] = useState<District[]>([]);
+    const [selectedGovernorate, setSelectedGovernorate] = useState<string>('');
+    const [selectedDistrict, setSelectedDistrict] = useState<string>('');
 
     const supabase = useMemo(
         () =>
@@ -38,26 +41,42 @@ function DiscoverStoresContent() {
         fetchUser();
     }, []);
 
-    // Fetch stores filtered by customer's governorate
+    // Fetch governorates and districts
+    useEffect(() => {
+        const fetchFilters = async () => {
+            try {
+                const { data: govData } = await supabase
+                    .from('governorates')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name', { ascending: true });
+
+                const { data: distData } = await supabase
+                    .from('districts')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name', { ascending: true });
+
+                setGovernorates(govData || []);
+                setDistricts(distData || []);
+            } catch (error) {
+                console.error('Error fetching filters:', error);
+            }
+        };
+
+        fetchFilters();
+    }, [supabase]);
+
+    // Fetch all stores
     useEffect(() => {
         const fetchStores = async () => {
             try {
-                // Get customer's governorate from store
-                const userGov = user?.governorate || null;
-
-                let query = supabase
+                const { data, error } = await supabase
                     .from('stores')
                     .select('*')
                     .eq('is_active', true)
                     .eq('is_visible', true)
                     .order('created_at', { ascending: false });
-
-                // Filter by governorate if customer has one set
-                if (userGov) {
-                    query = query.eq('governorate', userGov);
-                }
-
-                const { data, error } = await query;
 
                 if (error) throw error;
 
@@ -73,7 +92,7 @@ function DiscoverStoresContent() {
         };
 
         fetchStores();
-    }, [supabase, user?.governorate]);
+    }, [supabase]);
 
     // Update active category when search params change
     useEffect(() => {
@@ -85,16 +104,30 @@ function DiscoverStoresContent() {
     // Get unique categories from stores
     const categories = ['All', ...Array.from(new Set(stores.map(store => store.category).filter(Boolean)))];
 
+    // Get districts for selected governorate
+    const availableDistricts = selectedGovernorate
+        ? districts.filter(d => d.governorate_code === selectedGovernorate)
+        : [];
+
     // Filter and sort stores
     useEffect(() => {
         let filtered = [...stores];
+
+        // Filter by governorate
+        if (selectedGovernorate) {
+            filtered = filtered.filter(store => store.governorate === selectedGovernorate);
+        }
+
+        // Filter by district
+        if (selectedDistrict) {
+            filtered = filtered.filter(store => store.district === selectedDistrict);
+        }
 
         // Filter by category
         if (activeCategory !== 'All') {
             filtered = filtered.filter(store =>
                 store.category?.toLowerCase() === activeCategory.toLowerCase()
             );
-            console.log(`Filtering for category: ${activeCategory}. Found ${filtered.length} stores.`);
         }
 
         // Filter by search query
@@ -113,7 +146,7 @@ function DiscoverStoresContent() {
         }
 
         setFilteredStores(filtered);
-    }, [activeCategory, searchQuery, sortBy, stores]);
+    }, [activeCategory, searchQuery, sortBy, stores, selectedGovernorate, selectedDistrict]);
 
     if (isLoading) {
         return (
@@ -143,6 +176,39 @@ function DiscoverStoresContent() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 rounded-xl bg-card-light border border-border-light text-text-light-primary placeholder:text-text-light-secondary focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
+                    </div>
+
+                    {/* Governorate and District Filters */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                        <select
+                            value={selectedGovernorate}
+                            onChange={(e) => {
+                                setSelectedGovernorate(e.target.value);
+                                setSelectedDistrict(''); // Reset district when governorate changes
+                            }}
+                            className="px-3 py-2 rounded-lg bg-card-light border border-border-light text-text-light-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        >
+                            <option value="">كل المحافظات</option>
+                            {governorates.map((gov) => (
+                                <option key={gov.code} value={gov.code}>
+                                    {gov.name_ar}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={selectedDistrict}
+                            onChange={(e) => setSelectedDistrict(e.target.value)}
+                            disabled={!selectedGovernorate}
+                            className="px-3 py-2 rounded-lg bg-card-light border border-border-light text-text-light-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <option value="">كل المراكز</option>
+                            {availableDistricts.map((dist) => (
+                                <option key={dist.id} value={dist.name}>
+                                    {dist.name_ar}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 

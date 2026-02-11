@@ -6,6 +6,16 @@ export interface Governorate {
     name_ar: string;
 }
 
+export interface District {
+    id: string;
+    governorate_code: string;
+    name: string;
+    name_ar: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface SliderImage {
     id: string;
     image_url: string;
@@ -48,6 +58,7 @@ export interface Store {
     is_active: boolean;
     is_visible: boolean;
     governorate?: string;
+    district?: string;
     points_balance: number;
     created_at: string;
     updated_at: string;
