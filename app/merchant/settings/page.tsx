@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
-import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
 
 interface Store {
     id: string;
@@ -13,6 +12,7 @@ interface Store {
     category: string;
     address: string;
     governorate: string;
+    district: string | null;
     phone: string;
     maps_link: string;
     logo_url: string | null;
@@ -39,6 +39,7 @@ export default function MerchantSettingsPage() {
         category: '',
         address: '',
         governorate: '',
+        district: '',
         phone: '',
         maps_link: '',
     });
@@ -54,6 +55,9 @@ export default function MerchantSettingsPage() {
     const [availableSubcategories, setAvailableSubcategories] = useState<{ id: string; name: string; name_ar: string | null }[]>([]);
     const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
 
+    const [governorates, setGovernorates] = useState<any[]>([]);
+    const [districts, setDistricts] = useState<any[]>([]);
+
     const logoInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,7 +68,30 @@ export default function MerchantSettingsPage() {
     useEffect(() => {
         checkAuth();
         fetchCategories();
+        fetchGovernorates();
     }, []);
+
+    // Fetch active governorates and districts
+    const fetchGovernorates = async () => {
+        try {
+            const { data: govData } = await supabase
+                .from('governorates')
+                .select('*')
+                .eq('is_active', true)
+                .order('name', { ascending: true });
+
+            const { data: distData } = await supabase
+                .from('districts')
+                .select('*')
+                .eq('is_active', true)
+                .order('name', { ascending: true });
+
+            setGovernorates(govData || []);
+            setDistricts(distData || []);
+        } catch (error) {
+            console.error('Error fetching governorates:', error);
+        }
+    };
 
     // Fetch subcategories when category changes
     useEffect(() => {
@@ -134,6 +161,7 @@ export default function MerchantSettingsPage() {
                 category: storeData.category || '',
                 address: storeData.address || '',
                 governorate: storeData.governorate || '',
+                district: storeData.district || '',
                 phone: storeData.phone || '',
                 maps_link: storeData.maps_link || '',
             });
@@ -637,18 +665,43 @@ export default function MerchantSettingsPage() {
                                 </label>
                                 <select
                                     value={formData.governorate}
-                                    onChange={(e) => setFormData({ ...formData, governorate: e.target.value })}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, governorate: e.target.value, district: '' });
+                                    }}
                                     className="w-full px-4 py-2 bg-card-light border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light-primary "
                                     required
                                 >
                                     <option value="">اختر المحافظة</option>
-                                    {EGYPTIAN_GOVERNORATES.map((gov) => (
-                                        <option key={gov.code} value={gov.name}>
+                                    {governorates.map((gov) => (
+                                        <option key={gov.code} value={gov.code}>
                                             {gov.name_ar}
                                         </option>
                                     ))}
                                 </select>
                             </div>
+
+                            {/* District - Shows when governorate is selected */}
+                            {formData.governorate && (
+                                <div>
+                                    <label className="block text-sm font-medium text-text-light-primary mb-2">
+                                        المركز (اختياري)
+                                    </label>
+                                    <select
+                                        value={formData.district}
+                                        onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                                        className="w-full px-4 py-2 bg-card-light border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light-primary"
+                                    >
+                                        <option value="">اختر المركز (اختياري)</option>
+                                        {districts
+                                            .filter(d => d.governorate_code === formData.governorate)
+                                            .map((dist) => (
+                                                <option key={dist.id} value={dist.name}>
+                                                    {dist.name_ar}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
+                            )}
 
                             {/* Google Maps Link */}
                             <div>
