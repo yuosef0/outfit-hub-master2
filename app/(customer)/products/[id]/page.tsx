@@ -126,13 +126,26 @@ export default function ProductDetailPage() {
 
             if (variants && variants.length > 0) {
                 // Product has variants, find matching one
-                const { data: variant } = await supabase
+                let query = supabase
                     .from('product_variants')
                     .select('stock_quantity')
-                    .eq('product_id', product.id)
-                    .eq('size', selectedSize || null)
-                    .eq('color', selectedColor || null)
-                    .maybeSingle();
+                    .eq('product_id', product.id);
+
+                // Handle size matching (NULL or value)
+                if (selectedSize) {
+                    query = query.eq('size', selectedSize);
+                } else {
+                    query = query.is('size', null);
+                }
+
+                // Handle color matching (NULL or value)
+                if (selectedColor) {
+                    query = query.eq('color', selectedColor);
+                } else {
+                    query = query.is('color', null);
+                }
+
+                const { data: variant } = await query.maybeSingle();
 
                 setAvailableStock(variant?.stock_quantity || 0);
             } else {
