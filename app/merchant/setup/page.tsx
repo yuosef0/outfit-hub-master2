@@ -7,19 +7,6 @@ import Toast from '@/components/Toast';
 import { EGYPTIAN_GOVERNORATES } from '@/lib/types';
 
 
-
-const AREAS = [
-    'مدينة المنيا',
-    'المنيا الجديدة',
-    'أبو قرقاص',
-    'مغاغة',
-    'بني مزار',
-    'ملوي',
-    'سمالوط',
-    'العدوة',
-    'دير مواس',
-];
-
 export default function MerchantSetupPage() {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
@@ -33,7 +20,7 @@ export default function MerchantSetupPage() {
         category: '',
         address: '',
         governorate: '',
-        area: '',
+        district: '',
         maps_link: '',
         phone: '',
         logo: null as File | null,
@@ -54,6 +41,7 @@ export default function MerchantSetupPage() {
     );
 
     const [categories, setCategories] = useState<{ id: string; name: string; name_ar: string }[]>([]);
+    const [districts, setDistricts] = useState<any[]>([]);
 
     useEffect(() => {
         checkUser();
@@ -66,31 +54,18 @@ export default function MerchantSetupPage() {
 
             if (data) setCategories(data);
         };
-        fetchCategories();
-    }, []);
-
-    // Fetch subcategories when category changes
-    useEffect(() => {
-        const fetchSubcategories = async () => {
-            if (!formData.category) {
-                setAvailableSubcategories([]);
-                return;
-            }
-
-            const selectedCat = categories.find(c => (c.name_ar || c.name) === formData.category);
-            if (!selectedCat) return;
-
+        const fetchDistricts = async () => {
             const { data } = await supabase
-                .from('subcategories')
-                .select('id, name, name_ar')
-                .eq('category_id', selectedCat.id)
-                .order('name');
+                .from('districts')
+                .select('*')
+                .eq('is_active', true)
+                .order('name', { ascending: true });
 
-            setAvailableSubcategories(data || []);
+            if (data) setDistricts(data);
         };
-
-        fetchSubcategories();
-    }, [formData.category, categories]);
+        fetchCategories();
+        fetchDistricts();
+    }, []);
 
     // Fetch subcategories when category changes
     useEffect(() => {
@@ -170,7 +145,7 @@ export default function MerchantSetupPage() {
             return;
         }
         if (currentStep === 2) {
-            if (!formData.address || !formData.governorate || !formData.area || !formData.phone) {
+            if (!formData.address || !formData.governorate || !formData.district || !formData.phone) {
                 setToast({ message: 'برجاء ملء جميع الحقول المطلوبة', type: 'error' });
                 return;
             }
@@ -230,7 +205,7 @@ export default function MerchantSetupPage() {
                     category: formData.category,
                     address: formData.address,
                     governorate: formData.governorate,
-                    area: formData.area,
+                    district: formData.district,
                     phone: formData.phone,
                     maps_link: formData.maps_link || undefined,
                     logo_url: logoUrl,
@@ -374,9 +349,9 @@ export default function MerchantSetupPage() {
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-sm font-semibold text-text-light-primary text-right">المحافظة *</label>
                                 <div className="relative">
-                                    <select className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right" name="governorate" value={formData.governorate} onChange={handleChange}>
+                                    <select className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right" name="governorate" value={formData.governorate} onChange={(e) => setFormData({ ...formData, governorate: e.target.value, district: '' })}>
                                         <option value="">اختر المحافظة</option>
-                                        {EGYPTIAN_GOVERNORATES.map((gov) => (<option key={gov.code} value={gov.name}>{gov.name_ar}</option>))}
+                                        {EGYPTIAN_GOVERNORATES.map((gov) => (<option key={gov.code} value={gov.code}>{gov.name_ar}</option>))}
                                     </select>
                                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-text-light-secondary">
                                         <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>expand_more</span>
@@ -384,18 +359,22 @@ export default function MerchantSetupPage() {
                                 </div>
                             </div>
 
+                            {formData.governorate && (
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-semibold text-text-light-primary text-right">المنطقة *</label>
+                                <label className="text-sm font-semibold text-text-light-primary text-right">المركز *</label>
                                 <div className="relative">
-                                    <select name="area" value={formData.area} onChange={handleChange} className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right">
-                                        <option value="">اختر المنطقة</option>
-                                        {AREAS.map((area) => (<option key={area} value={area}>{area}</option>))}
+                                    <select name="district" value={formData.district} onChange={handleChange} className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right">
+                                        <option value="">اختر المركز</option>
+                                        {districts
+                                            .filter(d => d.governorate_code === formData.governorate)
+                                            .map((dist) => (<option key={dist.id} value={dist.name}>{dist.name_ar}</option>))}
                                     </select>
                                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-text-light-secondary">
                                         <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>expand_more</span>
                                     </div>
                                 </div>
                             </div>
+                            )}
 
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-sm font-semibold text-text-light-primary text-right">رابط Google Maps (اختياري)</label>

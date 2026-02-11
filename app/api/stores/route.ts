@@ -12,7 +12,7 @@ const storeSchema = z.object({
   logo_url: z.string().optional(),
   banner_url: z.string().optional().nullable(),
   governorate: z.string().optional(),
-  area: z.string().optional(),
+  district: z.string().optional(),
   phone: z.string().optional(),
 });
 
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         logo_url: validatedData.logo_url || null,
         banner_url: validatedData.banner_url || null,
         governorate: validatedData.governorate || null,
-        area: validatedData.area || null,
+        district: validatedData.district || null,
         phone: validatedData.phone || null,
         merchant_id: user.id,
         subscription_plan: 'basic',

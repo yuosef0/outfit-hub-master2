@@ -253,11 +253,6 @@ export default function MerchantSettingsPage() {
             return;
         }
 
-        if (!formData.governorate) {
-            setToast({ message: 'برجاء اختيار المحافظة', type: 'error' });
-            return;
-        }
-
         setSaving(true);
 
         try {
@@ -279,8 +274,6 @@ export default function MerchantSettingsPage() {
                     description: formData.description.trim(),
                     category: formData.category,
                     address: formData.address.trim(),
-                    governorate: formData.governorate,
-                    district: formData.district || null,
                     phone: formData.phone.trim(),
                     maps_link: formData.maps_link.trim(),
                     logo_url: logoUrl,
@@ -597,48 +590,26 @@ export default function MerchantSettingsPage() {
                                 />
                             </div>
 
-                            {/* Governorate */}
+                            {/* Governorate (read-only - set during registration) */}
                             <div>
                                 <label className="block text-sm font-medium text-text-light-primary mb-2">
-                                    المحافظة *
+                                    المحافظة
                                 </label>
-                                <select
-                                    value={formData.governorate}
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, governorate: e.target.value, district: '' });
-                                    }}
-                                    className="w-full px-4 py-2 bg-card-light border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light-primary "
-                                    required
-                                >
-                                    <option value="">اختر المحافظة</option>
-                                    {governorates.map((gov) => (
-                                        <option key={gov.code} value={gov.code}>
-                                            {gov.name_ar}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="w-full px-4 py-2 bg-background-light border border-border-light rounded-lg text-text-light-primary cursor-not-allowed">
+                                    {governorates.find(g => g.code === formData.governorate)?.name_ar || formData.governorate || 'غير محدد'}
+                                </div>
+                                <p className="text-xs text-text-light-secondary mt-1">تم تحديد المحافظة أثناء التسجيل ولا يمكن تغييرها</p>
                             </div>
 
-                            {/* District - Shows when governorate is selected */}
-                            {formData.governorate && (
+                            {/* District (read-only - set during registration) */}
+                            {formData.district && (
                                 <div>
                                     <label className="block text-sm font-medium text-text-light-primary mb-2">
-                                        المركز (اختياري)
+                                        المركز
                                     </label>
-                                    <select
-                                        value={formData.district}
-                                        onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                                        className="w-full px-4 py-2 bg-card-light border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light-primary"
-                                    >
-                                        <option value="">اختر المركز (اختياري)</option>
-                                        {districts
-                                            .filter(d => d.governorate_code === formData.governorate)
-                                            .map((dist) => (
-                                                <option key={dist.id} value={dist.name}>
-                                                    {dist.name_ar}
-                                                </option>
-                                            ))}
-                                    </select>
+                                    <div className="w-full px-4 py-2 bg-background-light border border-border-light rounded-lg text-text-light-primary cursor-not-allowed">
+                                        {districts.find(d => d.name === formData.district)?.name_ar || formData.district}
+                                    </div>
                                 </div>
                             )}
 
