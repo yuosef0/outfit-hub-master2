@@ -17,7 +17,6 @@ interface Store {
     maps_link: string;
     logo_url: string | null;
     banner_url: string | null;
-    is_visible: boolean;
 }
 
 interface Toast {
@@ -43,9 +42,6 @@ export default function MerchantSettingsPage() {
         phone: '',
         maps_link: '',
     });
-
-    const [isVisible, setIsVisible] = useState(true);
-    const [togglingVisibility, setTogglingVisibility] = useState(false);
 
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -154,7 +150,6 @@ export default function MerchantSettingsPage() {
             }
 
             setStore(storeData);
-            setIsVisible(storeData.is_visible !== false);
             setFormData({
                 name: storeData.name || '',
                 description: storeData.description || '',
@@ -182,39 +177,6 @@ export default function MerchantSettingsPage() {
             setToast({ message: 'حدث خطأ في التحقق من الحساب', type: 'error' });
         } finally {
             setLoading(false);
-        }
-    };
-
-    const toggleVisibility = async () => {
-        if (!store) return;
-        setTogglingVisibility(true);
-        try {
-            const newVisible = !isVisible;
-            const { data, error } = await supabase
-                .from('stores')
-                .update({ is_visible: newVisible })
-                .eq('id', store.id)
-                .eq('merchant_id', (await supabase.auth.getUser()).data.user?.id)
-                .select('is_visible')
-                .single();
-
-            if (error) throw error;
-
-            if (!data) {
-                throw new Error('لم يتم تحديث حالة الظهور');
-            }
-
-            setIsVisible(data.is_visible);
-            setStore(prev => prev ? { ...prev, is_visible: data.is_visible } : null);
-            setToast({
-                message: data.is_visible ? 'تم إظهار المتجر للعملاء' : 'تم إخفاء المتجر عن العملاء',
-                type: 'success'
-            });
-        } catch (error) {
-            console.error('Error toggling visibility:', error);
-            setToast({ message: 'حدث خطأ أثناء تغيير حالة الظهور', type: 'error' });
-        } finally {
-            setTogglingVisibility(false);
         }
     };
 
@@ -323,7 +285,6 @@ export default function MerchantSettingsPage() {
                     maps_link: formData.maps_link.trim(),
                     logo_url: logoUrl,
                     banner_url: bannerUrl,
-                    is_visible: isVisible,
                 })
                 .eq('id', store!.id);
 
@@ -409,38 +370,6 @@ export default function MerchantSettingsPage() {
             {/* Form */}
             <div className="max-w-4xl mx-auto px-4 py-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Store Visibility Section */}
-                    <div className={`rounded-lg border p-6 ${isVisible ? 'bg-card-light border-border-light' : 'bg-red-900/10 border-red-500/30'}`}>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className={`material-symbols-outlined ${isVisible ? 'text-green-400' : 'text-red-400'}`}>
-                                    {isVisible ? 'visibility' : 'visibility_off'}
-                                </span>
-                                <div>
-                                    <h2 className="text-lg font-semibold text-text-light-primary">ظهور المتجر</h2>
-                                    <p className={`text-sm ${isVisible ? 'text-green-400' : 'text-red-400'}`}>
-                                        {isVisible ? 'متجرك ظاهر للعملاء' : 'متجرك مخفي عن العملاء'}
-                                    </p>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={toggleVisibility}
-                                disabled={togglingVisibility}
-                                className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${isVisible ? 'bg-green-500' : 'bg-red-500'}`}
-                            >
-                                <span
-                                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${isVisible ? 'translate-x-5' : 'translate-x-0'}`}
-                                />
-                            </button>
-                        </div>
-                        {!isVisible && (
-                            <p className="text-xs text-text-light-secondary mt-3 bg-background-light rounded-lg p-3">
-                                عند الإخفاء، لن يظهر متجرك ومنتجاتك في نتائج البحث أو القوائم.
-                            </p>
-                        )}
-                    </div>
-
                     {/* Store Images Section */}
                     <div className="bg-card-light rounded-lg border border-border-light p-6">
                         <h2 className="text-lg font-semibold text-text-light-primary mb-4 flex items-center gap-2">
