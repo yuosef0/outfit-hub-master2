@@ -25,6 +25,8 @@ export default function Header() {
     const menuRef = useRef<HTMLDivElement>(null);
     const { user, updateGovernorate, fetchUser, loading } = useAuthStore();
     const [governorates, setGovernorates] = useState<any[]>([]);
+    const [districts, setDistricts] = useState<any[]>([]);
+    const [selectedDistrict, setSelectedDistrict] = useState<string>('');
 
     // Local state for governorate to allow immediate UI updates while saving
     // Initialize with user's governorate if available
@@ -57,23 +59,30 @@ export default function Header() {
         fetchUser();
     }, []);
 
-    // Fetch active governorates
+    // Fetch active governorates and districts
     useEffect(() => {
-        const fetchGovernorates = async () => {
+        const fetchData = async () => {
             try {
-                const { data } = await supabase
+                const { data: govData } = await supabase
                     .from('governorates')
                     .select('*')
                     .eq('is_active', true)
                     .order('name', { ascending: true });
 
-                setGovernorates(data || []);
+                const { data: distData } = await supabase
+                    .from('districts')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name', { ascending: true });
+
+                setGovernorates(govData || []);
+                setDistricts(distData || []);
             } catch (error) {
-                console.error('Error fetching governorates:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchGovernorates();
+        fetchData();
     }, [supabase]);
 
     // Track auth state
@@ -218,25 +227,55 @@ export default function Header() {
 
                     {/* Governorate Selector */}
                     {isAuthenticated && (
-                        <div className="flex items-center gap-2 text-text-light-secondary text-sm">
-                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>location_on</span>
-                            {loading ? (
-                                <span>{t('common.loading')}</span>
-                            ) : (
-                                <select
-                                    value={localGovernorate}
-                                    onChange={(e) => handleGovernorateChange(e.target.value)}
-                                    className="bg-transparent border-none text-text-light-secondary text-sm focus:outline-none focus:ring-0 cursor-pointer p-0 pr-5 appearance-none"
-                                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center' }}
-                                    disabled={isUpdatingGov}
-                                >
-                                    <option value="">{t('header.selectGovernorate')}</option>
-                                    {governorates.map((gov) => (
-                                        <option key={gov.code} value={gov.name}>
-                                            {gov.name} - {gov.name_ar}
-                                        </option>
-                                    ))}
-                                </select>
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-text-light-secondary text-sm">
+                                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>location_on</span>
+                                {loading ? (
+                                    <span>{t('common.loading')}</span>
+                                ) : (
+                                    <select
+                                        value={localGovernorate}
+                                        onChange={(e) => {
+                                            handleGovernorateChange(e.target.value);
+                                            setSelectedDistrict(''); // Reset district when governorate changes
+                                        }}
+                                        className="bg-transparent border-none text-text-light-secondary text-sm focus:outline-none focus:ring-0 cursor-pointer p-0 pr-5 appearance-none"
+                                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center' }}
+                                        disabled={isUpdatingGov}
+                                    >
+                                        <option value="">{t('header.selectGovernorate')}</option>
+                                        {governorates.map((gov) => (
+                                            <option key={gov.code} value={gov.name}>
+                                                {gov.name} - {gov.name_ar}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+
+                            {/* District Selector - Shows when governorate is selected */}
+                            {localGovernorate && (
+                                <div className="flex items-center gap-2 text-text-light-secondary text-sm pl-6">
+                                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>place</span>
+                                    <select
+                                        value={selectedDistrict}
+                                        onChange={(e) => setSelectedDistrict(e.target.value)}
+                                        className="bg-transparent border-none text-text-light-secondary text-sm focus:outline-none focus:ring-0 cursor-pointer p-0 pr-5 appearance-none"
+                                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center' }}
+                                    >
+                                        <option value="">{language === 'ar' ? 'كل المراكز' : 'All Districts'}</option>
+                                        {districts
+                                            .filter(d => {
+                                                const selectedGov = governorates.find(g => g.name === localGovernorate);
+                                                return selectedGov && d.governorate_code === selectedGov.code;
+                                            })
+                                            .map((dist) => (
+                                                <option key={dist.id} value={dist.name}>
+                                                    {dist.name} - {dist.name_ar}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
                             )}
                         </div>
                     )}

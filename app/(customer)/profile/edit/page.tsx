@@ -16,7 +16,9 @@ export default function EditProfilePage() {
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
     const [governorate, setGovernorate] = useState('');
+    const [district, setDistrict] = useState('');
     const [governorates, setGovernorates] = useState<any[]>([]);
+    const [districts, setDistricts] = useState<any[]>([]);
     const [avatarUrl, setAvatarUrl] = useState('');
     const [uploading, setUploading] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -33,23 +35,30 @@ export default function EditProfilePage() {
         []
     );
 
-    // Fetch active governorates
+    // Fetch active governorates and districts
     useEffect(() => {
-        const fetchGovernorates = async () => {
+        const fetchData = async () => {
             try {
-                const { data } = await supabase
+                const { data: govData } = await supabase
                     .from('governorates')
                     .select('*')
                     .eq('is_active', true)
                     .order('name', { ascending: true });
 
-                setGovernorates(data || []);
+                const { data: distData } = await supabase
+                    .from('districts')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name', { ascending: true });
+
+                setGovernorates(govData || []);
+                setDistricts(distData || []);
             } catch (error) {
-                console.error('Error fetching governorates:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchGovernorates();
+        fetchData();
     }, [supabase]);
 
     useEffect(() => {
@@ -281,7 +290,10 @@ export default function EditProfilePage() {
                         </label>
                         <select
                             value={governorate}
-                            onChange={(e) => setGovernorate(e.target.value)}
+                            onChange={(e) => {
+                                setGovernorate(e.target.value);
+                                setDistrict(''); // Reset district when governorate changes
+                            }}
                             className="w-full px-4 py-3 bg-card-light border border-border-light rounded-xl text-text-light-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none cursor-pointer"
                         >
                             <option value="">
@@ -294,6 +306,31 @@ export default function EditProfilePage() {
                             ))}
                         </select>
                     </div>
+
+                    {/* District - Shows when governorate is selected */}
+                    {governorate && (
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-text-light-primary">
+                                {language === 'ar' ? 'المركز' : 'District'}
+                            </label>
+                            <select
+                                value={district}
+                                onChange={(e) => setDistrict(e.target.value)}
+                                className="w-full px-4 py-3 bg-card-light border border-border-light rounded-xl text-text-light-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none cursor-pointer"
+                            >
+                                <option value="">
+                                    {language === 'ar' ? 'اختر المركز (اختياري)' : 'Select District (Optional)'}
+                                </option>
+                                {districts
+                                    .filter(d => d.governorate_code === governorate)
+                                    .map((dist) => (
+                                        <option key={dist.id} value={dist.name}>
+                                            {language === 'ar' ? dist.name_ar : dist.name}
+                                        </option>
+                                    ))}
+                            </select>
+                        </div>
+                    )}
 
                     {/* Info Note */}
                     <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
