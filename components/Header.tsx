@@ -69,7 +69,6 @@ export default function Header() {
                 const { data: govData } = await supabase
                     .from('governorates')
                     .select('*')
-                    .eq('is_active', true)
                     .order('name', { ascending: true });
 
                 const { data: distData } = await supabase
