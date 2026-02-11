@@ -47,6 +47,7 @@ export default function HomePage() {
                     .from('stores')
                     .select('*')
                     .eq('is_active', true)
+                    .or('is_visible.eq.true,is_visible.is.null')
                     .order('created_at', { ascending: false })
                     .limit(4);
 

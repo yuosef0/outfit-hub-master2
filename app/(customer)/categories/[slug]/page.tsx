@@ -64,6 +64,7 @@ export default function CategoryDetailPage() {
                         .from('stores')
                         .select('*')
                         .eq('is_active', true)
+                        .or('is_visible.eq.true,is_visible.is.null')
                         .or(`category.ilike.%${categoryData.name}%,category.ilike.%${categoryData.name_ar}%`)
                         .order('created_at', { ascending: false });
 

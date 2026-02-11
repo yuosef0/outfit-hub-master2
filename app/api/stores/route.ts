@@ -33,7 +33,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (isVisible !== null) {
-      query = query.eq('is_visible', isVisible === 'true');
+      if (isVisible === 'true') {
+        query = query.or('is_visible.eq.true,is_visible.is.null');
+      } else {
+        query = query.eq('is_visible', false);
+      }
     }
 
     const search = searchParams.get('search');
@@ -106,6 +110,7 @@ export async function POST(request: NextRequest) {
         merchant_id: user.id,
         subscription_plan: 'basic',
         is_active: false, // Admin needs to activate
+        is_visible: true, // Visible by default
       })
       .select()
       .single();

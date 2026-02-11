@@ -40,7 +40,7 @@ export default function CustomerHome() {
                             .select('id')
                             .eq('governorate', userData.governorate)
                             .eq('is_active', true)
-                            .eq('is_visible', true);
+                            .or('is_visible.eq.true,is_visible.is.null');
 
                         // Further filter by district if user has selected one
                         if (userData.district) {

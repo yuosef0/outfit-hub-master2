@@ -47,7 +47,7 @@ function DiscoverStoresContent() {
                     .from('stores')
                     .select('*')
                     .eq('is_active', true)
-                    .eq('is_visible', true)
+                    .or('is_visible.eq.true,is_visible.is.null')
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
