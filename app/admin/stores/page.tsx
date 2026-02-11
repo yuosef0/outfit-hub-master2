@@ -8,7 +8,7 @@ interface StoreWithMerchant {
     id: string;
     name: string;
     category: string | null;
-    area: string | null;
+    district: string | null;
     governorate: string | null;
     is_active: boolean;
     is_visible: boolean;
@@ -28,6 +28,7 @@ export default function AdminStoresPage() {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState<FilterStatus>('all');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [governorates, setGovernorates] = useState<any[]>([]);
 
     const supabase = useMemo(
         () => createBrowserClient(
@@ -37,11 +38,28 @@ export default function AdminStoresPage() {
         []
     );
 
+    // Fetch governorates for code-to-name resolution
+    useEffect(() => {
+        const fetchGovernorates = async () => {
+            const { data } = await supabase
+                .from('governorates')
+                .select('code, name, name_ar');
+            if (data) setGovernorates(data);
+        };
+        fetchGovernorates();
+    }, [supabase]);
+
+    const getGovernorateName = (code: string | null) => {
+        if (!code) return null;
+        const gov = governorates.find(g => g.code === code);
+        return gov?.name_ar || code;
+    };
+
     const fetchStores = async () => {
         try {
             const { data, error } = await supabase
                 .from('stores')
-                .select('id, name, category, area, governorate, is_active, is_visible, created_at, logo_url, merchant_id')
+                .select('id, name, category, district, governorate, is_active, is_visible, created_at, logo_url, merchant_id')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -214,8 +232,13 @@ export default function AdminStoresPage() {
                                             {store.category && (
                                                 <span className="text-[10px] bg-background-light px-1.5 py-0.5 rounded border border-border-light text-text-light-secondary">{store.category}</span>
                                             )}
-                                            {store.area && (
-                                                <span className="text-[10px] bg-background-light px-1.5 py-0.5 rounded border border-border-light text-text-light-secondary">{store.area}</span>
+                                            {store.governorate && (
+                                                <span className="text-[10px] bg-background-light px-1.5 py-0.5 rounded border border-border-light text-text-light-secondary">
+                                                    {getGovernorateName(store.governorate)}
+                                                </span>
+                                            )}
+                                            {store.district && (
+                                                <span className="text-[10px] bg-background-light px-1.5 py-0.5 rounded border border-border-light text-text-light-secondary">{store.district}</span>
                                             )}
                                             <span className="text-[10px] text-text-light-secondary">
                                                 {new Date(store.created_at).toLocaleDateString()}

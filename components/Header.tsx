@@ -261,8 +261,8 @@ export default function Header() {
                                     >
                                         <option value="">{t('header.selectGovernorate')}</option>
                                         {governorates.map((gov) => (
-                                            <option key={gov.code} value={gov.name}>
-                                                {gov.name} - {gov.name_ar}
+                                            <option key={gov.code} value={gov.code}>
+                                                {gov.name_ar}
                                             </option>
                                         ))}
                                     </select>
@@ -281,13 +281,10 @@ export default function Header() {
                                     >
                                         <option value="">{language === 'ar' ? 'كل المراكز' : 'All Districts'}</option>
                                         {districts
-                                            .filter(d => {
-                                                const selectedGov = governorates.find(g => g.name === localGovernorate);
-                                                return selectedGov && d.governorate_code === selectedGov.code;
-                                            })
+                                            .filter(d => d.governorate_code === localGovernorate)
                                             .map((dist) => (
                                                 <option key={dist.id} value={dist.name}>
-                                                    {dist.name} - {dist.name_ar}
+                                                    {dist.name_ar}
                                                 </option>
                                             ))}
                                     </select>
