@@ -60,6 +60,8 @@ const translations: Record<Language, Record<string, string>> = {
         'store.workingHours': 'Working Hours',
         'store.description': 'Description',
         'store.openUntil': 'Until',
+        'store.openingTime': 'Opening Time',
+        'store.closingTime': 'Closing Time',
         'store.verifiedMerchant': 'Verified Merchant',
         'store.noDescription': 'No description available.',
         'store.noReviews': 'No reviews yet',
@@ -248,6 +250,25 @@ const translations: Record<Language, Record<string, string>> = {
         'merchant.reviews': 'Reviews',
         'merchant.coupons': 'Coupons',
         'merchant.settings': 'Settings',
+        'merchant.branches': 'Branches',
+        'merchant.branches.title': 'Branches',
+        'merchant.branches.subtitle': 'Manage your store branches',
+        'merchant.branches.mainBranch': 'Main Branch',
+        'merchant.branches.addBranch': 'Add Branch',
+        'merchant.branches.editBranch': 'Edit Branch',
+        'merchant.branches.deleteBranch': 'Delete Branch',
+        'merchant.branches.deleteConfirm': 'Are you sure you want to delete this branch?',
+        'merchant.branches.branchName': 'Branch Name',
+        'merchant.branches.address': 'Address',
+        'merchant.branches.phone': 'Phone',
+        'merchant.branches.mapsLink': 'Google Maps Link',
+        'merchant.branches.governorate': 'Governorate',
+        'merchant.branches.district': 'District',
+        'merchant.branches.noBranches': 'No branches added yet',
+        'merchant.branches.saved': 'Branch saved successfully',
+        'merchant.branches.deleted': 'Branch deleted successfully',
+        'merchant.branches.duplicateLocation': 'A branch already exists in this location',
+        'store.otherBranches': 'Other Branch Locations',
         'merchant.pickup': 'Pickup',
         'merchant.categories': 'Categories',
         'merchant.addProduct': 'Add Product',
@@ -660,6 +681,22 @@ const translations: Record<Language, Record<string, string>> = {
         'admin.governorates.saved': 'Governorate saved successfully',
         'admin.governorates.deleted': 'Governorate deleted successfully',
         'admin.governorates.confirmDelete': 'Are you sure you want to delete this governorate?',
+
+        // Privacy Policy
+        'privacy.title': 'Privacy Policy',
+        'privacy.content': "Last updated: 2026\n\nAt Outfit-Hub, we value your privacy. We collect personal information to improve our services and your shopping experience. We do not share your data with third parties without your consent, except as required by law.\n\n1. Information Collection\nWe collect information you provide directly to us, such as when you create an account, make a purchase, or contact us.\n\n2. How We Use Information\nWe use the information we collect to provide, maintain, and improve our services, including to process transactions, send you related information, and respond to your comments and questions.\n\n3. Information Sharing\nWe may share your information with vendors, consultants, and other service providers who need access to such information to carry out work on our behalf.",
+
+        // Terms of Service
+        'terms.title': 'Terms of Service',
+        'terms.content': "Welcome to Outfit-Hub!\n\nBy accessing or using our website, you agree to be bound by these Terms of Service.\n\n1. Use of Services\nYou may use our services for lawful purposes only. You agree not to violate any laws in your jurisdiction.\n\n2. User Accounts\nTo access certain features, you may need to register for an account. You are responsible for maintaining the confidentiality of your account information.\n\n3. Product Availability\nAll products are subject to availability. We reserve the right to discontinue any product at any time.\n\n4. Pricing\nPrices for our products are subject to change without notice.",
+
+        // Return Policy
+        'return.title': 'Return Policy',
+        'return.content': "We want you to be completely satisfied with your purchase.\n\n1. Return Period\nYou can return items within 14 days of receipt.\n\n2. Conditions\nItems must be unused, unwashed, and in their original packaging with all tags attached.\n\n3. Process\nTo initiate a return, please contact our support team. Refunds are processed to the original payment method within 5-7 business days after we receive and inspect the return.\n\n4. Non-returnable Items\nCertain items like underwear and swimwear are non-returnable for hygiene reasons.",
+
+        // Cookie Policy
+        'cookie.title': 'Cookie Policy',
+        'cookie.content': "This Cookie Policy explains how Outfit-Hub uses cookies and similar technologies.\n\n1. What are Cookies?\nCookies are small text files stored on your device when you visit a website.\n\n2. How We Use Cookies\nWe use cookies to remember your preferences, analyze our traffic, and personalize content and ads.\n\n3. Your Choices\nYou can choose to disable cookies through your browser settings, but this may affect your ability to use certain features of our website.",
     },
     ar: {
         // Navigation
@@ -709,6 +746,8 @@ const translations: Record<Language, Record<string, string>> = {
         'store.workingHours': 'ساعات العمل',
         'store.description': 'الوصف',
         'store.openUntil': 'حتى',
+        'store.openingTime': 'وقت الفتح',
+        'store.closingTime': 'وقت الإغلاق',
         'store.verifiedMerchant': 'تاجر موثوق',
         'store.noDescription': 'لا يوجد وصف متاح.',
         'store.noReviews': 'لا توجد تقييمات بعد',
@@ -897,6 +936,25 @@ const translations: Record<Language, Record<string, string>> = {
         'merchant.reviews': 'التقييمات',
         'merchant.coupons': 'الكوبونات',
         'merchant.settings': 'الإعدادات',
+        'merchant.branches': 'الفروع',
+        'merchant.branches.title': 'الفروع',
+        'merchant.branches.subtitle': 'إدارة فروع المتجر',
+        'merchant.branches.mainBranch': 'الفرع الرئيسي',
+        'merchant.branches.addBranch': 'إضافة فرع',
+        'merchant.branches.editBranch': 'تعديل الفرع',
+        'merchant.branches.deleteBranch': 'حذف الفرع',
+        'merchant.branches.deleteConfirm': 'هل أنت متأكد من حذف هذا الفرع؟',
+        'merchant.branches.branchName': 'اسم الفرع',
+        'merchant.branches.address': 'العنوان',
+        'merchant.branches.phone': 'رقم الهاتف',
+        'merchant.branches.mapsLink': 'رابط خرائط جوجل',
+        'merchant.branches.governorate': 'المحافظة',
+        'merchant.branches.district': 'المركز',
+        'merchant.branches.noBranches': 'لم يتم إضافة فروع بعد',
+        'merchant.branches.saved': 'تم حفظ الفرع بنجاح',
+        'merchant.branches.deleted': 'تم حذف الفرع بنجاح',
+        'merchant.branches.duplicateLocation': 'يوجد فرع بالفعل في هذا الموقع',
+        'store.otherBranches': 'مواقع الفروع الأخرى',
         'merchant.pickup': 'التسليم',
         'merchant.categories': 'الفئات',
         'merchant.addProduct': 'إضافة منتج',
@@ -1309,6 +1367,22 @@ const translations: Record<Language, Record<string, string>> = {
         'admin.governorates.saved': 'تم حفظ المحافظة بنجاح',
         'admin.governorates.deleted': 'تم حذف المحافظة بنجاح',
         'admin.governorates.confirmDelete': 'هل أنت متأكد من حذف هذه المحافظة؟',
+
+        // Privacy Policy
+        'privacy.title': 'سياسة الخصوصية',
+        'privacy.content': "تحتوي هذه الصفحة على سياسة الخصوصية الخاصة بـ Outfit-Hub.\n\n1. جمع المعلومات\nنجمع المعلومات التي تقدمها لنا مباشرة، مثل عند إنشاء حساب أو إجراء عملية شراء أو الاتصال بنا.\n\n2. كيف نستخدم المعلومات\nتستخدم المعلومات التي نجمعها لتقديم خدماتنا وصيانتها وتحسينها، بما في ذلك معالجة المعاملات وإرسال المعلومات ذات الصلة والرد على تعليقاتك وأسئلتك.\n\n3. مشاركة المعلومات\nقد نشارك معلوماتك مع البائعين والمستشارين ومقدمي الخدمات الآخرين الذين يحتاجون إلى الوصول إلى هذه المعلومات لتنفيذ العمل نيابة عنا.\n\nنحن نلتزم بحماية بياناتك الشخصية وعدم مشاركتها مع أطراف ثالثة إلا في الحدود التي يسمح بها القانون.",
+
+        // Terms of Service
+        'terms.title': 'شروط الخدمة',
+        'terms.content': "مرحبًا بك في Outfit-Hub!\n\nمن خلال استخدام موقعنا، فإنك توافق على الالتزام بشروط الخدمة هذه.\n\n1. استخدام الخدمات\nيجوز لك استخدام خدماتنا لأغراض قانونية فقط. أنت توافق على عدم انتهاك أي قوانين في ولايتك القضائية.\n\n2. حسابات المستخدمين\nللوصول إلى ميزات معينة، قد تحتاج إلى التسجيل للحصول على حساب. أنت مسؤول عن الحفاظ على سرية معلومات حسابك.\n\n3. توفر المنتجات\nتخضع جميع المنتجات للتوافر. نحتفظ بالحق في إيقاف أي منتج في أي وقت.\n\n4. التسعير\nأسعار منتجاتنا عرضة للتغيير دون إشعار مسبق.",
+
+        // Return Policy
+        'return.title': 'سياسة الاسترجاع',
+        'return.content': "نحن نريد أن تكون راضيًا تمامًا عن مشترياتك.\n\n1. فترة الإرجاع\nيمكنك إرجاع العناصر خلال 14 يومًا من الاستلام.\n\n2. الشروط\nيجب أن تكون العناصر غير مستخدمة وغير مغسولة وفي عبوتها الأصلية مع جميع العلامات المرفقة.\n\n3. الإجراءات\nلبدء طلب إرجاع، يرجى الاتصال بفريق الدعم لدينا. تتم معالجة المبالغ المستردة إلى طريقة الدفع الأصلية خلال 5-7 أيام عمل بعد استلامنا للإرجاع وفحصه.\n\n4. العناصر غير القابلة للإرجاع\nبعض العناصر مثل الملابس الداخلية وملابس السباحة غير قابلة للإرجاع لأسباب صحية.",
+
+        // Cookie Policy
+        'cookie.title': 'سياسة ملفات تعريف الارتباط',
+        'cookie.content': "توضح هذه السياسة كيف تستخدم Outfit-Hub ملفات تعريف الارتباط.\n\n1. ما هي ملفات تعريف الارتباط؟\nهي ملفات نصية صغيرة يتم تخزينها على جهازك عند زيارة موقع ويب.\n\n2. كيف نستخدمها\nنستخدم ملفات تعريف الارتباط لتذكر تفضيلاتك وتحليل حركة المرور وتخصيص المحتوى والإعلانات.\n\n3. خياراتك\nيمكنك اختيار تعطيل ملفات تعريف الارتباط من خلال إعدادات المتصفح الخاص بك، ولكن قد يؤثر ذلك على قدرتك على استخدام ميزات معينة في موقعنا.",
     },
 };
 

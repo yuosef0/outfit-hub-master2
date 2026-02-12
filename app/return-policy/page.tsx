@@ -10,7 +10,7 @@ export default function ReturnPolicyPage() {
             <div className="max-w-3xl mx-auto">
                 <h1 className="text-3xl font-bold text-text-light-primary mb-6 text-center">{t('return.title')}</h1>
                 <div className="bg-card-light rounded-lg shadow-sm p-6 space-y-4 text-text-light-secondary">
-                    <p>{t('return.content')}</p>
+                    <p className="whitespace-pre-wrap">{t('return.content')}</p>
                 </div>
             </div>
         </div>

@@ -14,12 +14,20 @@ function DiscoverStoresContent() {
     const { t } = useLanguage();
     const initialCategory = searchParams.get('category');
 
+    interface DisplayStore extends Store {
+        display_name: string;
+        link_url: string;
+        is_branch?: boolean;
+        unique_key?: string;
+    }
+
     const [activeCategory, setActiveCategory] = useState(initialCategory || 'All');
     const [searchQuery, setSearchQuery] = useState('');
     const [stores, setStores] = useState<Store[]>([]);
-    const [filteredStores, setFilteredStores] = useState<Store[]>([]);
+    const [filteredStores, setFilteredStores] = useState<DisplayStore[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [sortBy, setSortBy] = useState<'name' | 'newest'>('newest');
+    const [branches, setBranches] = useState<{ id: string; store_id: string; governorate: string; district?: string; address?: string; name?: string }[]>([]);
 
     const supabase = useMemo(
         () =>
@@ -56,6 +64,17 @@ function DiscoverStoresContent() {
                     setStores(data);
                     setFilteredStores(data);
                 }
+
+                // Also fetch active branches for location filtering
+                try {
+                    const { data: branchesData } = await supabase
+                        .from('store_branches')
+                        .select('id, store_id, governorate, district, address, name')
+                        .eq('is_active', true);
+                    setBranches(branchesData || []);
+                } catch {
+                    setBranches([]);
+                }
             } catch (error) {
                 console.error('Error fetching stores:', error);
             } finally {
@@ -76,46 +95,98 @@ function DiscoverStoresContent() {
     // Get unique categories from stores
     const categories = ['All', ...Array.from(new Set(stores.map(store => store.category).filter(Boolean)))];
 
+    // Get the display address for a store (matching branch address or main store address)
+    const getDisplayAddress = (store: Store) => {
+        if (!user?.governorate) return store.address;
+        // Find a branch matching user's location
+        const matchingBranch = branches.find(b => {
+            if (b.store_id !== store.id) return false;
+            if (b.governorate !== user.governorate) return false;
+            if (user.district && b.district && b.district !== user.district) return false;
+            return true;
+        });
+        return matchingBranch?.address || store.address;
+    };
+
 
 
     // Filter and sort stores based on user's location from sidebar
     useEffect(() => {
-        let filtered = [...stores];
+        let result: DisplayStore[] = [];
 
-        // Filter by user's governorate from sidebar selection
+        // 1. Initial Processing: If location is set, split into Main Stores and Branches
         if (user?.governorate) {
-            filtered = filtered.filter(store => store.governorate === user.governorate);
+            // A. Main Stores matching location
+            const mainStores = stores.filter(store =>
+                store.governorate === user.governorate &&
+                (!user.district || store.district === user.district)
+            ).map(s => ({
+                ...s,
+                display_name: s.name,
+                link_url: `/stores/${s.id}`,
+                is_branch: false,
+                unique_key: `store_${s.id}`
+            }));
 
-            // Further filter by district if user has selected one
-            if (user?.district) {
-                filtered = filtered.filter(store => store.district === user.district);
-            }
+            // B. Branches matching location
+            const relevantBranches = branches.filter(b =>
+                b.governorate === user.governorate &&
+                (!user.district || b.district === user.district)
+            );
+
+            const branchStores = relevantBranches.map(b => {
+                const parentStore = stores.find(s => s.id === b.store_id);
+                if (!parentStore) return null;
+                return {
+                    ...parentStore,
+                    id: parentStore.id, // Keep parent ID for referencing, but unique_key handles list uniqueness
+                    display_name: b.name === parentStore.name ? b.name : `${parentStore.name} - ${b.name || 'Branch'}`,
+                    address: b.address || parentStore.address, // Use branch address
+                    governorate: b.governorate,
+                    district: b.district,
+                    link_url: `/stores/${parentStore.id}?branch_id=${b.id}`,
+                    is_branch: true,
+                    unique_key: `branch_${b.id}`
+                };
+            }).filter(Boolean) as DisplayStore[];
+
+            result = [...mainStores, ...branchStores];
+        } else {
+            // No location filter: Just show all main stores
+            result = stores.map(s => ({
+                ...s,
+                display_name: s.name,
+                link_url: `/stores/${s.id}`,
+                is_branch: false,
+                unique_key: `store_${s.id}`
+            }));
         }
 
-        // Filter by category
+        // 2. Filter by category
         if (activeCategory !== 'All') {
-            filtered = filtered.filter(store =>
+            result = result.filter(store =>
                 store.category?.toLowerCase() === activeCategory.toLowerCase()
             );
         }
 
-        // Filter by search query
+        // 3. Filter by search query
         if (searchQuery) {
-            filtered = filtered.filter(store =>
-                store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                store.description?.toLowerCase().includes(searchQuery.toLowerCase())
+            const query = searchQuery.toLowerCase();
+            result = result.filter(store =>
+                store.display_name.toLowerCase().includes(query) ||
+                store.description?.toLowerCase().includes(query)
             );
         }
 
-        // Sort
+        // 4. Sort
         if (sortBy === 'name') {
-            filtered.sort((a, b) => a.name.localeCompare(b.name));
+            result.sort((a, b) => a.display_name.localeCompare(b.display_name));
         } else {
-            filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         }
 
-        setFilteredStores(filtered);
-    }, [activeCategory, searchQuery, sortBy, stores, user?.governorate, user?.district]);
+        setFilteredStores(result);
+    }, [activeCategory, searchQuery, sortBy, stores, branches, user?.governorate, user?.district]);
 
     if (isLoading) {
         return (
@@ -204,8 +275,8 @@ function DiscoverStoresContent() {
                     <div className="grid grid-cols-2 gap-3">
                         {filteredStores.map((store) => (
                             <Link
-                                key={store.id}
-                                href={`/stores/${store.id}`}
+                                key={store.unique_key || store.id}
+                                href={store.link_url}
                                 className="group bg-card-light rounded-xl p-3 shadow-sm border border-border-light hover:border-primary/30 transition-all flex flex-col h-full relative"
                             >
                                 {/* Header with Logo & Wishlist */}
@@ -235,7 +306,7 @@ function DiscoverStoresContent() {
                                 {/* Store Info */}
                                 <div className="flex-1 min-w-0 mb-3">
                                     <h3 className="text-text-light-primary text-base font-bold leading-tight truncate mb-1">
-                                        {store.name}
+                                        {store.display_name}
                                     </h3>
 
                                     <div className="flex flex-wrap gap-1.5 mb-2">
@@ -251,12 +322,10 @@ function DiscoverStoresContent() {
                                         )}
                                     </div>
 
-                                    {store.address && (
-                                        <div className="flex items-center gap-1 text-[11px] text-text-light-secondary line-clamp-1">
-                                            <span className="material-symbols-outlined text-[14px] shrink-0">location_on</span>
-                                            <span className="truncate">{store.address}</span>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center gap-1 text-[11px] text-text-light-secondary line-clamp-1">
+                                        <span className="material-symbols-outlined text-[14px] shrink-0">location_on</span>
+                                        <span className="truncate">{store.address}</span>
+                                    </div>
                                 </div>
 
                                 {/* Action */}

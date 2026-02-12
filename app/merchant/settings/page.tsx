@@ -17,6 +17,8 @@ interface Store {
     maps_link: string;
     logo_url: string | null;
     banner_url: string | null;
+    opening_time: string | null;
+    closing_time: string | null;
 }
 
 interface Toast {
@@ -41,6 +43,8 @@ export default function MerchantSettingsPage() {
         district: '',
         phone: '',
         maps_link: '',
+        opening_time: '',
+        closing_time: '',
     });
 
     const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -159,6 +163,8 @@ export default function MerchantSettingsPage() {
                 district: storeData.district || '',
                 phone: storeData.phone || '',
                 maps_link: storeData.maps_link || '',
+                opening_time: storeData.opening_time || '',
+                closing_time: storeData.closing_time || '',
             });
             setLogoPreview(storeData.logo_url);
             setBannerPreview(storeData.banner_url);
@@ -276,6 +282,8 @@ export default function MerchantSettingsPage() {
                     address: formData.address.trim(),
                     phone: formData.phone.trim(),
                     maps_link: formData.maps_link.trim(),
+                    opening_time: formData.opening_time || null,
+                    closing_time: formData.closing_time || null,
                     logo_url: logoUrl,
                     banner_url: bannerUrl,
                 })
@@ -547,6 +555,32 @@ export default function MerchantSettingsPage() {
                                     rows={4}
                                     placeholder="وصف قصير عن متجرك ومنتجاتك..."
                                 />
+                            </div>
+
+                            {/* Working Hours */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-light-primary mb-2">
+                                        وقت الفتح
+                                    </label>
+                                    <input
+                                        type="time"
+                                        value={formData.opening_time}
+                                        onChange={(e) => setFormData({ ...formData, opening_time: e.target.value })}
+                                        className="w-full px-4 py-2 bg-card-light border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-light-primary mb-2">
+                                        وقت الإغلاق
+                                    </label>
+                                    <input
+                                        type="time"
+                                        value={formData.closing_time}
+                                        onChange={(e) => setFormData({ ...formData, closing_time: e.target.value })}
+                                        className="w-full px-4 py-2 bg-card-light border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light-primary"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

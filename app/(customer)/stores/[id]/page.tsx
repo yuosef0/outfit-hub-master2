@@ -4,9 +4,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import type { Store, Product, StoreReview } from '@/lib/types';
+import type { Store, Product, StoreReview, StoreBranch } from '@/lib/types';
 import WishlistButton from '@/components/WishlistButton';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { useAuthStore } from '@/store/authStore';
 import ReviewModal from '@/components/ReviewModal';
 import Toast from '@/components/Toast';
 
@@ -38,6 +39,8 @@ export default function StoreProfilePage() {
     const [reviews, setReviews] = useState<StoreReview[]>([]);
     const [avgRating, setAvgRating] = useState<number>(0);
     const [reviewsCount, setReviewsCount] = useState<number>(0);
+    const [branches, setBranches] = useState<StoreBranch[]>([]);
+    const authUser = useAuthStore((state) => state.user);
 
     const supabase = useMemo(
         () =>
@@ -152,6 +155,19 @@ export default function StoreProfilePage() {
                     return;
                 }
                 setStore(data);
+
+                // Fetch branches for this store
+                try {
+                    const { data: branchesData } = await supabase
+                        .from('store_branches')
+                        .select('*')
+                        .eq('store_id', storeId)
+                        .eq('is_active', true)
+                        .order('created_at', { ascending: true });
+                    setBranches(branchesData || []);
+                } catch {
+                    setBranches([]);
+                }
             } catch (error: any) {
                 console.error('Error fetching store:', error.message || error);
             }
@@ -350,6 +366,30 @@ export default function StoreProfilePage() {
         setFilteredProducts(filtered);
     }, [searchQuery, activeCategory, products]);
 
+    // Find a branch matching the user's location to display its info
+    const nearestBranch = useMemo(() => {
+        if (!authUser?.governorate || !store || branches.length === 0) return null;
+        // First try exact match (governorate + district)
+        if (authUser.district) {
+            const exact = branches.find(
+                b => b.governorate === authUser.governorate && b.district === authUser.district
+            );
+            if (exact) return exact;
+        }
+        // Fallback: match by governorate only
+        return branches.find(b => b.governorate === authUser.governorate) || null;
+    }, [authUser?.governorate, authUser?.district, branches, store]);
+
+    // Display info: use nearest branch if available, otherwise main store
+    const displayAddress = nearestBranch?.address || store?.address;
+    const displayPhone = nearestBranch?.phone || store?.phone;
+    const displayMapsLink = nearestBranch?.maps_link || store?.maps_link;
+
+    // Other branches = all branches except the one we're already showing
+    const otherBranches = nearestBranch
+        ? branches.filter(b => b.id !== nearestBranch.id)
+        : branches;
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-background-light">
@@ -476,9 +516,9 @@ export default function StoreProfilePage() {
  scrollbar-width: none;
  }
  `}</style>
-                    {store.address && (
+                    {displayAddress && (
                         <a
-                            href={store.maps_link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.address)}`}
+                            href={displayMapsLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayAddress)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 pl-1 pr-3 py-1.5 bg-card-light/50 rounded-lg border border-transparent hover:border-border-light transition-colors cursor-pointer shrink-0"
@@ -487,29 +527,45 @@ export default function StoreProfilePage() {
                                 <span className="material-symbols-outlined text-[18px]">location_on</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xs font-semibold text-text-light-primary">{store.address}</span>
-                                <span className="text-[10px] text-text-light-secondary">{t('store.viewOnMap')}</span>
+                                <span className="text-xs font-semibold text-text-light-primary">{displayAddress}</span>
+                                <span className="text-[10px] text-text-light-secondary">
+                                    {nearestBranch ? nearestBranch.name : t('store.viewOnMap')}
+                                </span>
                             </div>
                         </a>
                     )}
-                    {store.phone && (
-                        <div className="flex items-center gap-2 pl-1 pr-3 py-1.5 bg-card-light/50 rounded-lg border border-transparent hover:border-border-light transition-colors cursor-pointer shrink-0">
+                    {displayPhone && (
+                        <a href={`tel:${displayPhone}`} className="flex items-center gap-2 pl-1 pr-3 py-1.5 bg-card-light/50 rounded-lg border border-transparent hover:border-border-light transition-colors cursor-pointer shrink-0">
                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                                 <span className="material-symbols-outlined text-[18px]">call</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-xs font-semibold text-text-light-primary">{t('store.callNow')}</span>
-                                <span className="text-[10px] text-text-light-secondary">{store.phone}</span>
+                                <span className="text-[10px] text-text-light-secondary" dir="ltr">{displayPhone}</span>
                             </div>
-                        </div>
+                        </a>
                     )}
                     <div className="flex items-center gap-2 pl-1 pr-3 py-1.5 bg-card-light/50 rounded-lg border border-transparent hover:border-border-light transition-colors cursor-pointer shrink-0">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                             <span className="material-symbols-outlined text-[18px]">schedule</span>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-xs font-semibold text-text-light-primary">{t('store.open')}</span>
-                            <span className="text-[10px] text-text-light-secondary">{t('store.openUntil')} 9 PM</span>
+                            <span className="text-xs font-semibold text-text-light-primary">{t('store.workingHours')}</span>
+                            <span className="text-[10px] text-text-light-secondary" dir="ltr">
+                                {store.opening_time && store.closing_time ? (
+                                    (() => {
+                                        const format = (tStr: string) => {
+                                            const [h, m] = tStr.split(':');
+                                            const suffix = +h >= 12 ? (language === 'ar' ? 'م' : 'PM') : (language === 'ar' ? 'ص' : 'AM');
+                                            const hours = +h % 12 || 12;
+                                            return `${hours}:${m} ${suffix}`;
+                                        };
+                                        return `${format(store.opening_time)} - ${format(store.closing_time)}`;
+                                    })()
+                                ) : (
+                                    t('store.openUntil') + ' 9 PM' // Fallback
+                                )}
+                            </span>
                         </div>
                     </div>
 
@@ -700,10 +756,71 @@ export default function StoreProfilePage() {
                                 {store.description || t('store.noDescription')}
                             </p>
                         </div>
-                        {store.address && (
+                        {displayAddress && (
                             <div className="bg-card-light/50 rounded-xl p-4 border border-border-light">
                                 <h3 className="font-bold text-text-light-primary mb-2">{t('store.location')}</h3>
-                                <p className="text-text-light-secondary text-sm">{store.address}</p>
+                                <p className="text-text-light-secondary text-sm">{displayAddress}</p>
+                                {nearestBranch && (
+                                    <p className="text-primary text-xs mt-1 font-semibold">{nearestBranch.name}</p>
+                                )}
+                            </div>
+                        )}
+                        {otherBranches.length > 0 && (
+                            <div className="bg-card-light/50 rounded-xl p-4 border border-border-light">
+                                <h3 className="font-bold text-text-light-primary mb-3 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary" style={{ fontSize: '20px' }}>location_city</span>
+                                    {t('store.otherBranches')}
+                                </h3>
+                                <div className="space-y-3">
+                                    {/* Show main store location if we're displaying a branch */}
+                                    {nearestBranch && store.address && (
+                                        <div className="p-3 bg-background-light rounded-lg border border-border-light/50">
+                                            <p className="font-semibold text-text-light-primary text-sm">
+                                                {language === 'ar' ? 'الفرع الرئيسي' : 'Main Branch'}
+                                            </p>
+                                            <p className="text-text-light-secondary text-xs mt-1">{store.address}</p>
+                                            <div className="flex items-center gap-3 mt-2 flex-wrap">
+                                                {store.phone && (
+                                                    <a href={`tel:${store.phone}`} className="text-primary text-xs flex items-center gap-1">
+                                                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>call</span>
+                                                        <span dir="ltr">{store.phone}</span>
+                                                    </a>
+                                                )}
+                                                {store.maps_link && (
+                                                    <a href={store.maps_link} target="_blank" rel="noopener noreferrer" className="text-primary text-xs flex items-center gap-1">
+                                                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>map</span>
+                                                        {language === 'ar' ? 'عرض على الخريطة' : 'View on Map'}
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {otherBranches.map((branch) => (
+                                        <div key={branch.id} className="p-3 bg-background-light rounded-lg border border-border-light/50">
+                                            <p className="font-semibold text-text-light-primary text-sm">{branch.name}</p>
+                                            <p className="text-text-light-secondary text-xs mt-1">{branch.address}</p>
+                                            <div className="flex items-center gap-3 mt-2 flex-wrap">
+                                                {branch.phone && (
+                                                    <a href={`tel:${branch.phone}`} className="text-primary text-xs flex items-center gap-1">
+                                                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>call</span>
+                                                        <span dir="ltr">{branch.phone}</span>
+                                                    </a>
+                                                )}
+                                                {branch.maps_link && (
+                                                    <a
+                                                        href={branch.maps_link}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-primary text-xs flex items-center gap-1"
+                                                    >
+                                                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>map</span>
+                                                        {language === 'ar' ? 'عرض على الخريطة' : 'View on Map'}
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>

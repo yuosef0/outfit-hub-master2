@@ -59,7 +59,23 @@ export interface Store {
     is_visible: boolean;
     governorate?: string;
     district?: string;
+    opening_time?: string;
+    closing_time?: string;
     points_balance: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface StoreBranch {
+    id: string;
+    store_id: string;
+    name: string;
+    address: string;
+    governorate: string;
+    district?: string;
+    phone?: string;
+    maps_link?: string;
+    is_active: boolean;
     created_at: string;
     updated_at: string;
 }

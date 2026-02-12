@@ -48,8 +48,31 @@ export default function CustomerHome() {
                         }
 
                         const { data: govStores } = await storesQuery;
-                        if (govStores && govStores.length > 0) {
-                            storeIds = govStores.map(s => s.id);
+
+                        // Also include stores that have branches in user's location
+                        let branchStoreIds: string[] = [];
+                        try {
+                            let branchQuery = supabase
+                                .from('store_branches')
+                                .select('store_id')
+                                .eq('governorate', userData.governorate)
+                                .eq('is_active', true);
+
+                            if (userData.district) {
+                                branchQuery = branchQuery.eq('district', userData.district);
+                            }
+
+                            const { data: branchStores } = await branchQuery;
+                            branchStoreIds = branchStores?.map(b => b.store_id) || [];
+                        } catch {
+                            // store_branches table may not exist yet
+                        }
+
+                        const mainStoreIds = govStores?.map(s => s.id) || [];
+                        const allStoreIds = [...new Set([...mainStoreIds, ...branchStoreIds])];
+
+                        if (allStoreIds.length > 0) {
+                            storeIds = allStoreIds;
                         }
                     }
                 }

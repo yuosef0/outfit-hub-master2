@@ -11,7 +11,13 @@ export default function HomePage() {
     const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [featuredStores, setFeaturedStores] = useState<Store[]>([]);
+    interface DisplayStore extends Store {
+        display_name: string;
+        link_url: string;
+        is_branch?: boolean;
+    }
+
+    const [featuredStores, setFeaturedStores] = useState<DisplayStore[]>([]);
     const [newArrivals, setNewArrivals] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { user } = useAuthStore();
@@ -42,27 +48,96 @@ export default function HomePage() {
 
                 if (categoriesData) setCategories(categoriesData);
 
-                // Fetch featured stores (first 4) - Filtered by Governorate & District
-                let storesQuery = supabase
-                    .from('stores')
-                    .select('*')
-                    .eq('is_active', true)
-                    .or('is_visible.eq.true,is_visible.is.null')
-                    .order('created_at', { ascending: false })
-                    .limit(4);
+                // 2. Fetch Stores Logic
+                // If we have a location filter, we want to show:
+                // a) Main stores physically located here
+                // b) Branches physically located here
+
+                let displayStores: DisplayStore[] = [];
 
                 if (user?.governorate) {
-                    storesQuery = storesQuery.eq('governorate', user.governorate);
-                    if (user?.district) {
-                        storesQuery = storesQuery.eq('district', user.district);
+                    // A. Fetch Main Stores in Location
+                    let mainStoreQuery = supabase
+                        .from('stores')
+                        .select('*')
+                        .eq('is_active', true)
+                        .eq('governorate', user.governorate)
+                        .or('is_visible.eq.true,is_visible.is.null');
+
+                    if (user.district) {
+                        mainStoreQuery = mainStoreQuery.eq('district', user.district);
+                    }
+
+                    // B. Fetch Branches in Location (with parent store info)
+                    let branchQuery = supabase
+                        .from('store_branches')
+                        .select('*, store:store_id(*)')
+                        .eq('is_active', true)
+                        .eq('governorate', user.governorate);
+
+                    if (user.district) {
+                        branchQuery = branchQuery.eq('district', user.district);
+                    }
+
+                    const [mainRes, branchRes] = await Promise.all([mainStoreQuery, branchQuery]);
+
+                    // Process Main Stores
+                    if (mainRes.data) {
+                        const mainStores = mainRes.data.map((s: any) => ({
+                            ...s,
+                            display_name: s.name,
+                            link_url: `/stores/${s.id}`,
+                            is_branch: false,
+                            unique_key: `store_${s.id}`
+                        }));
+                        displayStores = [...displayStores, ...mainStores];
+                    }
+
+                    // Process Branches
+                    if (branchRes.data) {
+                        const branches = branchRes.data
+                            .filter((b: any) => b.store && b.store.is_active) // Ensure parent store is active
+                            .map((b: any) => ({
+                                ...b.store, // Inherit store props (logo, category, etc.)
+                                id: b.store.id, // Use store ID for linking basic stuff, but we use branch ID for uniqueness in list
+                                display_name: b.name === b.store.name ? b.name : `${b.store.name} - ${b.name}`, // "Zara - City Stars" or just "Branch Name" if descriptive
+                                link_url: `/stores/${b.store_id}?branch_id=${b.id}`,
+                                is_branch: true,
+                                unique_key: `branch_${b.id}` // Helper for React key
+                            }));
+                        displayStores = [...displayStores, ...branches];
+                    }
+
+                } else {
+                    // No location set: Fetch all Main Stores (Global View)
+                    const { data: storesData } = await supabase
+                        .from('stores')
+                        .select('*')
+                        .eq('is_active', true)
+                        .or('is_visible.eq.true,is_visible.is.null')
+                        .order('created_at', { ascending: false });
+
+                    if (storesData) {
+                        displayStores = storesData.map((s: any) => ({
+                            ...s,
+                            display_name: s.name,
+                            link_url: `/stores/${s.id}`,
+                            is_branch: false,
+                            unique_key: `store_${s.id}`
+                        }));
                     }
                 }
 
-                const { data: storesData } = await storesQuery;
+                setFeaturedStores(displayStores);
 
-                if (storesData) setFeaturedStores(storesData);
+                // For New Arrivals, we still want to show products from ALL relevant stores in this area
+                // We can derive relevantStoreIds from our displayStores
+                const filteredStoreIds = displayStores.map(ds => ds.id);
+                // Depending on the logic, if displayStores is empty (because of filter), New Arrivals should be empty too?
+                // Or if no filter (Global View), displayStores has all stores, so New Arrivals has all products.
+                // Re-using the logic from previous step for New Arrivals is fine, but using `filteredStoreIds` is more consistent with what user sees.
 
-                // Fetch new arrivals (latest 6 products with store info) - Filtered by Store Governorate & District
+                // 3. Fetch New Arrivals (Filtered by relevant IDs if location is set)
                 let productsQuery = supabase
                     .from('products')
                     .select(`
@@ -76,19 +151,29 @@ export default function HomePage() {
                         )
                     `)
                     .eq('is_active', true)
-                    .order('created_at', { ascending: false })
-                    .limit(6);
+                    .limit(50); // Larger pool for randomization
 
-                if (user?.governorate) {
-                    productsQuery = productsQuery.eq('stores.governorate', user.governorate);
-                    if (user?.district) {
-                        productsQuery = productsQuery.eq('stores.district', user.district);
+                const relevantStoreIds = displayStores.length > 0 ? displayStores.map(ds => ds.id) : null;
+
+                if (relevantStoreIds !== null && user?.governorate) {
+                    if (relevantStoreIds.length > 0) {
+                        productsQuery = productsQuery.in('store_id', relevantStoreIds);
+                        const { data: productsData } = await productsQuery;
+                        if (productsData) {
+                            const shuffled = [...productsData].sort(() => 0.5 - Math.random());
+                            setNewArrivals(shuffled.slice(0, 10));
+                        }
+                    } else {
+                        setNewArrivals([]);
+                    }
+                } else {
+                    // No location set, fetch random from all
+                    const { data: productsData } = await productsQuery;
+                    if (productsData) {
+                        const shuffled = [...productsData].sort(() => 0.5 - Math.random());
+                        setNewArrivals(shuffled.slice(0, 10));
                     }
                 }
-
-                const { data: productsData } = await productsQuery;
-
-                if (productsData) setNewArrivals(productsData);
             } catch (error: any) {
                 if (error.name !== 'AbortError') {
                     console.error('Error fetching data:', error);
@@ -218,10 +303,10 @@ export default function HomePage() {
                 <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <div className="flex items-stretch p-4 gap-3">
                         {featuredStores.length > 0 ? (
-                            featuredStores.map((store) => (
+                            featuredStores.map((store: any) => (
                                 <Link
-                                    key={store.id}
-                                    href={`/stores/${store.id}`}
+                                    key={store.unique_key || store.id}
+                                    href={store.link_url}
                                     className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40 hover:opacity-80 transition-opacity"
                                 >
                                     {store.logo_url ? (
@@ -235,8 +320,8 @@ export default function HomePage() {
                                         </div>
                                     )}
                                     <div>
-                                        <p className="text-text-dark-primary text-base font-medium leading-normal">
-                                            {store.name}
+                                        <p className="text-text-dark-primary text-base font-medium leading-normal line-clamp-1">
+                                            {store.display_name}
                                         </p>
                                         <p className="text-text-dark-secondary text-sm font-normal leading-normal">
                                             {store.category || 'Store'}

@@ -14,13 +14,20 @@ interface Subcategory {
     name_ar: string | null;
 }
 
+interface DisplayStore extends Store {
+    display_name: string;
+    link_url: string;
+    is_branch?: boolean;
+    unique_key?: string;
+}
+
 export default function CategoryDetailPage() {
     const router = useRouter();
     const params = useParams();
     const slug = typeof params?.slug === 'string' ? params.slug : Array.isArray(params?.slug) ? params.slug[0] : '';
 
-    const [stores, setStores] = useState<Store[]>([]);
-    const [filteredStores, setFilteredStores] = useState<Store[]>([]);
+    const [stores, setStores] = useState<DisplayStore[]>([]);
+    const [filteredStores, setFilteredStores] = useState<DisplayStore[]>([]);
     const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
     const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -41,6 +48,8 @@ export default function CategoryDetailPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                if (!slug) return;
+
                 const categoryName = slug.replace(/-/g, ' ');
 
                 // 1. Fetch Category to get ID and Arabic Name
@@ -59,30 +68,101 @@ export default function CategoryDetailPage() {
                         .order('name');
                     setSubcategories(subs || []);
 
-                    // 3. Fetch Stores (match English OR Arabic category name)
-                    let storesQuery = supabase
-                        .from('stores')
-                        .select('*')
-                        .eq('is_active', true)
-                        .or('is_visible.eq.true,is_visible.is.null')
-                        .or(`category.ilike.%${categoryData.name}%,category.ilike.%${categoryData.name_ar}%`)
-                        .order('created_at', { ascending: false });
+                    let displayStores: DisplayStore[] = [];
 
-                    // Filter by governorate and district if user is logged in and has them selected
+                    // 3. Logic: If User Location is set, fetch Local Main Stores + Local Branches
                     if (user?.governorate) {
-                        storesQuery = storesQuery.eq('governorate', user.governorate);
-                        if (user?.district) {
-                            storesQuery = storesQuery.eq('district', user.district);
+                        // A. Fetch Main Stores in this Location matching Category
+                        let mainStoresQuery = supabase
+                            .from('stores')
+                            .select('*')
+                            .eq('is_active', true)
+                            .or('is_visible.eq.true,is_visible.is.null')
+                            .eq('governorate', user.governorate)
+                            .or(`category.ilike.%${categoryData.name}%,category.ilike.%${categoryData.name_ar || categoryData.name}%`);
+
+                        if (user.district) {
+                            mainStoresQuery = mainStoresQuery.eq('district', user.district);
+                        }
+
+                        const { data: mainStoresData } = await mainStoresQuery;
+
+                        if (mainStoresData) {
+                            const mainStores = mainStoresData.map((s: any) => ({
+                                ...s,
+                                display_name: s.name,
+                                link_url: `/stores/${s.id}`,
+                                is_branch: false,
+                                unique_key: `store_${s.id}`
+                            }));
+                            displayStores = [...displayStores, ...mainStores];
+                        }
+
+                        // B. Fetch Branches in this Location matching Category (via parent store)
+                        let branchesQuery = supabase
+                            .from('store_branches')
+                            .select('*, store:store_id(*)')
+                            .eq('is_active', true)
+                            .eq('governorate', user.governorate);
+
+                        if (user.district) {
+                            branchesQuery = branchesQuery.eq('district', user.district);
+                        }
+
+                        const { data: branchesData } = await branchesQuery;
+
+                        if (branchesData) {
+                            // Filter branches where parent store matches category
+                            const relevantBranches = branchesData.filter((b: any) => {
+                                const s = b.store;
+                                if (!s || !s.is_active) return false; // Parent store must be active
+
+                                const catName = categoryData.name.toLowerCase();
+                                const catNameAr = categoryData.name_ar?.toLowerCase();
+                                const storeCat = s.category?.toLowerCase() || '';
+
+                                return storeCat.includes(catName) || (catNameAr && storeCat.includes(catNameAr));
+                            });
+
+                            const branchStores = relevantBranches.map((b: any) => ({
+                                ...b.store, // Inherit parent store props
+                                id: b.store.id, // ID must match for some checks, but unique_key handles list
+                                display_name: b.name === b.store.name ? b.name : `${b.store.name} - ${b.name || 'Branch'}`,
+                                address: b.address || b.store.address, // Use branch address
+                                governorate: b.governorate,
+                                district: b.district,
+                                link_url: `/stores/${b.store_id}?branch_id=${b.id}`,
+                                is_branch: true,
+                                unique_key: `branch_${b.id}`
+                            }));
+
+                            displayStores = [...displayStores, ...branchStores];
+                        }
+
+                    } else {
+                        // 4. No Location Filter: Fetch ALL Main Stores matching Category
+                        const { data: allMainStores } = await supabase
+                            .from('stores')
+                            .select('*')
+                            .eq('is_active', true)
+                            .or('is_visible.eq.true,is_visible.is.null')
+                            .or(`category.ilike.%${categoryData.name}%,category.ilike.%${categoryData.name_ar || categoryData.name}%`)
+                            .order('created_at', { ascending: false });
+
+                        if (allMainStores) {
+                            const mainStores = allMainStores.map((s: any) => ({
+                                ...s,
+                                display_name: s.name,
+                                link_url: `/stores/${s.id}`,
+                                is_branch: false,
+                                unique_key: `store_${s.id}`
+                            }));
+                            displayStores = [...displayStores, ...mainStores];
                         }
                     }
 
-                    const { data: storesData, error } = await storesQuery;
-
-                    if (error) throw error;
-                    if (storesData) {
-                        setStores(storesData);
-                        setFilteredStores(storesData);
-                    }
+                    setStores(displayStores);
+                    setFilteredStores(displayStores);
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -103,9 +183,10 @@ export default function CategoryDetailPage() {
 
             // 1. Filter by Search
             if (searchQuery) {
+                const query = searchQuery.toLowerCase();
                 filtered = filtered.filter(store =>
-                    store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    store.description?.toLowerCase().includes(searchQuery.toLowerCase())
+                    store.display_name.toLowerCase().includes(query) ||
+                    store.description?.toLowerCase().includes(query)
                 );
             }
 
@@ -118,6 +199,7 @@ export default function CategoryDetailPage() {
 
                 if (storeSubcategories) {
                     const storeIds = new Set(storeSubcategories.map(s => s.store_id));
+                    // Note: Branches share the same store_id as parent, so this filters branches correctly too
                     filtered = filtered.filter(store => storeIds.has(store.id));
                 }
             }
@@ -127,12 +209,6 @@ export default function CategoryDetailPage() {
 
         filterStores();
     }, [searchQuery, stores, selectedSubcategory, supabase]);
-
-
-
-    const displayTitle = slug
-        ? slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-        : "Category";
 
     if (isLoading) {
         return (
@@ -147,7 +223,6 @@ export default function CategoryDetailPage() {
 
     return (
         <div className="max-w-md mx-auto min-h-screen bg-background-light shadow-2xl relative overflow-hidden flex flex-col transition-colors duration-200">
-
 
             {/* Store Count and Filters */}
             <div className="px-5 py-3 border-b border-border-light/50/50 space-y-3">
@@ -192,7 +267,7 @@ export default function CategoryDetailPage() {
                 ) : (
                     filteredStores.map((store) => (
                         <div
-                            key={store.id}
+                            key={store.unique_key || store.id}
                             className="group bg-card-light/50 rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border-light/50 hover:border-primary/30 transition-all"
                         >
                             <div className="flex gap-4 mb-3">
@@ -211,7 +286,7 @@ export default function CategoryDetailPage() {
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h3 className="text-text-light-primary text-lg font-bold leading-tight truncate">
-                                                {store.name}
+                                                {store.display_name}
                                             </h3>
                                             <div className="flex items-center gap-2 mt-1">
                                                 {store.category && (
@@ -237,14 +312,12 @@ export default function CategoryDetailPage() {
                                     {store.description}
                                 </p>
                             )}
-                            {store.address && (
-                                <div className="flex items-center gap-2 text-xs text-text-light-secondary mb-4">
-                                    <span className="material-symbols-outlined text-[16px]">location_on</span>
-                                    <span>{store.address}</span>
-                                </div>
-                            )}
+                            <div className="flex items-center gap-2 text-xs text-text-light-secondary mb-4">
+                                <span className="material-symbols-outlined text-[16px]">location_on</span>
+                                <span>{store.address}</span>
+                            </div>
                             <Link
-                                href={`/stores/${store.id}`}
+                                href={store.link_url}
                                 className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-primary/20 text-primary font-semibold text-sm hover:bg-primary hover:text-white transition-all active:scale-[0.98]"
                             >
                                 {t('categories.viewStore')}
