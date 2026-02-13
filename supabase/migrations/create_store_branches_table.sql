@@ -38,7 +38,7 @@ CREATE POLICY "Merchants can insert branches" ON store_branches
         EXISTS (
             SELECT 1 FROM stores
             WHERE stores.id = store_branches.store_id
-            AND stores.merchant_id = auth.uid()
+            AND stores.merchant_id = (select auth.uid())
         )
     );
 
@@ -48,7 +48,7 @@ CREATE POLICY "Merchants can update their branches" ON store_branches
         EXISTS (
             SELECT 1 FROM stores
             WHERE stores.id = store_branches.store_id
-            AND stores.merchant_id = auth.uid()
+            AND stores.merchant_id = (select auth.uid())
         )
     );
 
@@ -58,6 +58,6 @@ CREATE POLICY "Merchants can delete their branches" ON store_branches
         EXISTS (
             SELECT 1 FROM stores
             WHERE stores.id = store_branches.store_id
-            AND stores.merchant_id = auth.uid()
+            AND stores.merchant_id = (select auth.uid())
         )
     );
