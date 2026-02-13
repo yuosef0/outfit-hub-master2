@@ -25,7 +25,8 @@
       "Bash(cd:*)",
       "Bash(npx next lint)",
       "Bash(npx tsc:*)",
-      "Bash(copy:*)"
+      "Bash(copy:*)",
+      "Bash(wc:*)"
     ]
   }
 }
