@@ -26,6 +26,34 @@ export default function ProductsListPage() {
  checkStoreAndFetchProducts();
  }, []);
 
+ // Real-time stock updates: reflect product stock changes caused by completed orders
+ useEffect(() => {
+ if (!storeId) return;
+
+ const channel = supabase
+   .channel(`merchant-products-stock-${storeId}`)
+   .on(
+     'postgres_changes',
+     {
+       event: 'UPDATE',
+       schema: 'public',
+       table: 'products',
+       filter: `store_id=eq.${storeId}`,
+     },
+     (payload) => {
+       const updated = payload.new as Product;
+       setProducts((prev) =>
+         prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+       );
+     }
+   )
+   .subscribe();
+
+ return () => {
+   supabase.removeChannel(channel);
+ };
+ }, [storeId]);
+
  useEffect(() => {
  // Filter products
  let filtered = products;

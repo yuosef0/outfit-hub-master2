@@ -43,6 +43,15 @@ BEGIN
                 UPDATE product_variants
                 SET stock_quantity = GREATEST(0, stock_quantity - qty)
                 WHERE id = variant_id;
+
+                -- Sync product-level stock_quantity = SUM of all its variants
+                UPDATE products
+                SET stock_quantity = (
+                    SELECT COALESCE(SUM(pv.stock_quantity), 0)
+                    FROM product_variants pv
+                    WHERE pv.product_id = prod_id
+                )
+                WHERE id = prod_id;
             ELSE
                 -- Fallback: deduct from product-level stock
                 UPDATE products
