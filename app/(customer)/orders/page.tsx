@@ -7,6 +7,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Order, OrderStatus } from '@/lib/types';
 import ReviewModal from '@/components/ReviewModal';
+import Toast from '@/components/Toast';
 
 export default function OrdersPage() {
     const router = useRouter();
@@ -16,6 +17,8 @@ export default function OrdersPage() {
     const { t, language } = useLanguage();
     const [reviewedOrders, setReviewedOrders] = useState<Set<string>>(new Set());
     const [reviewModalData, setReviewModalData] = useState<{ orderId: string; storeId: string; storeName: string } | null>(null);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
     const supabase = useMemo(
         () =>
@@ -34,6 +37,8 @@ export default function OrdersPage() {
                     router.push('/login');
                     return;
                 }
+
+                setUserId(user.id);
 
                 const { data, error } = await supabase
                     .from('orders')
@@ -71,6 +76,48 @@ export default function OrdersPage() {
 
         fetchOrders();
     }, [supabase, router]);
+
+    // Real-time subscription: update order status instantly when merchant completes pickup
+    useEffect(() => {
+        if (!userId) return;
+
+        const channel = supabase
+            .channel(`customer-orders-realtime-${userId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'orders',
+                    filter: `customer_id=eq.${userId}`,
+                },
+                (payload) => {
+                    const updated = payload.new as any;
+
+                    // Merge update into existing orders (keep joined store data)
+                    setOrders((prev) =>
+                        prev.map((o) =>
+                            o.id === updated.id
+                                ? { ...o, ...updated, stores: o.stores }
+                                : o
+                        )
+                    );
+
+                    // Show thank-you toast when order is completed
+                    if (updated.status === 'completed') {
+                        setToast({
+                            message: '🎉 تم استلام طلبك بنجاح! شكراً لك على ثقتك بنا',
+                            type: 'success',
+                        });
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [userId, supabase]);
 
     const handleReviewSuccess = () => {
         if (reviewModalData) {
@@ -129,6 +176,7 @@ export default function OrdersPage() {
 
     return (
         <div className="relative flex min-h-screen w-full flex-col bg-background-light pb-24">
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             {/* Header */}
             <div className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md border-b border-border-light">
                 <div className="flex items-center px-4 py-3">
