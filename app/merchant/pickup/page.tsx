@@ -315,13 +315,38 @@ export default function PickupPage() {
  </div>
 
  {/* Items */}
- <div className="mb-6 max-h-40 overflow-y-auto">
+ <div className="mb-6 max-h-52 overflow-y-auto">
  <p className="text-sm font-bold text-text-light-primary mb-2">المنتجات:</p>
  <div className="space-y-2">
  {selectedOrder.items.map((item: any, index: number) => (
- <div key={index} className="text-sm text-text-light-secondary flex justify-between">
- <span>{item.product_name} × {item.quantity}</span>
- <span className="font-medium">{(item.price * item.quantity).toFixed(2)} ج.م</span>
+ <div key={index} className="bg-background-light rounded-lg p-3">
+   <div className="flex justify-between items-start">
+     <span className="text-sm font-medium text-text-light-primary flex-1 ml-2">
+       {item.product_name} × {item.quantity}
+     </span>
+     <span className="text-sm font-bold text-primary shrink-0">
+       {(item.price * item.quantity).toFixed(2)} ج.م
+     </span>
+   </div>
+   {(item.size || item.color) && (
+     <div className="flex gap-2 flex-wrap mt-1.5">
+       {item.size && (
+         <span className="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-medium">
+           <span className="material-symbols-outlined" style={{fontSize:'12px'}}>straighten</span>
+           المقاس: {item.size}
+         </span>
+       )}
+       {item.color && (
+         <span className="inline-flex items-center gap-1.5 text-xs bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full font-medium">
+           <span
+             className="w-3 h-3 rounded-full border border-purple-300 inline-block shrink-0"
+             style={{ backgroundColor: item.color }}
+           />
+           اللون: {item.color}
+         </span>
+       )}
+     </div>
+   )}
  </div>
  ))}
  </div>
