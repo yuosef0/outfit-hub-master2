@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import Link from 'next/link';
@@ -17,9 +17,12 @@ export default function ProductsListPage() {
  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
- const supabase = createBrowserClient(
- process.env.NEXT_PUBLIC_SUPABASE_URL!,
- process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+ const supabase = useMemo(
+ () => createBrowserClient(
+   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+ ),
+ []
  );
 
  useEffect(() => {
@@ -178,11 +181,11 @@ export default function ProductsListPage() {
  }
 
  return (
- <div className="bg-background-light">
+ <div className="bg-background-light min-h-screen overscroll-none">
  {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
  {/* Header */}
- <div className="bg-card-light border-b border-border-light sticky top-0 z-10">
+ <div className="bg-card-light border-b border-border-light sticky top-0 z-10 will-change-transform">
  <div className="px-4 py-4">
  <div className="flex items-center justify-between">
  <div>

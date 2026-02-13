@@ -36,6 +36,7 @@ export default function ProductDetailPage() {
     const [isInCart, setIsInCart] = useState(false);
     const [cartItemId, setCartItemId] = useState<string | null>(null);
     const [availableStock, setAvailableStock] = useState<number>(0);
+    const [allVariants, setAllVariants] = useState<{ size: string | null; color: string | null; stock_quantity: number }[]>([]);
 
     // Check if product is in cart
     const checkCartStatus = async () => {
@@ -113,49 +114,36 @@ export default function ProductDetailPage() {
         }
     }, [productId, supabase]);
 
-    // Fetch available stock for selected variant
+    // Fetch ALL variants once when product loads, then derive available stock from selection
     useEffect(() => {
-        const fetchAvailableStock = async () => {
+        const fetchVariants = async () => {
             if (!product) return;
 
-            // Check if product has variants
             const { data: variants } = await supabase
                 .from('product_variants')
-                .select('stock_quantity')
+                .select('size, color, stock_quantity')
                 .eq('product_id', product.id);
 
             if (variants && variants.length > 0) {
-                // Product has variants, find matching one
-                let query = supabase
-                    .from('product_variants')
-                    .select('stock_quantity')
-                    .eq('product_id', product.id);
-
-                // Handle size matching (NULL or value)
-                if (selectedSize) {
-                    query = query.eq('size', selectedSize);
-                } else {
-                    query = query.is('size', null);
-                }
-
-                // Handle color matching (NULL or value)
-                if (selectedColor) {
-                    query = query.eq('color', selectedColor);
-                } else {
-                    query = query.is('color', null);
-                }
-
-                const { data: variant } = await query.maybeSingle();
-
-                setAvailableStock(variant?.stock_quantity || 0);
+                setAllVariants(variants);
             } else {
-                // No variants, use product-level stock
+                setAllVariants([]);
                 setAvailableStock(product.stock_quantity || 0);
             }
         };
+        fetchVariants();
+    }, [product]); // eslint-disable-line react-hooks/exhaustive-deps
 
-        fetchAvailableStock();
-    }, [product, selectedSize, selectedColor]);
+    // Recalculate available stock whenever selection or allVariants changes
+    useEffect(() => {
+        if (allVariants.length === 0) return;
+
+        const match = allVariants.find(v =>
+            (v.size === selectedSize || (v.size === null && selectedSize === null)) &&
+            (v.color === selectedColor || (v.color === null && selectedColor === null))
+        );
+        setAvailableStock(match?.stock_quantity ?? 0);
+    }, [allVariants, selectedSize, selectedColor]);
 
     // Check cart status when product changes
     useEffect(() => {
@@ -311,13 +299,21 @@ export default function ProductDetailPage() {
                         {/* Stock Info */}
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined text-sm text-text-light-secondary">inventory</span>
-                            <span className="text-sm text-text-light-secondary">
-                                {product.stock_quantity > 0 ? (
-                                    <span className="text-green-400 font-medium">
-                                        {product.stock_quantity} {t('product.inStock')}
-                                    </span>
+                            <span className="text-sm">
+                                {allVariants.length === 0 ? (
+                                    product.stock_quantity > 0 ? (
+                                        <span className="text-green-500 font-medium">{product.stock_quantity} {t('product.inStock')}</span>
+                                    ) : (
+                                        <span className="text-red-500 font-medium">{t('product.outOfStock')}</span>
+                                    )
+                                ) : (selectedSize !== null || selectedColor !== null) ? (
+                                    availableStock > 0 ? (
+                                        <span className="text-green-500 font-medium">{availableStock} {t('product.inStock')}</span>
+                                    ) : (
+                                        <span className="text-red-500 font-medium">{t('product.outOfStock')}</span>
+                                    )
                                 ) : (
-                                    <span className="text-red-400 font-medium">{t('product.outOfStock')}</span>
+                                    <span className="text-text-light-secondary">اختر المقاس أو اللون لمعرفة التوفر</span>
                                 )}
                             </span>
                         </div>
@@ -327,18 +323,36 @@ export default function ProductDetailPage() {
                             <div className="mb-4">
                                 <span className="text-sm font-medium text-text-light-primary mb-3 block">{t('product.size')}</span>
                                 <div className="flex flex-wrap gap-2">
-                                    {product.sizes.map((size) => (
-                                        <button
-                                            key={size}
-                                            onClick={() => setSelectedSize(size)}
-                                            className={`h-10 min-w-[40px] px-3 rounded-lg border text-sm font-medium transition-all ${selectedSize === size
-                                                ? 'border-primary bg-primary text-white'
-                                                : 'border-border-light bg-card-light text-text-light-secondary hover:border-primary/50'
-                                                }`}
-                                        >
-                                            {size}
-                                        </button>
-                                    ))}
+                                    {product.sizes.map((size) => {
+                                        // Stock for this size (considering selected color)
+                                        const sizeStock = allVariants.length > 0
+                                            ? allVariants
+                                                .filter(v => v.size === size && (selectedColor ? v.color === selectedColor : true))
+                                                .reduce((s, v) => s + v.stock_quantity, 0)
+                                            : product.stock_quantity;
+                                        const outOfStock = sizeStock === 0;
+                                        return (
+                                            <button
+                                                key={size}
+                                                onClick={() => !outOfStock && setSelectedSize(selectedSize === size ? null : size)}
+                                                disabled={outOfStock}
+                                                className={`relative h-10 min-w-[40px] px-3 rounded-lg border text-sm font-medium transition-all
+                                                    ${outOfStock
+                                                        ? 'border-border-light text-text-light-secondary/40 bg-background-light cursor-not-allowed'
+                                                        : selectedSize === size
+                                                            ? 'border-primary bg-primary text-white'
+                                                            : 'border-border-light bg-card-light text-text-light-secondary hover:border-primary/50'
+                                                    }`}
+                                            >
+                                                {size}
+                                                {outOfStock && (
+                                                    <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                        <span className="block w-[120%] h-[1.5px] bg-red-400/60 rotate-[-20deg]" />
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -347,18 +361,36 @@ export default function ProductDetailPage() {
                             <div className="mb-4">
                                 <span className="text-sm font-medium text-text-light-primary mb-3 block">{t('product.color')}</span>
                                 <div className="flex flex-wrap gap-2">
-                                    {product.colors.map((color) => (
-                                        <button
-                                            key={color}
-                                            onClick={() => setSelectedColor(color)}
-                                            className={`h-10 px-4 rounded-lg border text-sm font-medium transition-all ${selectedColor === color
-                                                ? 'border-primary bg-primary text-white'
-                                                : 'border-border-light bg-card-light text-text-light-secondary hover:border-primary/50'
-                                                }`}
-                                        >
-                                            {color}
-                                        </button>
-                                    ))}
+                                    {product.colors.map((color) => {
+                                        // Stock for this color (considering selected size)
+                                        const colorStock = allVariants.length > 0
+                                            ? allVariants
+                                                .filter(v => v.color === color && (selectedSize ? v.size === selectedSize : true))
+                                                .reduce((s, v) => s + v.stock_quantity, 0)
+                                            : product.stock_quantity;
+                                        const outOfStock = colorStock === 0;
+                                        return (
+                                            <button
+                                                key={color}
+                                                onClick={() => !outOfStock && setSelectedColor(selectedColor === color ? null : color)}
+                                                disabled={outOfStock}
+                                                className={`relative h-10 px-4 rounded-lg border text-sm font-medium transition-all
+                                                    ${outOfStock
+                                                        ? 'border-border-light text-text-light-secondary/40 bg-background-light cursor-not-allowed'
+                                                        : selectedColor === color
+                                                            ? 'border-primary bg-primary text-white'
+                                                            : 'border-border-light bg-card-light text-text-light-secondary hover:border-primary/50'
+                                                    }`}
+                                            >
+                                                {color}
+                                                {outOfStock && (
+                                                    <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                        <span className="block w-[120%] h-[1.5px] bg-red-400/60 rotate-[-20deg]" />
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -452,7 +484,7 @@ export default function ProductDetailPage() {
                                         setToast({ message: t('msg.tryAgain'), type: 'error' });
                                     }
                                 }}
-                                disabled={product.stock_quantity === 0 && !isInCart}
+                                disabled={availableStock === 0 && !isInCart}
                                 className={`flex-1 h-14 rounded-xl flex items-center justify-center gap-2 font-bold text-base shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${isInCart
                                     ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/30'
                                     : 'bg-primary hover:bg-primary/90 text-white shadow-primary/30'
@@ -461,7 +493,7 @@ export default function ProductDetailPage() {
                                 <span className="material-symbols-outlined">
                                     {isInCart ? 'remove_shopping_cart' : 'shopping_cart'}
                                 </span>
-                                {isInCart ? t('common.remove') : product.stock_quantity > 0 ? t('common.addToCart') : t('product.outOfStock')}
+                                {isInCart ? t('common.remove') : availableStock > 0 ? t('common.addToCart') : t('product.outOfStock')}
                             </button>
                         </div>
                     </div>
