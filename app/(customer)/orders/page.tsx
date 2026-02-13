@@ -7,6 +7,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Order, OrderStatus } from '@/lib/types';
 import ReviewModal from '@/components/ReviewModal';
+import Toast from '@/components/Toast';
 
 export default function OrdersPage() {
     const router = useRouter();
@@ -16,6 +17,9 @@ export default function OrdersPage() {
     const { t, language } = useLanguage();
     const [reviewedOrders, setReviewedOrders] = useState<Set<string>>(new Set());
     const [reviewModalData, setReviewModalData] = useState<{ orderId: string; storeId: string; storeName: string } | null>(null);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+    const [completedOrder, setCompletedOrder] = useState<{ id: string; storeName: string } | null>(null);
 
     const supabase = useMemo(
         () =>
@@ -34,6 +38,8 @@ export default function OrdersPage() {
                     router.push('/login');
                     return;
                 }
+
+                setUserId(user.id);
 
                 const { data, error } = await supabase
                     .from('orders')
@@ -71,6 +77,50 @@ export default function OrdersPage() {
 
         fetchOrders();
     }, [supabase, router]);
+
+    // Real-time subscription: update order status instantly when merchant completes pickup
+    useEffect(() => {
+        if (!userId) return;
+
+        const channel = supabase
+            .channel(`customer-orders-realtime-${userId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'orders',
+                    filter: `customer_id=eq.${userId}`,
+                },
+                (payload) => {
+                    const updated = payload.new as any;
+
+                    // Use functional update so we have access to current state
+                    setOrders((prev) => {
+                        const current = prev.find((o) => o.id === updated.id);
+
+                        // Show congratulations modal when order transitions to completed
+                        if (updated.status === 'completed' && current?.status !== 'completed') {
+                            setCompletedOrder({
+                                id: updated.id,
+                                storeName: current?.stores?.name || 'المتجر',
+                            });
+                        }
+
+                        return prev.map((o) =>
+                            o.id === updated.id
+                                ? { ...o, ...updated, stores: o.stores }
+                                : o
+                        );
+                    });
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [userId, supabase]);
 
     const handleReviewSuccess = () => {
         if (reviewModalData) {
@@ -129,6 +179,7 @@ export default function OrdersPage() {
 
     return (
         <div className="relative flex min-h-screen w-full flex-col bg-background-light pb-24">
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             {/* Header */}
             <div className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md border-b border-border-light">
                 <div className="flex items-center px-4 py-3">
@@ -224,8 +275,8 @@ export default function OrdersPage() {
                                         </span>
                                     </div>
 
-                                    {/* Pickup Code - Only for pending orders */}
-                                    {['reserved', 'confirmed', 'ready'].includes(order.status) && (
+                                    {/* Pickup Code - Only for active (not expired, not completed) orders */}
+                                    {['reserved', 'confirmed', 'ready'].includes(order.status) && new Date(order.expires_at) > new Date() && (
                                         <div className="mt-3 p-4 bg-primary/5 border border-primary/20 rounded-xl">
                                             <div className="flex flex-col items-center gap-3">
                                                 {/* QR Code */}
@@ -363,6 +414,41 @@ export default function OrdersPage() {
                     orderId={reviewModalData.orderId}
                     onSuccess={handleReviewSuccess}
                 />
+            )}
+
+            {/* 🎉 Congratulations Modal — shown when merchant completes the order */}
+            {completedOrder && (
+                <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-card-light rounded-3xl p-8 max-w-sm w-full border border-border-light shadow-2xl text-center">
+                        {/* Animated checkmark */}
+                        <div className="w-28 h-28 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5 animate-bounce">
+                            <span className="material-symbols-outlined text-green-500 text-6xl">check_circle</span>
+                        </div>
+
+                        <h2 className="text-2xl font-bold text-text-light-primary mb-2">
+                            تم الاستلام! 🎉
+                        </h2>
+
+                        <p className="text-text-light-secondary mb-1 text-sm">
+                            شكراً لك على تسوقك من
+                        </p>
+                        <p className="text-primary font-bold text-lg mb-4">
+                            {completedOrder.storeName}
+                        </p>
+
+                        <p className="text-sm text-text-light-secondary mb-7 leading-relaxed">
+                            نتمنى أن تكون راضياً عن تجربتك معنا 💙<br />
+                            يسعدنا خدمتك دائماً
+                        </p>
+
+                        <button
+                            onClick={() => setCompletedOrder(null)}
+                            className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-colors shadow-md"
+                        >
+                            رائع! 👍
+                        </button>
+                    </div>
+                </div>
             )}
         </div>
     );
