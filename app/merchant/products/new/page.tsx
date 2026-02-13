@@ -324,7 +324,8 @@ export default function NewProductPage() {
 
     const updateVariantStock = (index: number, value: string) => {
         const newVariants = [...variants];
-        newVariants[index].stock = parseInt(value) || 0;
+        const numValue = value === '' ? 0 : Math.max(0, parseInt(value) || 0);
+        newVariants[index] = { ...newVariants[index], stock: numValue };
         setVariants(newVariants);
 
         // Update total stock
@@ -873,14 +874,31 @@ export default function NewProductPage() {
                                                     <td className="px-4 py-2 text-text-light-secondary">
                                                         {variant.color || '-'}
                                                     </td>
-                                                    <td className="px-4 py-2">
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            value={variant.stock}
-                                                            onChange={(e) => updateVariantStock(index, e.target.value)}
-                                                            className="w-24 px-2 py-1 rounded border border-border-light bg-background-light focus:ring-2 focus:ring-primary text-center"
-                                                        />
+                                                    <td className="px-3 py-2">
+                                                        <div className="flex items-center gap-1 justify-center">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateVariantStock(index, String(Math.max(0, variant.stock - 1)))}
+                                                                className="w-7 h-7 flex items-center justify-center rounded-md bg-background-light border border-border-light hover:bg-card-light text-text-light-primary transition-colors"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[16px]">remove</span>
+                                                            </button>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                value={variant.stock === 0 ? '' : variant.stock}
+                                                                onChange={(e) => updateVariantStock(index, e.target.value)}
+                                                                placeholder="0"
+                                                                className="w-14 px-1 py-1 rounded border border-border-light bg-background-light focus:ring-2 focus:ring-primary text-center text-sm"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateVariantStock(index, String(variant.stock + 1))}
+                                                                className="w-7 h-7 flex items-center justify-center rounded-md bg-primary/15 hover:bg-primary/25 text-primary transition-colors"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[16px]">add</span>
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
