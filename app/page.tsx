@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import WishlistButton from '@/components/WishlistButton';
+import RamadanDecorations from '@/components/RamadanDecorations';
 import { createBrowserClient } from '@supabase/ssr';
 import type { SliderImage, Category, Store, Product } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
@@ -213,6 +214,7 @@ export default function HomePage() {
             className="relative flex h-auto min-h-screen w-full flex-col bg-background-dark justify-between group/design-root overflow-x-hidden"
             style={{ fontFamily: 'Inter, "Noto Sans", sans-serif' }}
         >
+            <RamadanDecorations />
             <div className="pb-24">
                 {/* Slider Section */}
                 <div className="@container px-4 pt-3">
