@@ -26,7 +26,10 @@
       "Bash(npx next lint)",
       "Bash(npx tsc:*)",
       "Bash(copy:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(node -e:*)",
+      "Bash(node test-categories.mjs:*)",
+      "Bash(node:*)"
     ]
   }
 }

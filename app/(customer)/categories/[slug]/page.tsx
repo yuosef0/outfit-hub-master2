@@ -11,11 +11,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const { slug } = await params;
     const categoryName = slug.replace(/-/g, ' ');
 
-    const { data: category } = await supabase
+    // Fetch all categories and match client-side to handle trailing spaces in DB
+    const { data: allCategories } = await supabase
         .from('categories')
-        .select('name, name_ar, description, image_url')
-        .or(`name.ilike.${categoryName},name_ar.ilike.${categoryName}`)
-        .single();
+        .select('name, name_ar, description, image_url');
+
+    const trimmedSlug = categoryName.trim().toLowerCase();
+    const category = allCategories?.find(c =>
+        c.name?.trim().toLowerCase() === trimmedSlug ||
+        c.name_ar?.trim().toLowerCase() === trimmedSlug
+    ) || null;
 
     if (!category) {
         return { title: 'Category Not Found' };

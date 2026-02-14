@@ -52,12 +52,18 @@ export default function CategoryDetailPage() {
 
                 const categoryName = slug.replace(/-/g, ' ');
 
-                // 1. Fetch Category to get ID and Arabic Name (search both name and name_ar)
-                const { data: categoryData } = await supabase
+                // 1. Fetch Category to get ID and Arabic Name
+                // Fetch all categories and match client-side to handle trailing spaces in DB
+                const { data: allCategories } = await supabase
                     .from('categories')
                     .select('id, name, name_ar')
-                    .or(`name.ilike.${categoryName},name_ar.ilike.${categoryName}`)
-                    .single();
+                    .eq('is_active', true);
+
+                const trimmedSlug = categoryName.trim().toLowerCase();
+                const categoryData = allCategories?.find(c =>
+                    c.name?.trim().toLowerCase() === trimmedSlug ||
+                    c.name_ar?.trim().toLowerCase() === trimmedSlug
+                ) || null;
 
                 if (categoryData) {
                     // 2. Fetch Subcategories

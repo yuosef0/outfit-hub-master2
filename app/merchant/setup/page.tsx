@@ -292,7 +292,7 @@ export default function MerchantSetupPage() {
                                 <label className="text-sm font-semibold text-text-light-primary text-right">الفئات الرئيسية * (اختر فئة أو أكثر)</label>
                                 <div className="grid grid-cols-2 gap-2 bg-card-light rounded-lg border border-border-light p-3">
                                     {categories.map((cat) => {
-                                        const catName = cat.name_ar || cat.name;
+                                        const catName = (cat.name_ar || cat.name).trim();
                                         const selectedCats = formData.category ? formData.category.split(',') : [];
                                         const isSelected = selectedCats.includes(catName);
                                         return (
