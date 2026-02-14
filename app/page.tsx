@@ -62,7 +62,7 @@ export default function HomePage() {
                         .select('*')
                         .eq('is_active', true)
                         .eq('governorate', user.governorate)
-                        .or('is_visible.eq.true,is_visible.is.null');
+                        .not('is_visible', 'is', false);
 
                     if (user.district) {
                         mainStoreQuery = mainStoreQuery.eq('district', user.district);
@@ -114,7 +114,7 @@ export default function HomePage() {
                         .from('stores')
                         .select('*')
                         .eq('is_active', true)
-                        .or('is_visible.eq.true,is_visible.is.null')
+                        .not('is_visible', 'is', false)
                         .order('created_at', { ascending: false });
 
                     if (storesData) {

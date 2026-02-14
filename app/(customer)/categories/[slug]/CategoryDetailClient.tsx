@@ -52,11 +52,11 @@ export default function CategoryDetailPage() {
 
                 const categoryName = slug.replace(/-/g, ' ');
 
-                // 1. Fetch Category to get ID and Arabic Name
+                // 1. Fetch Category to get ID and Arabic Name (search both name and name_ar)
                 const { data: categoryData } = await supabase
                     .from('categories')
                     .select('id, name, name_ar')
-                    .ilike('name', categoryName)
+                    .or(`name.ilike.${categoryName},name_ar.ilike.${categoryName}`)
                     .single();
 
                 if (categoryData) {
@@ -73,13 +73,15 @@ export default function CategoryDetailPage() {
                     // 3. Logic: If User Location is set, fetch Local Main Stores + Local Branches
                     if (user?.governorate) {
                         // A. Fetch Main Stores in this Location matching Category
+                        const catName = categoryData.name;
+                        const catNameAr = categoryData.name_ar || categoryData.name;
                         let mainStoresQuery = supabase
                             .from('stores')
                             .select('*')
                             .eq('is_active', true)
-                            .or('is_visible.eq.true,is_visible.is.null')
+                            .not('is_visible', 'is', false)
                             .eq('governorate', user.governorate)
-                            .or(`category.ilike.%${categoryData.name}%,category.ilike.%${categoryData.name_ar || categoryData.name}%`);
+                            .or(`category.ilike.%${catName}%,category.ilike.%${catNameAr}%`);
 
                         if (user.district) {
                             mainStoresQuery = mainStoresQuery.eq('district', user.district);
@@ -141,12 +143,14 @@ export default function CategoryDetailPage() {
 
                     } else {
                         // 4. No Location Filter: Fetch ALL Main Stores matching Category
+                        const catName = categoryData.name;
+                        const catNameAr = categoryData.name_ar || categoryData.name;
                         const { data: allMainStores } = await supabase
                             .from('stores')
                             .select('*')
                             .eq('is_active', true)
-                            .or('is_visible.eq.true,is_visible.is.null')
-                            .or(`category.ilike.%${categoryData.name}%,category.ilike.%${categoryData.name_ar || categoryData.name}%`)
+                            .not('is_visible', 'is', false)
+                            .or(`category.ilike.%${catName}%,category.ilike.%${catNameAr}%`)
                             .order('created_at', { ascending: false });
 
                         if (allMainStores) {

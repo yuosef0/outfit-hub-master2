@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const { data: category } = await supabase
         .from('categories')
         .select('name, name_ar, description, image_url')
-        .ilike('name', categoryName)
+        .or(`name.ilike.${categoryName},name_ar.ilike.${categoryName}`)
         .single();
 
     if (!category) {
