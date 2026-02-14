@@ -217,22 +217,24 @@ export default function HomePage() {
                 {/* Slider Section */}
                 <div className="@container px-4 pt-3">
                     <div>
-                        <div className="relative overflow-hidden bg-background-dark rounded-2xl min-h-[218px]">
+                        <div className="relative overflow-hidden bg-background-dark rounded-2xl">
                             {sliderImages.length > 0 ? (
                                 <>
                                     {sliderImages.map((slide, index) => (
                                         <div
                                             key={slide.id}
-                                            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+                                            className={`${index === 0 ? 'relative' : 'absolute inset-0'} transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
                                                 }`}
-                                            style={{
-                                                backgroundImage: `linear-gradient(0deg, rgba(15, 23, 19, 0.4) 0%, rgba(15, 23, 19, 0) 25%), url("${slide.image_url}")`,
-                                                backgroundSize: 'cover',
-                                                backgroundPosition: 'center',
-                                            }}
                                         >
+                                            <img
+                                                src={slide.image_url}
+                                                alt={slide.title || ''}
+                                                className="w-full h-auto block rounded-2xl"
+                                            />
+                                            {/* Gradient overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(15,23,19,0.4)] via-transparent to-transparent rounded-2xl" />
                                             {slide.title && (
-                                                <div className="absolute bottom-0 left-0 right-0 p-6">
+                                                <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
                                                     <h2 className="text-cream text-2xl font-bold">{slide.title}</h2>
                                                     {slide.description && (
                                                         <p className="text-text-dark-primary text-sm mt-1">{slide.description}</p>
@@ -242,7 +244,7 @@ export default function HomePage() {
                                         </div>
                                     ))}
                                     {/* Slider Indicators */}
-                                    <div className="absolute bottom-5 left-0 right-0 flex justify-center gap-2">
+                                    <div className="absolute bottom-5 left-0 right-0 flex justify-center gap-2 z-20">
                                         {sliderImages.map((_, index) => (
                                             <button
                                                 key={index}
