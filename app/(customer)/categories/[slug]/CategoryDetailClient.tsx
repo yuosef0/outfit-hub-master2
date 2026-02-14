@@ -70,18 +70,24 @@ export default function CategoryDetailPage() {
 
                     let displayStores: DisplayStore[] = [];
 
+                    // Helper: check if store category matches this category page
+                    const catName = categoryData.name.toLowerCase();
+                    const catNameAr = (categoryData.name_ar || '').toLowerCase();
+                    const matchesCategory = (storeCategory: string | null | undefined) => {
+                        if (!storeCategory) return false;
+                        const cats = storeCategory.split(',').map(c => c.trim().toLowerCase());
+                        return cats.some(c => c === catName || (catNameAr && c === catNameAr));
+                    };
+
                     // 3. Logic: If User Location is set, fetch Local Main Stores + Local Branches
                     if (user?.governorate) {
-                        // A. Fetch Main Stores in this Location matching Category
-                        const catName = categoryData.name;
-                        const catNameAr = categoryData.name_ar || categoryData.name;
+                        // A. Fetch Main Stores in this Location
                         let mainStoresQuery = supabase
                             .from('stores')
                             .select('*')
                             .eq('is_active', true)
                             .not('is_visible', 'is', false)
-                            .eq('governorate', user.governorate)
-                            .or(`category.ilike.%${catName}%,category.ilike.%${catNameAr}%`);
+                            .eq('governorate', user.governorate);
 
                         if (user.district) {
                             mainStoresQuery = mainStoresQuery.eq('district', user.district);
@@ -90,17 +96,20 @@ export default function CategoryDetailPage() {
                         const { data: mainStoresData } = await mainStoresQuery;
 
                         if (mainStoresData) {
-                            const mainStores = mainStoresData.map((s: any) => ({
-                                ...s,
-                                display_name: s.name,
-                                link_url: `/stores/${s.id}`,
-                                is_branch: false,
-                                unique_key: `store_${s.id}`
-                            }));
+                            // Filter by category client-side (handles comma-separated multi-categories)
+                            const mainStores = mainStoresData
+                                .filter((s: any) => matchesCategory(s.category))
+                                .map((s: any) => ({
+                                    ...s,
+                                    display_name: s.name,
+                                    link_url: `/stores/${s.id}`,
+                                    is_branch: false,
+                                    unique_key: `store_${s.id}`
+                                }));
                             displayStores = [...displayStores, ...mainStores];
                         }
 
-                        // B. Fetch Branches in this Location matching Category (via parent store)
+                        // B. Fetch Branches in this Location (filter by parent store category)
                         let branchesQuery = supabase
                             .from('store_branches')
                             .select('*, store:store_id(*)')
@@ -114,23 +123,17 @@ export default function CategoryDetailPage() {
                         const { data: branchesData } = await branchesQuery;
 
                         if (branchesData) {
-                            // Filter branches where parent store matches category
                             const relevantBranches = branchesData.filter((b: any) => {
                                 const s = b.store;
-                                if (!s || !s.is_active) return false; // Parent store must be active
-
-                                const catName = categoryData.name.toLowerCase();
-                                const catNameAr = categoryData.name_ar?.toLowerCase();
-                                const storeCat = s.category?.toLowerCase() || '';
-
-                                return storeCat.includes(catName) || (catNameAr && storeCat.includes(catNameAr));
+                                if (!s || !s.is_active) return false;
+                                return matchesCategory(s.category);
                             });
 
                             const branchStores = relevantBranches.map((b: any) => ({
-                                ...b.store, // Inherit parent store props
-                                id: b.store.id, // ID must match for some checks, but unique_key handles list
+                                ...b.store,
+                                id: b.store.id,
                                 display_name: b.name === b.store.name ? b.name : `${b.store.name} - ${b.name || 'Branch'}`,
-                                address: b.address || b.store.address, // Use branch address
+                                address: b.address || b.store.address,
                                 governorate: b.governorate,
                                 district: b.district,
                                 link_url: `/stores/${b.store_id}?branch_id=${b.id}`,
@@ -142,25 +145,24 @@ export default function CategoryDetailPage() {
                         }
 
                     } else {
-                        // 4. No Location Filter: Fetch ALL Main Stores matching Category
-                        const catName = categoryData.name;
-                        const catNameAr = categoryData.name_ar || categoryData.name;
+                        // 4. No Location Filter: Fetch ALL Main Stores, filter by category client-side
                         const { data: allMainStores } = await supabase
                             .from('stores')
                             .select('*')
                             .eq('is_active', true)
                             .not('is_visible', 'is', false)
-                            .or(`category.ilike.%${catName}%,category.ilike.%${catNameAr}%`)
                             .order('created_at', { ascending: false });
 
                         if (allMainStores) {
-                            const mainStores = allMainStores.map((s: any) => ({
-                                ...s,
-                                display_name: s.name,
-                                link_url: `/stores/${s.id}`,
-                                is_branch: false,
-                                unique_key: `store_${s.id}`
-                            }));
+                            const mainStores = allMainStores
+                                .filter((s: any) => matchesCategory(s.category))
+                                .map((s: any) => ({
+                                    ...s,
+                                    display_name: s.name,
+                                    link_url: `/stores/${s.id}`,
+                                    is_branch: false,
+                                    unique_key: `store_${s.id}`
+                                }));
                             displayStores = [...displayStores, ...mainStores];
                         }
                     }
