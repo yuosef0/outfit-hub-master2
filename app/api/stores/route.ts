@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       .select('*, users(full_name, email)');
 
     if (category) {
-      query = query.eq('category', category);
+      query = query.ilike('category', `%${category}%`);
     }
 
     if (isActive !== null) {

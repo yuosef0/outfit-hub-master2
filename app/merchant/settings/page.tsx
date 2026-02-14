@@ -101,13 +101,15 @@ export default function MerchantSettingsPage() {
                 return;
             }
 
-            const selectedCat = categories.find(c => (c.name_ar || c.name) === formData.category);
-            if (!selectedCat) return;
+            const selectedCatNames = formData.category.split(',');
+            const selectedCats = categories.filter(c => selectedCatNames.includes(c.name_ar || c.name));
+            if (selectedCats.length === 0) return;
 
+            const categoryIds = selectedCats.map(c => c.id);
             const { data } = await supabase
                 .from('subcategories')
                 .select('id, name, name_ar')
-                .eq('category_id', selectedCat.id)
+                .in('category_id', categoryIds)
                 .order('name');
 
             setAvailableSubcategories(data || []);
@@ -495,21 +497,32 @@ export default function MerchantSettingsPage() {
                             {/* Category */}
                             <div>
                                 <label className="block text-sm font-medium text-text-light-primary mb-2">
-                                    فئة المتجر *
+                                    فئات المتجر * (اختر فئة أو أكثر)
                                 </label>
-                                <select
-                                    value={formData.category}
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    className="w-full px-4 py-2 bg-card-light border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light-primary "
-                                    required
-                                >
-                                    <option value="">اختر الفئة</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat.id} value={cat.name_ar || cat.name}>
-                                            {cat.name_ar || cat.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="grid grid-cols-2 gap-2 bg-background-light rounded-lg border border-border-light p-3">
+                                    {categories.map((cat) => {
+                                        const catName = cat.name_ar || cat.name;
+                                        const selectedCats = formData.category ? formData.category.split(',') : [];
+                                        const isSelected = selectedCats.includes(catName);
+                                        return (
+                                            <label key={cat.id} className={`flex items-center gap-2 cursor-pointer p-2.5 rounded-lg border transition-all ${isSelected ? 'border-primary bg-primary/10' : 'border-border-light hover:border-primary/50'}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => {
+                                                        const cats = formData.category ? formData.category.split(',') : [];
+                                                        const updated = isSelected
+                                                            ? cats.filter(c => c !== catName)
+                                                            : [...cats, catName];
+                                                        setFormData({ ...formData, category: updated.join(',') });
+                                                    }}
+                                                    className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+                                                />
+                                                <span className="text-sm text-text-light-primary text-right flex-1">{catName}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
                             </div>
 
                             {/* Subcategories Selection */}

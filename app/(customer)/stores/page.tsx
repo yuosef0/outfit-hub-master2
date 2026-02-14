@@ -92,8 +92,8 @@ function DiscoverStoresContent() {
         }
     }, [initialCategory]);
 
-    // Get unique categories from stores
-    const categories = ['All', ...Array.from(new Set(stores.map(store => store.category).filter(Boolean)))];
+    // Get unique categories from stores (handles comma-separated multi-categories)
+    const categories = ['All', ...Array.from(new Set(stores.flatMap(store => (store.category || '').split(',').map(c => c.trim())).filter(Boolean)))];
 
     // Get the display address for a store (matching branch address or main store address)
     const getDisplayAddress = (store: Store) => {
@@ -162,11 +162,12 @@ function DiscoverStoresContent() {
             }));
         }
 
-        // 2. Filter by category
+        // 2. Filter by category (handles comma-separated multi-categories)
         if (activeCategory !== 'All') {
-            result = result.filter(store =>
-                store.category?.toLowerCase() === activeCategory.toLowerCase()
-            );
+            result = result.filter(store => {
+                const storeCats = (store.category || '').split(',').map(c => c.trim().toLowerCase());
+                return storeCats.includes(activeCategory.toLowerCase());
+            });
         }
 
         // 3. Filter by search query
@@ -310,11 +311,11 @@ function DiscoverStoresContent() {
                                     </h3>
 
                                     <div className="flex flex-wrap gap-1.5 mb-2">
-                                        {store.category && (
-                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-background-light text-text-light-secondary border border-border-light">
-                                                {store.category}
+                                        {store.category && store.category.split(',').map((cat, i) => (
+                                            <span key={i} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-background-light text-text-light-secondary border border-border-light">
+                                                {cat.trim()}
                                             </span>
-                                        )}
+                                        ))}
                                         {store.subscription_plan === 'premium' && (
                                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-900/10 text-amber-600 border border-amber-200">
                                                 {t('stores.premium')}

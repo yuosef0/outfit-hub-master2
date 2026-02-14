@@ -75,13 +75,15 @@ export default function MerchantSetupPage() {
                 return;
             }
 
-            const selectedCat = categories.find(c => (c.name_ar || c.name) === formData.category);
-            if (!selectedCat) return;
+            const selectedCatNames = formData.category.split(',');
+            const selectedCats = categories.filter(c => selectedCatNames.includes(c.name_ar || c.name));
+            if (selectedCats.length === 0) return;
 
+            const categoryIds = selectedCats.map(c => c.id);
             const { data } = await supabase
                 .from('subcategories')
                 .select('id, name, name_ar')
-                .eq('category_id', selectedCat.id)
+                .in('category_id', categoryIds)
                 .order('name');
 
             setAvailableSubcategories(data || []);
@@ -287,15 +289,30 @@ export default function MerchantSetupPage() {
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-semibold text-text-light-primary text-right">الفئة الرئيسية *</label>
-                                <div className="relative">
-                                    <select className="w-full appearance-none rounded-lg border border-border-light bg-card-light px-4 py-3 text-base text-text-light-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm pr-10 text-right" name="category" value={formData.category} onChange={handleChange}>
-                                        <option value="">اختر الفئة</option>
-                                        {categories.map((cat) => (<option key={cat.id} value={cat.name_ar || cat.name}>{cat.name_ar || cat.name}</option>))}
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-text-light-secondary">
-                                        <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>expand_more</span>
-                                    </div>
+                                <label className="text-sm font-semibold text-text-light-primary text-right">الفئات الرئيسية * (اختر فئة أو أكثر)</label>
+                                <div className="grid grid-cols-2 gap-2 bg-card-light rounded-lg border border-border-light p-3">
+                                    {categories.map((cat) => {
+                                        const catName = cat.name_ar || cat.name;
+                                        const selectedCats = formData.category ? formData.category.split(',') : [];
+                                        const isSelected = selectedCats.includes(catName);
+                                        return (
+                                            <label key={cat.id} className={`flex items-center gap-2 cursor-pointer p-2.5 rounded-lg border transition-all ${isSelected ? 'border-primary bg-primary/10' : 'border-border-light hover:border-primary/50'}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => {
+                                                        const cats = formData.category ? formData.category.split(',') : [];
+                                                        const updated = isSelected
+                                                            ? cats.filter(c => c !== catName)
+                                                            : [...cats, catName];
+                                                        setFormData({ ...formData, category: updated.join(',') });
+                                                    }}
+                                                    className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+                                                />
+                                                <span className="text-sm text-text-light-primary text-right flex-1">{catName}</span>
+                                            </label>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
