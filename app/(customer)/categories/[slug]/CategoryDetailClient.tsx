@@ -71,12 +71,13 @@ export default function CategoryDetailPage() {
                     let displayStores: DisplayStore[] = [];
 
                     // Helper: check if store category matches this category page
-                    const catName = categoryData.name.toLowerCase();
-                    const catNameAr = (categoryData.name_ar || '').toLowerCase();
+                    const catName = categoryData.name.toLowerCase().trim();
+                    const catNameAr = (categoryData.name_ar || '').toLowerCase().trim();
                     const matchesCategory = (storeCategory: string | null | undefined) => {
                         if (!storeCategory) return false;
-                        const cats = storeCategory.split(',').map(c => c.trim().toLowerCase());
-                        return cats.some(c => c === catName || (catNameAr && c === catNameAr));
+                        const storeCatLower = storeCategory.toLowerCase();
+                        // Use includes() for flexible matching (handles comma-separated and partial matches)
+                        return storeCatLower.includes(catName) || (catNameAr && storeCatLower.includes(catNameAr));
                     };
 
                     // 3. Logic: If User Location is set, fetch Local Main Stores + Local Branches
