@@ -38,23 +38,34 @@ export default function RamadanGreeting() {
                         onClick={handleClose}
                     />
 
-                    {/* Modal Content */}
+                    {/* Decorations pinned to top */}
+                    <motion.img
+                        initial={{ opacity: 0, y: -30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -30 }}
+                        transition={{ type: "spring", duration: 0.8 }}
+                        src="/images/66b17cb1a4e11.png"
+                        alt="Ramadan decorations"
+                        className="absolute top-0 left-0 w-full h-auto object-contain z-10 pointer-events-none"
+                    />
+
+                    {/* Modal Content - centered */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
                         transition={{ type: "spring", duration: 0.8 }}
-                        className="relative z-10 max-w-2xl w-full flex flex-col items-center"
+                        className="relative z-10 max-w-md w-full flex flex-col items-center"
                     >
                         {/* The Image */}
-                        <div className="relative w-full aspect-[4/3] md:aspect-video flex items-center justify-center">
+                        <div className="relative w-full flex items-center justify-center">
                             {/* Glow Effect behind image */}
-                            <div className="absolute inset-0 bg-[#FFD700] opacity-10 blur-3xl rounded-full animate-pulse"></div>
+                            <div className="absolute inset-0 bg-[#FFD700] opacity-10 blur-3xl rounded-full"></div>
 
                             <img
                                 src="/images/—Pngtree—lettering ramadan luxury arabic text_6181609.png"
                                 alt="Ramadan Kareem"
-                                className="relative w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,215,0,0.3)]"
+                                className="relative w-full h-auto object-contain drop-shadow-[0_0_25px_rgba(255,215,0,0.3)]"
                             />
                         </div>
 
@@ -67,16 +78,6 @@ export default function RamadanGreeting() {
                         >
                             إغلاق
                         </motion.button>
-
-                        {/* Close Button Top Right (optional alternative) */}
-                        <button
-                            onClick={handleClose}
-                            className="absolute -top-10 right-0 md:-right-10 text-white/50 hover:text-white transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
                     </motion.div>
                 </div>
             )}
