@@ -277,27 +277,9 @@ export default function RamadanDecorations() {
 
             {/* ===== Hanging Fanous - Removed (moved to header) ===== */}
 
-            {/* ===== Crescent + Star ===== */}
-            <div className="absolute right-5 animate-float" style={{ top: '160px', animationDelay: '0.5s' }}>
-                <CrescentStar className="w-11 h-11 drop-shadow-[0_0_14px_rgba(255,215,0,0.6)]" />
-            </div>
 
-            {/* ===== Twinkling Stars ===== */}
-            <div className="absolute left-[12%] animate-twinkle" style={{ top: '110px' }}>
-                <Star className="w-5 h-5" color="#FFD700" />
-            </div>
-            <div className="absolute left-[42%] animate-twinkle-slow" style={{ top: '170px', animationDelay: '0.8s' }}>
-                <Star className="w-4 h-4" color="#FFB703" />
-            </div>
-            <div className="absolute right-[18%] animate-twinkle-fast" style={{ top: '100px', animationDelay: '0.4s' }}>
-                <Star className="w-4 h-4" color="#FF6B6B" />
-            </div>
-            <div className="absolute right-[35%] animate-twinkle" style={{ top: '180px', animationDelay: '1.2s' }}>
-                <Star className="w-5 h-5" color="#FFD166" />
-            </div>
-            <div className="absolute left-[55%] animate-twinkle-slow" style={{ top: '90px', animationDelay: '0.6s' }}>
-                <Star className="w-3.5 h-3.5" color="#52D689" />
-            </div>
+
+
 
             {/* ===== شخصية فانوس - Fanous Character with speech bubble ===== */}
             {showCharacter && (
@@ -324,5 +306,45 @@ export default function RamadanDecorations() {
                 </div>
             )}
         </div>
+    );
+}
+
+/* ===== Mosque Skyline ===== */
+export function MosqueSkyline({ className, color = '#2D5A43' }: { className?: string; color?: string }) {
+    return (
+        <svg viewBox="0 0 1200 120" fill="none" className={className} preserveAspectRatio="none">
+            <path
+                d="M0 120 L1200 120 L1200 105 L1150 105 Q1125 105, 1110 80 L1100 60 L1090 80 Q1075 105, 1050 105 L1000 105 L950 105 Q925 105, 910 80 L900 50 L890 80 Q875 105, 850 105 L700 105 Q675 105, 660 70 L650 40 L640 70 Q625 105, 600 105 L450 105 Q425 105, 410 80 L400 60 L390 80 Q375 105, 350 105 L200 105 Q175 105, 160 80 L150 50 L140 80 Q125 105, 100 105 L0 105 Z"
+                fill={color}
+                opacity="0.1"
+            />
+            {/* Mosques */}
+            <g opacity="0.15">
+                {/* Left Mosque */}
+                <rect x="50" y="80" width="60" height="40" fill={color} />
+                <path d="M50 80 Q80 50, 110 80" fill={color} />
+                <rect x="120" y="60" width="10" height="60" fill={color} />
+                <path d="M115 60 L125 60 L125 50 L115 50 Z" fill={color} />
+
+                {/* Center Mosque */}
+                <rect x="500" y="70" width="100" height="50" fill={color} />
+                <path d="M500 70 Q550 20, 600 70" fill={color} />
+                <rect x="480" y="40" width="15" height="80" fill={color} />
+                <path d="M475 40 L495 40 L487.5 25 Z" fill={color} />
+                <rect x="605" y="40" width="15" height="80" fill={color} />
+                <path d="M600 40 L620 40 L612.5 25 Z" fill={color} />
+
+                {/* Right Mosque */}
+                <rect x="900" y="80" width="80" height="40" fill={color} />
+                <circle cx="940" cy="80" r="30" fill={color} />
+                <rect x="990" y="50" width="12" height="70" fill={color} />
+                <path d="M986 50 L1006 50 L996 35 Z" fill={color} />
+            </g>
+            <path
+                d="M0 120 L1200 120 L1200 115 L0 115 Z"
+                fill={color}
+                opacity="0.3"
+            />
+        </svg>
     );
 }

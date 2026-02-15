@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import WishlistButton from '@/components/WishlistButton';
 import RamadanDecorations from '@/components/RamadanDecorations';
+import RamadanLoader from '@/components/RamadanLoader';
 import { createBrowserClient } from '@supabase/ssr';
 import type { SliderImage, Category, Store, Product } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
@@ -199,14 +200,7 @@ export default function HomePage() {
     }, [sliderImages.length]);
 
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-background-light">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-4 text-text-light-secondary">Loading...</p>
-                </div>
-            </div>
-        );
+        return <RamadanLoader />;
     }
 
     return (
@@ -267,127 +261,146 @@ export default function HomePage() {
                 </div>
 
                 {/* Categories Section */}
-                <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
-                    Categories
-                </h3>
-                <div className="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="flex items-stretch p-4 gap-8">
-                        {categories.length > 0 ? (
-                            categories.map((category) => (
-                                <Link
-                                    key={category.id}
-                                    href={`/categories/${category.name.toLowerCase()}`}
-                                    className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4 hover:opacity-80 transition-opacity"
-                                >
-                                    {category.image_url ? (
-                                        <div
-                                            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex flex-col self-center w-full"
-                                            style={{ backgroundImage: `url("${category.image_url}")` }}
-                                        />
-                                    ) : (
-                                        <div className="aspect-square rounded-full flex items-center justify-center bg-card-dark w-full">
-                                            <span className="material-symbols-outlined text-4xl text-text-dark-secondary">category</span>
+                <div className="bg-arabesque/30 pt-4 pb-8 rounded-t-3xl mt-4 border-t border-[#FFD700]/20">
+                    <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-4 text-center">
+                        Categories
+                    </h3>
+                    <div className="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        <div className="flex items-stretch px-4 gap-8">
+                            {categories.length > 0 ? (
+                                categories.map((category) => (
+                                    <Link
+                                        key={category.id}
+                                        href={`/categories/${category.name.toLowerCase()}`}
+                                        className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4 hover:opacity-80 transition-opacity"
+                                    >
+                                        {/* Festive Border Container */}
+                                        <div className="w-full aspect-square rounded-full flex flex-col items-center justify-center p-[2px] bg-gradient-to-br from-[#FFD700]/40 via-transparent to-[#FFD700]/40 shadow-lg">
+                                            {category.image_url ? (
+                                                <div
+                                                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-full h-full border-2 border-background-dark"
+                                                    style={{ backgroundImage: `url("${category.image_url}")` }}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full rounded-full flex items-center justify-center bg-card-dark border-2 border-background-dark">
+                                                    <span className="material-symbols-outlined text-4xl text-text-dark-secondary">category</span>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                    <p className="text-text-dark-primary text-base font-medium leading-normal">
-                                        {category.name}
-                                    </p>
-                                </Link>
-                            ))
-                        ) : (
-                            <p className="text-text-dark-secondary px-4">No categories available</p>
-                        )}
+                                        <p className="text-text-dark-primary text-base font-medium leading-normal">
+                                            {category.name}
+                                        </p>
+                                    </Link>
+                                ))
+                            ) : (
+                                <p className="text-text-dark-secondary px-4">No categories available</p>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* Featured Stores Section */}
-                <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
-                    Featured Stores
-                </h3>
-                <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="flex items-stretch p-4 gap-3">
-                        {featuredStores.length > 0 ? (
-                            featuredStores.map((store: any) => (
-                                <Link
-                                    key={store.unique_key || store.id}
-                                    href={store.link_url}
-                                    className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40 hover:opacity-80 transition-opacity"
-                                >
-                                    {store.logo_url ? (
-                                        <div
-                                            className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
-                                            style={{ backgroundImage: `url("${store.logo_url}")` }}
-                                        />
-                                    ) : (
-                                        <div className="w-full aspect-video rounded-xl flex items-center justify-center bg-card-dark">
-                                            <span className="material-symbols-outlined text-4xl text-text-dark-secondary">store</span>
+                <div className="bg-arabesque/30 pt-4 pb-8 rounded-t-3xl mt-4 border-t border-[#FFD700]/20">
+                    <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-4 text-center">
+                        Featured Stores
+                    </h3>
+                    <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        <div className="flex items-stretch p-4 gap-3">
+                            {featuredStores.length > 0 ? (
+                                featuredStores.map((store: any) => (
+                                    <Link
+                                        key={store.unique_key || store.id}
+                                        href={store.link_url}
+                                        className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40 hover:opacity-80 transition-opacity relative group"
+                                    >
+
+
+                                        {/* Festive Border Container */}
+                                        <div className="w-full aspect-video rounded-xl relative overflow-hidden bg-card-dark p-[1px] bg-gradient-to-br from-[#FFD700]/40 via-transparent to-[#FFD700]/40 shadow-md transform group-hover:scale-105 transition-transform duration-300">
+                                            <div className="w-full h-full rounded-[11px] overflow-hidden relative bg-card-dark">
+                                                {store.logo_url ? (
+                                                    <div
+                                                        className="w-full h-full bg-center bg-no-repeat bg-cover"
+                                                        style={{ backgroundImage: `url("${store.logo_url}")` }}
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-card-dark">
+                                                        <span className="material-symbols-outlined text-4xl text-text-dark-secondary">store</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    )}
-                                    <div>
-                                        <p className="text-text-dark-primary text-base font-medium leading-normal line-clamp-1">
-                                            {store.display_name}
-                                        </p>
-                                        <p className="text-text-dark-secondary text-sm font-normal leading-normal">
-                                            {store.category || 'Store'}
-                                        </p>
-                                    </div>
-                                </Link>
-                            ))
-                        ) : (
-                            <p className="text-text-dark-secondary px-4">No featured stores available</p>
-                        )}
+                                        <div>
+                                            <p className="text-text-dark-primary text-base font-medium leading-normal line-clamp-1">
+                                                {store.display_name}
+                                            </p>
+                                            <p className="text-text-dark-secondary text-sm font-normal leading-normal">
+                                                {store.category || 'Store'}
+                                            </p>
+                                        </div>
+                                    </Link>
+                                ))
+                            ) : (
+                                <p className="text-text-dark-secondary px-4">No featured stores available</p>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* New Arrivals Section */}
-                <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
-                    New Arrivals
-                </h3>
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
-                    {newArrivals.length > 0 ? (
-                        newArrivals.map((product) => (
-                            <Link
-                                key={product.id}
-                                href={`/products/${product.id}`}
-                                className="flex flex-col gap-3 pb-3 group relative"
-                            >
-                                <div className="w-full aspect-[3/4] rounded-xl relative overflow-hidden bg-card-dark">
-                                    {product.image_urls && product.image_urls.length > 0 ? (
-                                        <div
-                                            className="w-full h-full bg-center bg-no-repeat bg-cover"
-                                            style={{
-                                                backgroundImage: `url("${product.image_urls[0]}")`,
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-4xl text-text-dark-secondary">image</span>
+                <div className="bg-arabesque/30 pt-4 pb-8 rounded-t-3xl mt-4 border-t border-[#FFD700]/20">
+                    <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 text-center">
+                        New Arrivals <span className="text-[#FFD700]">✨</span>
+                    </h3>
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
+                        {newArrivals.length > 0 ? (
+                            newArrivals.map((product) => (
+                                <Link
+                                    key={product.id}
+                                    href={`/products/${product.id}`}
+                                    className="flex flex-col gap-3 pb-3 group relative"
+                                >
+                                    {/* Festive Border Container */}
+                                    <div className="w-full aspect-[3/4] rounded-xl relative overflow-hidden bg-card-dark p-[1px] bg-gradient-to-br from-[#FFD700]/40 via-transparent to-[#FFD700]/40">
+                                        <div className="w-full h-full rounded-[11px] overflow-hidden relative bg-card-dark">
+                                            {product.image_urls && product.image_urls.length > 0 ? (
+                                                <div
+                                                    className="w-full h-full bg-center bg-no-repeat bg-cover transform group-hover:scale-105 transition-transform duration-500"
+                                                    style={{
+                                                        backgroundImage: `url("${product.image_urls[0]}")`,
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <span className="material-symbols-outlined text-4xl text-text-dark-secondary">image</span>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                    <div className="absolute top-2 right-2">
-                                        <WishlistButton productId={product.id} className="!bg-card-dark" />
+                                        <div className="absolute top-2 right-2 z-10">
+                                            <WishlistButton productId={product.id} className="!bg-card-dark/80 backdrop-blur-sm" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <p className="text-text-dark-primary text-base font-medium leading-normal">
-                                        {product.name}
-                                    </p>
-                                    <p className="text-text-dark-secondary text-sm font-normal leading-normal">
-                                        ${product.price.toFixed(2)}
-                                    </p>
-                                    {product.stores && (
-                                        <p className="text-text-dark-secondary text-xs font-normal leading-normal mt-1">
-                                            {product.stores.name}
+                                    <div>
+                                        <p className="text-text-dark-primary text-base font-medium leading-normal">
+                                            {product.name}
                                         </p>
-                                    )}
-                                </div>
-                            </Link>
-                        ))
-                    ) : (
-                        <p className="text-text-dark-secondary col-span-full text-center">
-                            No new arrivals available
-                        </p>
-                    )}
+                                        <p className="text-text-dark-secondary text-sm font-normal leading-normal">
+                                            ${product.price.toFixed(2)}
+                                        </p>
+                                        {product.stores && (
+                                            <p className="text-text-dark-secondary text-xs font-normal leading-normal mt-1">
+                                                {product.stores.name}
+                                            </p>
+                                        )}
+                                    </div>
+                                </Link>
+                            ))
+                        ) : (
+                            <p className="text-text-dark-secondary col-span-full text-center">
+                                No new arrivals available
+                            </p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import BottomNav from '@/components/BottomNav';
 import CartManager from "@/components/CartManager";
 import ScrollToTop from "@/components/ScrollToTop";
+import CursorTrail from "@/components/CursorTrail";
 
 export default function MainLayoutWrapper({
     children,
@@ -33,6 +34,7 @@ export default function MainLayoutWrapper({
             <CartManager />
             <BottomNav />
             <ScrollToTop />
+            <CursorTrail />
         </>
     );
 }

@@ -10,6 +10,7 @@ import { useCartUI } from '@/context/CartUIContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { useAuthStore } from '@/store/authStore';
 import { Fanous, StringLights } from '@/components/RamadanDecorations';
+import IftarCountdown from '@/components/IftarCountdown';
 
 export default function Header() {
     const pathname = usePathname();
@@ -210,6 +211,11 @@ export default function Header() {
                         <p className="font-playfair text-cream text-sm md:text-base font-bold -mt-0.5 tracking-wide">
                             رمضان كريم
                         </p>
+                    </div>
+
+                    {/* Iftar Countdown (Hidden on small screens if needed, but useful generally) */}
+                    <div className="absolute left-[20%] hidden lg:block z-20">
+                        <IftarCountdown />
                     </div>
 
                     {/* Right - Search & Notifications */}

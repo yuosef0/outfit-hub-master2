@@ -201,9 +201,9 @@ function DiscoverStoresContent() {
     }
 
     return (
-        <div className="max-w-md mx-auto min-h-screen bg-background-light shadow-2xl relative overflow-hidden flex flex-col transition-colors duration-200">
+        <div className="max-w-md mx-auto min-h-screen bg-background-light shadow-2xl relative flex flex-col transition-colors duration-200">
             {/* Header Section */}
-            <div className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md pb-2 shadow-sm">
+            <div className="bg-background-light pb-2 shadow-sm rounded-t-xl">
                 <div className="px-4 py-3">
                     <h1 className="text-2xl font-bold text-text-light-primary mb-3">{t('stores.discover')}</h1>
 
