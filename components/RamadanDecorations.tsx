@@ -315,7 +315,7 @@ export default function RamadanDecorations() {
 
                     {/* Speech bubble */}
                     <div className="relative mb-1 bg-gradient-to-br from-[#FFD700]/20 to-[#E63946]/20 backdrop-blur-sm border border-[#FFD700]/40 rounded-2xl rounded-bl-sm px-3 py-2 text-center">
-                        <p className="text-sm font-bold text-[#FFD700] leading-tight">رمضان كريم 🌙</p>
+                        <p className="text-sm font-bold text-white leading-tight">رمضان كريم 🌙</p>
                         <p className="text-xs text-cream font-medium mt-0.5">كل سنة وانتوا طيبين</p>
                     </div>
 
