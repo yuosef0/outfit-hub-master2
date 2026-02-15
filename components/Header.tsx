@@ -163,7 +163,7 @@ export default function Header() {
 
     return (
         <>
-            <header className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md shadow-sm overflow-hidden">
+            <header className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md shadow-sm">
                 {/* Ramadan Decorations */}
                 <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
                     <div className="opacity-80 scale-75 origin-top">
