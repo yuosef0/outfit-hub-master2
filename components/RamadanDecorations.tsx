@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 /* ===== Traditional Egyptian Fanous (فانوس رمضان) ===== */
-function Fanous({ color = 'red', className }: { color?: 'red' | 'gold' | 'green' | 'purple'; className?: string }) {
+export function Fanous({ color = 'red', className }: { color?: 'red' | 'gold' | 'green' | 'purple'; className?: string }) {
     const colors = {
         red: { body: '#E63946', bodyLight: '#FF6B6B', glow: 'rgba(230, 57, 70, 0.6)', cap: '#FFD700', accent: '#FF9F1C' },
         gold: { body: '#FFB703', bodyLight: '#FFD166', glow: 'rgba(255, 183, 3, 0.6)', cap: '#E63946', accent: '#FF6B6B' },
@@ -77,7 +77,7 @@ function Fanous({ color = 'red', className }: { color?: 'red' | 'gold' | 'green'
 }
 
 /* ===== شخصية فانوس - Cute Fanous Character with face, hands & legs ===== */
-function FanousCharacter({ className }: { className?: string }) {
+export function FanousCharacter({ className }: { className?: string }) {
     return (
         <svg viewBox="0 0 120 180" fill="none" className={className}>
             <defs>
@@ -184,13 +184,13 @@ function FanousCharacter({ className }: { className?: string }) {
 }
 
 /* ===== زينة رمضان - Colorful Bunting/String ===== */
-function StringLights() {
+export function StringLights({ top = '48px', className }: { top?: string; className?: string }) {
     const flagColors = ['#E63946', '#FFB703', '#2D9B5A', '#7B2D8E', '#FF6B6B', '#FFD166', '#52D689', '#E63946', '#FFB703', '#2D9B5A', '#7B2D8E'];
 
     return (
         <svg
-            className="absolute left-0 w-full"
-            style={{ height: '50px', top: '48px' }}
+            className={`absolute left-0 w-full ${className || ''}`}
+            style={{ height: '50px', top }}
             viewBox="0 0 420 50"
             preserveAspectRatio="none"
             fill="none"
@@ -238,7 +238,7 @@ function StringLights() {
 }
 
 /* ===== Crescent + Star ===== */
-function CrescentStar({ className }: { className?: string }) {
+export function CrescentStar({ className }: { className?: string }) {
     return (
         <svg viewBox="0 0 44 44" fill="none" className={className}>
             <circle cx="22" cy="22" r="20" fill="rgba(255, 215, 0, 0.08)" />
@@ -256,7 +256,7 @@ function CrescentStar({ className }: { className?: string }) {
 }
 
 /* ===== Decorative Star ===== */
-function Star({ className, color = '#FFD700' }: { className?: string; color?: string }) {
+export function Star({ className, color = '#FFD700' }: { className?: string; color?: string }) {
     return (
         <svg viewBox="0 0 20 20" fill="none" className={className}>
             <path
@@ -272,28 +272,10 @@ export default function RamadanDecorations() {
 
     return (
         <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden">
-            {/* ===== String Lights / زينة - below header (48px) ===== */}
-            <StringLights />
+            {/* ===== String Lights / زينة - Removed (moved to header) ===== */}
+            {/* <StringLights /> */}
 
-            {/* ===== Left Fanous (Red - Large) - hanging from below header ===== */}
-            <div className="absolute left-3 origin-top animate-swing" style={{ top: '48px' }}>
-                <Fanous color="red" className="w-14 h-24 drop-shadow-[0_0_12px_rgba(230,57,70,0.5)]" />
-            </div>
-
-            {/* ===== Right Fanous (Gold - Large) ===== */}
-            <div className="absolute right-3 origin-top animate-swing-slow" style={{ top: '48px', animationDelay: '0.7s' }}>
-                <Fanous color="gold" className="w-14 h-24 drop-shadow-[0_0_12px_rgba(255,183,3,0.5)]" />
-            </div>
-
-            {/* ===== Center-Left Fanous (Green - Medium) ===== */}
-            <div className="absolute left-[28%] origin-top animate-swing" style={{ top: '48px', animationDelay: '1.2s' }}>
-                <Fanous color="green" className="w-10 h-[68px] drop-shadow-[0_0_10px_rgba(45,155,90,0.4)]" />
-            </div>
-
-            {/* ===== Center-Right Fanous (Purple - Medium) ===== */}
-            <div className="absolute right-[28%] origin-top animate-swing-slow" style={{ top: '48px', animationDelay: '0.3s' }}>
-                <Fanous color="purple" className="w-10 h-[68px] drop-shadow-[0_0_10px_rgba(123,45,142,0.4)]" />
-            </div>
+            {/* ===== Hanging Fanous - Removed (moved to header) ===== */}
 
             {/* ===== Crescent + Star ===== */}
             <div className="absolute right-5 animate-float" style={{ top: '160px', animationDelay: '0.5s' }}>
@@ -334,7 +316,7 @@ export default function RamadanDecorations() {
                     {/* Speech bubble */}
                     <div className="relative mb-1 bg-gradient-to-br from-[#FFD700]/20 to-[#E63946]/20 backdrop-blur-sm border border-[#FFD700]/40 rounded-2xl rounded-bl-sm px-3 py-2 text-center">
                         <p className="text-sm font-bold text-[#FFD700] leading-tight">رمضان كريم 🌙</p>
-                        <p className="text-[10px] text-cream/80 mt-0.5">كل سنة وانتوا طيبين</p>
+                        <p className="text-xs text-cream font-medium mt-0.5">كل سنة وانتوا طيبين</p>
                     </div>
 
                     {/* Character */}

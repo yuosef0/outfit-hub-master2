@@ -9,6 +9,7 @@ import { SearchModal } from '@/components/SearchModal';
 import { useCartUI } from '@/context/CartUIContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { useAuthStore } from '@/store/authStore';
+import { Fanous, StringLights } from '@/components/RamadanDecorations';
 
 export default function Header() {
     const pathname = usePathname();
@@ -162,7 +163,20 @@ export default function Header() {
 
     return (
         <>
-            <header className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md">
+            <header className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md shadow-sm overflow-hidden">
+                {/* Ramadan Decorations */}
+                <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+                    <div className="opacity-80 scale-75 origin-top">
+                        <StringLights top="-10px" />
+                    </div>
+                    {/* Hanging Lanterns */}
+                    <div className="absolute top-0 left-1 md:left-2 animate-swing origin-top">
+                        <Fanous color="red" className="w-8 h-14 md:w-10 md:h-16 drop-shadow-md" />
+                    </div>
+                    <div className="absolute top-0 right-1 md:right-2 animate-swing-slow origin-top">
+                        <Fanous color="gold" className="w-8 h-14 md:w-10 md:h-16 drop-shadow-md" />
+                    </div>
+                </div>
                 <div className="relative flex items-center px-4 py-3 justify-between">
                     {/* Left - Menu Button */}
                     <div className="flex items-center gap-1">
@@ -186,13 +200,16 @@ export default function Header() {
                     </div>
 
                     {/* Center - Brand Name */}
-                    <div className="absolute left-1/2 transform -translate-x-1/2">
+                    <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center z-10">
                         <h1
                             className="font-playfair text-cream text-xl font-black tracking-wide select-none whitespace-nowrap"
                             style={{ letterSpacing: '0.08em' }}
                         >
                             OutFit-Hub
                         </h1>
+                        <p className="font-playfair text-cream text-sm md:text-base font-bold -mt-0.5 tracking-wide">
+                            رمضان كريم
+                        </p>
                     </div>
 
                     {/* Right - Search & Notifications */}
