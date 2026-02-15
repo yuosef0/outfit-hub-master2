@@ -226,14 +226,14 @@ export default function MerchantSettingsPage() {
         const filePath = `stores/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-            .from('store-images')
+            .from('stores')
             .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
         const {
             data: { publicUrl },
-        } = supabase.storage.from('store-images').getPublicUrl(filePath);
+        } = supabase.storage.from('stores').getPublicUrl(filePath);
 
         return publicUrl;
     };
