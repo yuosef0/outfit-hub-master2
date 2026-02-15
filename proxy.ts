@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -104,7 +104,7 @@ export async function middleware(request: NextRequest) {
       userRole = 'merchant';
     }
 
-    console.log('Middleware - User:', user.id, 'Role:', userRole, 'Path:', pathname);
+    console.log('Proxy - User:', user.id, 'Role:', userRole, 'Path:', pathname);
 
     // Admin routes - only admin can access
     if (pathname.startsWith('/admin')) {
