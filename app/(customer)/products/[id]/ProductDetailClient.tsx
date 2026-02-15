@@ -8,6 +8,7 @@ import WishlistButton from '@/components/WishlistButton';
 import Toast from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Product } from '@/lib/types';
+import RamadanLoader from '@/components/RamadanLoader';
 
 export default function ProductDetailPage() {
     const router = useRouter();
@@ -177,13 +178,12 @@ export default function ProductDetailPage() {
 
     const imageCount = product?.image_urls?.length || 0;
 
+    // ... (in the component)
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-card-light">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-4 text-text-light-secondary">{t('common.loading')}</p>
-                </div>
+                <RamadanLoader />
             </div>
         );
     }
