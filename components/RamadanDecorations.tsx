@@ -77,109 +77,19 @@ export function Fanous({ color = 'red', className }: { color?: 'red' | 'gold' | 
 }
 
 /* ===== شخصية فانوس - Cute Fanous Character with face, hands & legs ===== */
+/* ===== شخصية فانوس - Cute Fanous Character with face, hands & legs ===== */
 export function FanousCharacter({ className }: { className?: string }) {
     return (
-        <svg viewBox="0 0 120 180" fill="none" className={className}>
-            <defs>
-                <radialGradient id="char-glow" cx="50%" cy="40%" r="50%">
-                    <stop offset="0%" stopColor="rgba(255, 183, 3, 0.5)" />
-                    <stop offset="100%" stopColor="transparent" />
-                </radialGradient>
-                <linearGradient id="char-body" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#FF6B6B" />
-                    <stop offset="100%" stopColor="#E63946" />
-                </linearGradient>
-            </defs>
-
-            {/* === Top ornament === */}
-            <line x1="60" y1="0" x2="60" y2="12" stroke="#FFD700" strokeWidth="2.5" />
-            <circle cx="60" cy="3" r="3" fill="#FFD700" />
-            <path d="M52 12 Q60 4, 68 12 Z" fill="#FFD700" />
-            <rect x="48" y="12" width="24" height="6" rx="3" fill="#FFD700" />
-
-            {/* === Main body === */}
-            <path
-                d="M48 18 L42 35 Q37 60, 40 80 L46 95 Q60 102, 74 95 L80 80 Q83 60, 78 35 L72 18 Z"
-                fill="url(#char-body)"
-                stroke="#FFD700"
-                strokeWidth="2"
+        <div
+            className={`relative ${className} flex items-center justify-center`}
+        >
+            {/* The Cartoon Character Image */}
+            <img
+                src="/images/—Pngtree—cheerful cartoon boy in traditional_20427650.png"
+                alt="Ramadan Cartoon Boy"
+                className="w-full h-full object-contain drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)] z-10"
             />
-
-            {/* Inner glow */}
-            <ellipse cx="60" cy="58" rx="14" ry="28" fill="url(#char-glow)" />
-
-            {/* Decorative bands */}
-            <path d="M44 30 L60 26 L76 30" stroke="#FFD700" strokeWidth="1.2" opacity="0.7" />
-            <line x1="39" y1="58" x2="81" y2="58" stroke="#FFD700" strokeWidth="1" opacity="0.5" />
-            <path d="M42 78 L60 74 L78 78" stroke="#FFD700" strokeWidth="1.2" opacity="0.7" />
-
-            {/* Diamond patterns */}
-            <path d="M60 32 L66 45 L60 58 L54 45 Z" fill="#FF9F1C" opacity="0.25" stroke="#FFD700" strokeWidth="0.6" />
-            <path d="M60 60 L65 70 L60 80 L55 70 Z" fill="#FF9F1C" opacity="0.25" stroke="#FFD700" strokeWidth="0.6" />
-
-            {/* === FACE === */}
-            {/* Eyes - big cute eyes */}
-            <ellipse cx="52" cy="48" rx="5" ry="5.5" fill="white" />
-            <ellipse cx="68" cy="48" rx="5" ry="5.5" fill="white" />
-            {/* Pupils */}
-            <ellipse cx="53" cy="49" rx="3" ry="3.5" fill="#1a1a2e" />
-            <ellipse cx="69" cy="49" rx="3" ry="3.5" fill="#1a1a2e" />
-            {/* Eye shine */}
-            <circle cx="54.5" cy="47" r="1.5" fill="white" />
-            <circle cx="70.5" cy="47" r="1.5" fill="white" />
-
-            {/* Rosy cheeks */}
-            <ellipse cx="46" cy="56" rx="4" ry="2.5" fill="#FF9F9F" opacity="0.5" />
-            <ellipse cx="74" cy="56" rx="4" ry="2.5" fill="#FF9F9F" opacity="0.5" />
-
-            {/* Happy smile */}
-            <path d="M54 58 Q60 65, 66 58" stroke="#1a1a2e" strokeWidth="2" strokeLinecap="round" fill="none" />
-
-            {/* === Bottom cap === */}
-            <rect x="50" y="95" width="20" height="5" rx="2" fill="#FFD700" />
-
-            {/* === LEFT hand (waving) === */}
-            <g>
-                <animateTransform attributeName="transform" type="rotate" values="-10 37 70; 10 37 70; -10 37 70" dur="1.5s" repeatCount="indefinite" />
-                {/* Arm */}
-                <path d="M42 55 Q32 52, 24 42" stroke="#FFD700" strokeWidth="3" strokeLinecap="round" fill="none" />
-                {/* Hand (open palm) */}
-                <circle cx="22" cy="40" r="4" fill="#FFD700" />
-                {/* Fingers */}
-                <line x1="19" y1="37" x2="17" y2="33" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
-                <line x1="21" y1="36" x2="20" y2="32" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
-                <line x1="24" y1="36" x2="24" y2="32" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
-            </g>
-
-            {/* === RIGHT hand (waving) === */}
-            <g>
-                <animateTransform attributeName="transform" type="rotate" values="10 83 70; -10 83 70; 10 83 70" dur="1.8s" repeatCount="indefinite" />
-                {/* Arm */}
-                <path d="M78 55 Q88 52, 96 42" stroke="#FFD700" strokeWidth="3" strokeLinecap="round" fill="none" />
-                {/* Hand */}
-                <circle cx="98" cy="40" r="4" fill="#FFD700" />
-                {/* Fingers */}
-                <line x1="96" y1="36" x2="96" y2="32" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
-                <line x1="99" y1="36" x2="100" y2="32" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
-                <line x1="101" y1="37" x2="103" y2="33" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
-            </g>
-
-            {/* === Legs === */}
-            {/* Left leg */}
-            <path d="M52 100 L48 120 Q47 125, 42 126" stroke="#FFD700" strokeWidth="3" strokeLinecap="round" fill="none" />
-            {/* Left shoe */}
-            <ellipse cx="40" cy="127" rx="6" ry="3" fill="#E63946" />
-
-            {/* Right leg */}
-            <path d="M68 100 L72 120 Q73 125, 78 126" stroke="#FFD700" strokeWidth="3" strokeLinecap="round" fill="none" />
-            {/* Right shoe */}
-            <ellipse cx="80" cy="127" rx="6" ry="3" fill="#E63946" />
-
-            {/* Flame glow */}
-            <ellipse cx="60" cy="55" rx="4" ry="6" fill="rgba(255, 255, 200, 0.4)">
-                <animate attributeName="ry" values="5;7;5" dur="2s" repeatCount="indefinite" />
-            </ellipse>
-        </svg>
+        </div>
     );
 }
 
@@ -287,22 +197,23 @@ export default function RamadanDecorations() {
                     className="absolute bottom-[55px] left-3 pointer-events-auto animate-slide-up"
                     style={{ animationDelay: '0.5s' }}
                 >
-                    {/* Close button */}
+                    {/* Close button - High Visibility */}
                     <button
                         onClick={() => setShowCharacter(false)}
-                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-card-light border border-border-light text-text-light-secondary text-xs flex items-center justify-center z-10 hover:bg-red-500 hover:text-white transition-colors"
+                        className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-red-500 text-white shadow-md flex items-center justify-center z-30 hover:bg-red-600 transition-colors"
+                        aria-label="Close"
                     >
-                        ×
+                        <span className="text-sm font-bold leading-none mb-0.5">×</span>
                     </button>
 
-                    {/* Speech bubble */}
-                    <div className="relative mb-1 bg-gradient-to-br from-[#FFD700]/20 to-[#E63946]/20 backdrop-blur-sm border border-[#FFD700]/40 rounded-2xl rounded-bl-sm px-3 py-2 text-center">
-                        <p className="text-sm font-bold text-cream leading-tight">رمضان كريم 🌙</p>
-                        <p className="text-xs text-cream font-medium mt-0.5">كل سنة وانتوا طيبين</p>
+                    {/* Speech bubble - Larger Text */}
+                    <div className="relative -mb-4 z-20 bg-gradient-to-br from-[#FFD700] to-[#E63946] rounded-2xl rounded-bl-sm px-4 py-3 text-center shadow-lg transform translate-x-2 min-w-[140px] border border-[#B8860B]">
+                        <p className="text-lg font-bold text-white leading-tight drop-shadow-md">رمضان كريم 🌙</p>
+                        <p className="text-base text-white font-medium mt-1 drop-shadow-sm">كل سنة وانتوا طيبين</p>
                     </div>
 
                     {/* Character */}
-                    <FanousCharacter className="w-20 h-[120px] drop-shadow-[0_0_16px_rgba(230,57,70,0.4)]" />
+                    <FanousCharacter className="w-32 h-44 drop-shadow-[0_0_16px_rgba(230,57,70,0.4)]" />
                 </div>
             )}
         </div>

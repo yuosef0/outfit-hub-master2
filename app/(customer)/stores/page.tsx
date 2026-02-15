@@ -207,15 +207,15 @@ function DiscoverStoresContent() {
                 <div className="px-4 py-3">
                     <h1 className="text-2xl font-bold text-text-light-primary mb-3">{t('stores.discover')}</h1>
 
-                    {/* Search Bar */}
+                    {/* Search Bar - Ramadan Style */}
                     <div className="relative mb-3">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-light-secondary">search</span>
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#B8860B]">search</span>
                         <input
                             type="text"
                             placeholder={t('stores.searchPlaceholder')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 rounded-xl bg-card-light border border-border-light text-text-light-primary placeholder:text-text-light-secondary focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#FFD700]/5 border border-[#FFD700]/40 text-text-light-primary placeholder:text-text-light-secondary/70 focus:outline-none focus:ring-2 focus:ring-[#FFD700]/50 focus:border-[#FFD700]"
                         />
                     </div>
 
@@ -223,8 +223,8 @@ function DiscoverStoresContent() {
 
                 {/* Filters & Sort */}
                 <div className="flex flex-col gap-2">
-                    {/* Category Pills */}
-                    <div className="flex gap-2 px-4 overflow-x-auto no-scrollbar">
+                    {/* Category Pills - Ramadan Style */}
+                    <div className="flex gap-2 px-4 overflow-x-auto no-scrollbar pb-2">
                         <style jsx>{`
                             .no-scrollbar::-webkit-scrollbar {
                                 display: none;
@@ -238,21 +238,21 @@ function DiscoverStoresContent() {
                             <button
                                 key={category}
                                 onClick={() => setActiveCategory(category || 'All')}
-                                className={`flex h-8 px-3 shrink-0 items-center justify-center rounded-full transition-transform active:scale-95 border ${activeCategory === category
-                                    ? 'bg-primary border-primary text-white shadow-sm'
-                                    : 'bg-card-light border-border-light text-text-light-secondary hover:border-primary/50'
+                                className={`flex h-8 px-4 shrink-0 items-center justify-center rounded-full transition-all active:scale-95 border ${activeCategory === category
+                                    ? 'bg-[#FFD700]/90 border-[#FFD700] text-[#8B0000] font-bold shadow-md shadow-[#FFD700]/20'
+                                    : 'bg-card-light border-[#FFD700]/30 text-text-light-secondary hover:border-[#FFD700] hover:bg-[#FFD700]/5'
                                     }`}
                             >
-                                <span className="text-xs font-medium">{category}</span>
+                                <span className="text-xs">{category}</span>
                             </button>
                         ))}
                     </div>
 
                     {/* Sort & Stats Row */}
-                    <div className="flex justify-between items-center px-4 pt-1">
+                    <div className="flex justify-between items-center px-4 pt-1 pb-2">
                         <button
                             onClick={() => setSortBy(sortBy === 'newest' ? 'name' : 'newest')}
-                            className="flex items-center gap-1.5 text-text-light-secondary hover:text-primary transition-colors"
+                            className="flex items-center gap-1.5 text-text-light-secondary hover:text-[#B8860B] transition-colors"
                         >
                             <span className="material-symbols-outlined text-[18px]">sort</span>
                             <span className="text-xs font-medium">{t('stores.sortBy')}: {sortBy === 'newest' ? t('stores.newest') : t('stores.name')}</span>
@@ -265,7 +265,7 @@ function DiscoverStoresContent() {
             </div>
 
             {/* Main Content: Store List */}
-            <main className="flex-1 overflow-y-auto px-4 py-4 pb-24">
+            <main className="flex-1 overflow-y-auto px-4 py-4 pb-24 scale-95" style={{ height: 'calc(100vh - 180px)' }}>
                 {filteredStores.length === 0 ? (
                     <div className="text-center py-12">
                         <span className="material-symbols-outlined text-6xl text-border-light mb-4">store</span>
@@ -278,11 +278,17 @@ function DiscoverStoresContent() {
                             <Link
                                 key={store.unique_key || store.id}
                                 href={store.link_url}
-                                className="group bg-card-light rounded-xl p-3 shadow-sm border border-border-light hover:border-primary/30 transition-all flex flex-col h-full relative"
+                                className="group bg-card-light rounded-xl p-3 shadow-md border border-[#FFD700]/30 hover:border-[#FFD700] hover:shadow-[0_0_15px_rgba(255,215,0,0.2)] transition-all flex flex-col h-full relative overflow-hidden"
                             >
+                                {/* Ramadan Decorative Corner */}
+                                <div className="absolute -right-6 -top-6 w-12 h-12 bg-[#FFD700]/10 rounded-full blur-xl group-hover:bg-[#FFD700]/20 transition-all"></div>
+                                <div className="absolute top-2 right-2 opacity-20 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-lg">🏮</span>
+                                </div>
+
                                 {/* Header with Logo & Wishlist */}
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="w-12 h-12 shrink-0 rounded-lg bg-background-light flex items-center justify-center overflow-hidden border border-border-light">
+                                <div className="flex justify-between items-start mb-3 relative z-10">
+                                    <div className="w-12 h-12 shrink-0 rounded-lg bg-background-light flex items-center justify-center overflow-hidden border border-[#FFD700]/20 group-hover:border-[#FFD700]/50 transition-colors">
                                         {store.logo_url ? (
                                             <img
                                                 className="w-full h-full object-cover"
@@ -294,7 +300,7 @@ function DiscoverStoresContent() {
                                         )}
                                     </div>
                                     <div
-                                        className="absolute top-2 right-2 z-10"
+                                        className="relative z-20"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
@@ -305,14 +311,14 @@ function DiscoverStoresContent() {
                                 </div>
 
                                 {/* Store Info */}
-                                <div className="flex-1 min-w-0 mb-3">
-                                    <h3 className="text-text-light-primary text-base font-bold leading-tight truncate mb-1">
+                                <div className="flex-1 min-w-0 mb-3 relative z-10">
+                                    <h3 className="text-text-light-primary text-base font-bold leading-tight truncate mb-1 group-hover:text-[#B8860B] transition-colors">
                                         {store.display_name}
                                     </h3>
 
                                     <div className="flex flex-wrap gap-1.5 mb-2">
                                         {store.category && store.category.split(',').map((cat, i) => (
-                                            <span key={i} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-background-light text-text-light-secondary border border-border-light">
+                                            <span key={i} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#FFD700]/5 text-text-light-secondary border border-[#FFD700]/20">
                                                 {cat.trim()}
                                             </span>
                                         ))}
@@ -324,14 +330,14 @@ function DiscoverStoresContent() {
                                     </div>
 
                                     <div className="flex items-center gap-1 text-[11px] text-text-light-secondary line-clamp-1">
-                                        <span className="material-symbols-outlined text-[14px] shrink-0">location_on</span>
+                                        <span className="material-symbols-outlined text-[14px] shrink-0 text-[#B8860B]/70">location_on</span>
                                         <span className="truncate">{store.address}</span>
                                     </div>
                                 </div>
 
                                 {/* Action */}
                                 <div
-                                    className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg bg-cream text-primary font-bold text-xs hover:bg-cream/90 transition-all mt-auto"
+                                    className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg bg-gradient-to-r from-[#FFD700]/10 to-[#E63946]/5 text-[#B8860B] font-bold text-xs border border-[#FFD700]/20 group-hover:bg-[#FFD700] group-hover:text-white transition-all mt-auto z-10"
                                 >
                                     {t('stores.view')}
                                 </div>
