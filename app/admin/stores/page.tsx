@@ -17,6 +17,7 @@ interface StoreWithMerchant {
     merchant_id: string;
     merchant_name?: string;
     merchant_email?: string;
+    merchant_phone?: string;
 }
 
 type FilterStatus = 'all' | 'active' | 'inactive';
@@ -69,7 +70,7 @@ export default function AdminStoresPage() {
                 const merchantIds = [...new Set(data.map(s => s.merchant_id))];
                 const { data: merchants } = await supabase
                     .from('users')
-                    .select('id, full_name, email')
+                    .select('id, full_name, email, phone')
                     .in('id', merchantIds);
 
                 const merchantMap = new Map((merchants || []).map(m => [m.id, m]));
@@ -78,6 +79,7 @@ export default function AdminStoresPage() {
                     ...s,
                     merchant_name: merchantMap.get(s.merchant_id)?.full_name || '-',
                     merchant_email: merchantMap.get(s.merchant_id)?.email || '-',
+                    merchant_phone: merchantMap.get(s.merchant_id)?.phone || '-',
                 }));
 
                 setStores(storesWithMerchant);
@@ -229,6 +231,12 @@ export default function AdminStoresPage() {
                                             </span>
                                         </div>
                                         <p className="text-xs text-text-light-secondary">{store.merchant_name} &middot; {store.merchant_email}</p>
+                                        {store.merchant_phone && store.merchant_phone !== '-' && (
+                                            <p className="text-xs text-text-light-secondary flex items-center gap-1 mt-0.5">
+                                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>phone</span>
+                                                <a href={`tel:${store.merchant_phone}`} dir="ltr" className="hover:text-primary transition-colors">{store.merchant_phone}</a>
+                                            </p>
+                                        )}
                                         <div className="flex flex-wrap gap-2 mt-1.5">
                                             {store.category && (
                                                 <span className="text-[10px] bg-background-light px-1.5 py-0.5 rounded border border-border-light text-text-light-secondary">{store.category}</span>

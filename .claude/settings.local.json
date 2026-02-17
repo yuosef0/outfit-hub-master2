@@ -29,7 +29,8 @@
       "Bash(wc:*)",
       "Bash(node -e:*)",
       "Bash(node test-categories.mjs:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(dir:*)"
     ]
   }
 }
