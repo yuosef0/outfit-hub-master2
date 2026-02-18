@@ -723,6 +723,11 @@ export default function StoreProfilePage() {
                                                 productId={product.id}
                                                 className="absolute top-2 right-2 z-10"
                                             />
+                                            {product.old_price && product.old_price > product.price && (
+                                                <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                                                    -{Math.round(((product.old_price - product.price) / product.old_price) * 100)}%
+                                                </span>
+                                            )}
                                             {product.stock_quantity === 0 && (
                                                 <div className="absolute bottom-2 left-2 bg-red-500 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded">
                                                     {t('product.outOfStock')}
@@ -735,7 +740,12 @@ export default function StoreProfilePage() {
                                             </div>
                                             <p className="text-xs text-text-light-secondary">{product.category}</p>
                                             <div className="mt-auto pt-2 flex items-center justify-between">
-                                                <span className="text-base font-bold text-text-light-primary">{t('common.egp')} {product.price.toFixed(2)}</span>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-base font-bold text-text-light-primary">{t('common.egp')} {product.price.toFixed(2)}</span>
+                                                    {product.old_price && product.old_price > product.price && (
+                                                        <span className="text-xs text-text-light-secondary line-through">{t('common.egp')} {product.old_price.toFixed(2)}</span>
+                                                    )}
+                                                </div>
                                                 <button className="w-7 h-7 flex items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90">
                                                     <span className="material-symbols-outlined text-[16px]">add</span>
                                                 </button>
