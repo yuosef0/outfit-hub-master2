@@ -262,9 +262,9 @@ export default function EditProductPage() {
             return;
         }
 
-        const invalidFiles = files.filter(f => f.size > 2 * 1024 * 1024);
+        const invalidFiles = files.filter(f => f.size > 50 * 1024 * 1024);
         if (invalidFiles.length > 0) {
-            setToast({ message: 'حجم الصورة يجب أن يكون أقل من 2 ميجابايت', type: 'error' });
+            setToast({ message: 'حجم الصورة يجب أن يكون أقل من 50 ميجابايت', type: 'error' });
             return;
         }
 
@@ -598,7 +598,7 @@ export default function EditProductPage() {
                             📷 صور المنتج * (صورة واحدة على الأقل)
                         </label>
                         <p className="text-sm text-text-light-secondary mb-4 text-right">
-                            حد أقصى 10 صور | حجم الصورة: أقل من 2 ميجابايت
+                            حد أقصى 10 صور | حجم الصورة: أقل من 50 ميجابايت
                         </p>
 
                         <div className="grid grid-cols-3 gap-3 mb-4">
