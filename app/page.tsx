@@ -379,14 +379,26 @@ export default function HomePage() {
                                         <div className="absolute top-2 right-2 z-10">
                                             <WishlistButton productId={product.id} className="!bg-card-dark/80 backdrop-blur-sm" />
                                         </div>
+                                        {product.old_price && product.old_price > product.price && (
+                                            <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                                                -{Math.round(((product.old_price - product.price) / product.old_price) * 100)}%
+                                            </span>
+                                        )}
                                     </div>
                                     <div>
                                         <p className="text-text-dark-primary text-base font-medium leading-normal">
                                             {product.name}
                                         </p>
-                                        <p className="text-text-dark-secondary text-sm font-normal leading-normal">
-                                            ${product.price.toFixed(2)}
-                                        </p>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="text-text-dark-secondary text-sm font-normal leading-normal">
+                                                ${product.price.toFixed(2)}
+                                            </p>
+                                            {product.old_price && product.old_price > product.price && (
+                                                <p className="text-text-dark-secondary/60 text-xs line-through">
+                                                    ${product.old_price.toFixed(2)}
+                                                </p>
+                                            )}
+                                        </div>
                                         {product.stores && (
                                             <p className="text-text-dark-secondary text-xs font-normal leading-normal mt-1">
                                                 {product.stores.name}

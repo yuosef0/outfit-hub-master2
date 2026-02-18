@@ -94,6 +94,7 @@ export interface Product {
     name: string;
     description?: string;
     price: number;
+    old_price?: number;
     category?: string;
     category_id?: string; // System category ID
     gender_filter?: string;

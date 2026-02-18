@@ -177,7 +177,7 @@ export function NotificationsDropdown() {
                     </div>
 
                     {/* List */}
-                    <div className="max-h-[70vh] overflow-y-auto">
+                    <div className="max-h-[320px] overflow-y-auto">
                         {loading ? (
                             <div className="p-8 text-center text-text-light-secondary">
                                 <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
