@@ -7,6 +7,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import type { Store } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { StoreBadges } from '@/components/StoreBadges';
 
 interface Subcategory {
     id: string;
@@ -32,6 +33,8 @@ export default function CategoryDetailPage() {
     const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [productCounts, setProductCounts] = useState<Record<string, number>>({});
+    const [topWeeklyStoreId, setTopWeeklyStoreId] = useState<string | null>(null);
     const { user } = useAuthStore();
     const { t } = useLanguage();
 
@@ -174,6 +177,30 @@ export default function CategoryDetailPage() {
                         }
                     }
 
+                    // Fetch product counts for badges
+                    const storeIds = displayStores.map(ds => ds.id);
+                    if (storeIds.length > 0) {
+                        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+                        const { data: pcData } = await supabase
+                            .from('products')
+                            .select('store_id, created_at')
+                            .eq('is_active', true)
+                            .in('store_id', storeIds)
+                            .limit(5000);
+
+                        const counts: Record<string, number> = {};
+                        const weeklyCounts: Record<string, number> = {};
+                        pcData?.forEach((p: { store_id: string; created_at: string }) => {
+                            counts[p.store_id] = (counts[p.store_id] || 0) + 1;
+                            if (p.created_at >= oneWeekAgo) {
+                                weeklyCounts[p.store_id] = (weeklyCounts[p.store_id] || 0) + 1;
+                            }
+                        });
+                        setProductCounts(counts);
+                        const topEntry = Object.entries(weeklyCounts).sort(([, a], [, b]) => b - a)[0];
+                        setTopWeeklyStoreId(topEntry && topEntry[1] > 0 ? topEntry[0] : null);
+                    }
+
                     setStores(displayStores);
                     setFilteredStores(displayStores);
                 }
@@ -301,7 +328,7 @@ export default function CategoryDetailPage() {
                                             <h3 className="text-text-light-primary text-lg font-bold leading-tight truncate">
                                                 {store.display_name}
                                             </h3>
-                                            <div className="flex items-center gap-2 mt-1">
+                                            <div className="flex items-center gap-2 mt-1 flex-wrap">
                                                 {store.category && (
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-card-light text-text-light-secondary">
                                                         {store.category}
@@ -313,6 +340,10 @@ export default function CategoryDetailPage() {
                                                     </span>
                                                 )}
                                             </div>
+                                            <StoreBadges
+                                                productCount={productCounts[store.id] || 0}
+                                                isTopWeekly={topWeeklyStoreId === store.id}
+                                            />
                                         </div>
                                         <button className="text-text-light-secondary hover:text-red-500 transition-colors">
                                             <span className="material-symbols-outlined text-[20px]">favorite</span>

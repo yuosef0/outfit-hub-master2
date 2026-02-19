@@ -8,6 +8,7 @@ import StoreWishlistButton from '@/components/StoreWishlistButton';
 import type { Store, District } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { StoreBadges } from '@/components/StoreBadges';
 
 function DiscoverStoresContent() {
     const searchParams = useSearchParams();
@@ -28,6 +29,8 @@ function DiscoverStoresContent() {
     const [isLoading, setIsLoading] = useState(true);
     const [sortBy, setSortBy] = useState<'name' | 'newest'>('newest');
     const [branches, setBranches] = useState<{ id: string; store_id: string; governorate: string; district?: string; address?: string; name?: string }[]>([]);
+    const [productCounts, setProductCounts] = useState<Record<string, number>>({});
+    const [topWeeklyStoreId, setTopWeeklyStoreId] = useState<string | null>(null);
 
     const supabase = useMemo(
         () =>
@@ -63,6 +66,30 @@ function DiscoverStoresContent() {
                 if (data) {
                     setStores(data);
                     setFilteredStores(data);
+
+                    // Fetch product counts for badges
+                    const storeIds = data.map((s: Store) => s.id);
+                    if (storeIds.length > 0) {
+                        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+                        const { data: pcData } = await supabase
+                            .from('products')
+                            .select('store_id, created_at')
+                            .eq('is_active', true)
+                            .in('store_id', storeIds)
+                            .limit(5000);
+
+                        const counts: Record<string, number> = {};
+                        const weeklyCounts: Record<string, number> = {};
+                        pcData?.forEach((p: { store_id: string; created_at: string }) => {
+                            counts[p.store_id] = (counts[p.store_id] || 0) + 1;
+                            if (p.created_at >= oneWeekAgo) {
+                                weeklyCounts[p.store_id] = (weeklyCounts[p.store_id] || 0) + 1;
+                            }
+                        });
+                        setProductCounts(counts);
+                        const topEntry = Object.entries(weeklyCounts).sort(([, a], [, b]) => b - a)[0];
+                        setTopWeeklyStoreId(topEntry && topEntry[1] > 0 ? topEntry[0] : null);
+                    }
                 }
 
                 // Also fetch active branches for location filtering
@@ -313,7 +340,7 @@ function DiscoverStoresContent() {
                                         {store.display_name}
                                     </h3>
 
-                                    <div className="flex flex-wrap gap-1.5 mb-2">
+                                    <div className="flex flex-wrap gap-1.5 mb-1">
                                         {store.category && store.category.split(',').map((cat, i) => (
                                             <span key={i} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#FFD700]/5 text-text-light-secondary border border-[#FFD700]/20">
                                                 {cat.trim()}
@@ -326,7 +353,12 @@ function DiscoverStoresContent() {
                                         )}
                                     </div>
 
-                                    <div className="flex items-center gap-1 text-[11px] text-text-light-secondary line-clamp-1">
+                                    <StoreBadges
+                                        productCount={productCounts[store.id] || 0}
+                                        isTopWeekly={topWeeklyStoreId === store.id}
+                                    />
+
+                                    <div className="flex items-center gap-1 text-[11px] text-text-light-secondary line-clamp-1 mt-2">
                                         <span className="material-symbols-outlined text-[14px] shrink-0 text-[#B8860B]/70">location_on</span>
                                         <span className="truncate">{store.address}</span>
                                     </div>
