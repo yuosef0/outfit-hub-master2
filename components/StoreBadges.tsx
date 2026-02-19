@@ -6,13 +6,13 @@ interface StoreBadgesProps {
 export function StoreBadges({ productCount, isTopWeekly }: StoreBadgesProps) {
     const badges: { label: string; icon: string; className: string }[] = [];
 
-    if (productCount > 30) {
+    if (productCount > 20) {
         badges.push({
             label: 'تاجر نشط',
             icon: 'verified',
             className: 'bg-emerald-500 text-white',
         });
-    } else if (productCount > 20) {
+    } else if (productCount >= 15) {
         badges.push({
             label: 'أفضل عرض',
             icon: 'local_offer',
@@ -22,7 +22,7 @@ export function StoreBadges({ productCount, isTopWeekly }: StoreBadgesProps) {
 
     if (isTopWeekly) {
         badges.push({
-            label: 'الأكثر إضافة هذا الأسبوع',
+            label: 'الأكثر نشاطاً',
             icon: 'trending_up',
             className: 'bg-amber-500 text-white',
         });

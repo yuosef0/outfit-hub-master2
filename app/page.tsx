@@ -156,8 +156,15 @@ export default function HomePage() {
                     const topEntry = Object.entries(weeklyCounts).sort(([, a], [, b]) => b - a)[0];
                     setTopWeeklyStoreId(topEntry && topEntry[1] > 0 ? topEntry[0] : null);
 
-                    // Featured stores = stores with >10 active products
-                    setFeaturedStores(displayStores.filter(ds => (counts[ds.id] || 0) > 10));
+                    // Featured stores = all stores with ≥5 products, sorted by weekly activity then total count
+                    const visibleFeatured = displayStores
+                        .filter(ds => (counts[ds.id] || 0) >= 5)
+                        .sort((a, b) => {
+                            const weeklyDiff = (weeklyCounts[b.id] || 0) - (weeklyCounts[a.id] || 0);
+                            if (weeklyDiff !== 0) return weeklyDiff;
+                            return (counts[b.id] || 0) - (counts[a.id] || 0);
+                        });
+                    setFeaturedStores(visibleFeatured);
                 } else {
                     setFeaturedStores([]);
                 }
