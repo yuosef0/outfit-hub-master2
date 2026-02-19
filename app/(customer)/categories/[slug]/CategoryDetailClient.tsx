@@ -199,10 +199,16 @@ export default function CategoryDetailPage() {
                         setProductCounts(counts);
                         const topEntry = Object.entries(weeklyCounts).sort(([, a], [, b]) => b - a)[0];
                         setTopWeeklyStoreId(topEntry && topEntry[1] > 0 ? topEntry[0] : null);
-                    }
 
-                    setStores(displayStores);
-                    setFilteredStores(displayStores);
+                        // Category pages only show stores with ≥5 products
+                        // (stores with 1–4 products are only visible in the stores discovery page)
+                        const visibleDisplayStores = displayStores.filter(ds => (counts[ds.id] || 0) >= 5);
+                        setStores(visibleDisplayStores);
+                        setFilteredStores(visibleDisplayStores);
+                    } else {
+                        setStores([]);
+                        setFilteredStores([]);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);

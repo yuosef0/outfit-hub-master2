@@ -64,10 +64,7 @@ function DiscoverStoresContent() {
                 if (error) throw error;
 
                 if (data) {
-                    setStores(data);
-                    setFilteredStores(data);
-
-                    // Fetch product counts for badges
+                    // Fetch product counts first, then filter before setting state
                     const storeIds = data.map((s: Store) => s.id);
                     if (storeIds.length > 0) {
                         const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -89,6 +86,14 @@ function DiscoverStoresContent() {
                         setProductCounts(counts);
                         const topEntry = Object.entries(weeklyCounts).sort(([, a], [, b]) => b - a)[0];
                         setTopWeeklyStoreId(topEntry && topEntry[1] > 0 ? topEntry[0] : null);
+
+                        // Stores with 0 products are hidden everywhere
+                        const visibleStores = data.filter((s: Store) => (counts[s.id] || 0) >= 1);
+                        setStores(visibleStores);
+                        setFilteredStores(visibleStores);
+                    } else {
+                        setStores([]);
+                        setFilteredStores([]);
                     }
                 }
 
