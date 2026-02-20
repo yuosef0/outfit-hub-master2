@@ -8,6 +8,7 @@ import RamadanLoader from '@/components/RamadanLoader';
 import { createBrowserClient } from '@supabase/ssr';
 import type { SliderImage, Category, Store, Product } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
+import { StoreBadges } from '@/components/StoreBadges';
 
 export default function HomePage() {
     const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
@@ -22,6 +23,8 @@ export default function HomePage() {
     const [featuredStores, setFeaturedStores] = useState<DisplayStore[]>([]);
     const [newArrivals, setNewArrivals] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [productCounts, setProductCounts] = useState<Record<string, number>>({});
+    const [topWeeklyStoreId, setTopWeeklyStoreId] = useState<string | null>(null);
     const { user } = useAuthStore();
 
     const supabase = createBrowserClient(
@@ -130,7 +133,41 @@ export default function HomePage() {
                     }
                 }
 
-                setFeaturedStores(displayStores);
+                // Fetch product counts per store for badges + featured filter
+                const storeIds = displayStores.map(ds => ds.id);
+                if (storeIds.length > 0) {
+                    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+                    const { data: pcData } = await supabase
+                        .from('products')
+                        .select('store_id, created_at')
+                        .eq('is_active', true)
+                        .in('store_id', storeIds)
+                        .limit(5000);
+
+                    const counts: Record<string, number> = {};
+                    const weeklyCounts: Record<string, number> = {};
+                    pcData?.forEach(p => {
+                        counts[p.store_id] = (counts[p.store_id] || 0) + 1;
+                        if (p.created_at >= oneWeekAgo) {
+                            weeklyCounts[p.store_id] = (weeklyCounts[p.store_id] || 0) + 1;
+                        }
+                    });
+                    setProductCounts(counts);
+                    const topEntry = Object.entries(weeklyCounts).sort(([, a], [, b]) => b - a)[0];
+                    setTopWeeklyStoreId(topEntry && topEntry[1] > 0 ? topEntry[0] : null);
+
+                    // Featured stores = all stores with ≥5 products, sorted by weekly activity then total count
+                    const visibleFeatured = displayStores
+                        .filter(ds => (counts[ds.id] || 0) >= 5)
+                        .sort((a, b) => {
+                            const weeklyDiff = (weeklyCounts[b.id] || 0) - (weeklyCounts[a.id] || 0);
+                            if (weeklyDiff !== 0) return weeklyDiff;
+                            return (counts[b.id] || 0) - (counts[a.id] || 0);
+                        });
+                    setFeaturedStores(visibleFeatured);
+                } else {
+                    setFeaturedStores([]);
+                }
 
                 // For New Arrivals, we still want to show products from ALL relevant stores in this area
                 // We can derive relevantStoreIds from our displayStores
@@ -337,6 +374,10 @@ export default function HomePage() {
                                             <p className="text-text-dark-secondary text-sm font-normal leading-normal">
                                                 {store.category || 'Store'}
                                             </p>
+                                            <StoreBadges
+                                                productCount={productCounts[store.id] || 0}
+                                                isTopWeekly={topWeeklyStoreId === store.id}
+                                            />
                                         </div>
                                     </Link>
                                 ))
@@ -379,14 +420,26 @@ export default function HomePage() {
                                         <div className="absolute top-2 right-2 z-10">
                                             <WishlistButton productId={product.id} className="!bg-card-dark/80 backdrop-blur-sm" />
                                         </div>
+                                        {product.old_price && product.old_price > product.price && (
+                                            <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                                                -{Math.round(((product.old_price - product.price) / product.old_price) * 100)}%
+                                            </span>
+                                        )}
                                     </div>
                                     <div>
                                         <p className="text-text-dark-primary text-base font-medium leading-normal">
                                             {product.name}
                                         </p>
-                                        <p className="text-text-dark-secondary text-sm font-normal leading-normal">
-                                            ${product.price.toFixed(2)}
-                                        </p>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="text-text-dark-secondary text-sm font-normal leading-normal">
+                                                ${product.price.toFixed(2)}
+                                            </p>
+                                            {product.old_price && product.old_price > product.price && (
+                                                <p className="text-text-dark-secondary/60 text-xs line-through">
+                                                    ${product.old_price.toFixed(2)}
+                                                </p>
+                                            )}
+                                        </div>
                                         {product.stores && (
                                             <p className="text-text-dark-secondary text-xs font-normal leading-normal mt-1">
                                                 {product.stores.name}
