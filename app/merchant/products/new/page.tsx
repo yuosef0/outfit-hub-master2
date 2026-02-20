@@ -45,6 +45,7 @@ export default function NewProductPage() {
 
     const [formData, setFormData] = useState({
         name: '',
+        sku: '',
         description: '',
         price: '',
         old_price: '',
@@ -380,6 +381,7 @@ export default function NewProductPage() {
             const productData: any = {
                 store_id: storeId,
                 name: formData.name,
+                sku: formData.sku || null,
                 description: formData.description,
                 price: parseFloat(formData.price),
                 category: formData.category,
@@ -532,7 +534,7 @@ export default function NewProductPage() {
                         </div>
                     </div>
 
-                    {/* اسم المنتج */}
+                    {/* اسم المنتج + SKU */}
                     <div className="bg-card-light rounded-xl p-5 border border-border-light">
                         <label className="block text-right font-bold text-text-light-primary mb-3">
                             اسم المنتج *
@@ -545,6 +547,18 @@ export default function NewProductPage() {
                             required
                             className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
                             placeholder="تيشرت قطن 100%"
+                        />
+
+                        <label className="block text-right font-bold text-text-light-primary mb-3 mt-4">
+                            كود المنتج (SKU)
+                        </label>
+                        <input
+                            type="text"
+                            name="sku"
+                            value={formData.sku}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="مثال: TSH-001 (اختياري - للربط مع السيستم)"
                         />
                     </div>
 

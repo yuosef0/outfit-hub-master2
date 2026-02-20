@@ -30,7 +30,8 @@
       "Bash(node -e:*)",
       "Bash(node test-categories.mjs:*)",
       "Bash(node:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(grep:*)"
     ]
   }
 }
