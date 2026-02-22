@@ -79,8 +79,6 @@ export default function MerchantHeader() {
         { href: '/merchant/reviews', icon: 'star', labelKey: 'merchant.reviews' },
         { href: '/merchant/coupons', icon: 'local_offer', labelKey: 'merchant.coupons' },
         { href: '/merchant/branches', icon: 'location_city', labelKey: 'merchant.branches', labelAr: 'الفروع', labelEn: 'Branches' },
-        { href: '/merchant/import', icon: 'upload_file', labelKey: 'merchant.import', labelAr: 'استيراد منتجات', labelEn: 'Import Products' },
-        { href: '/merchant/stock', icon: 'warehouse', labelKey: 'merchant.stock', labelAr: 'تحديث المخزون', labelEn: 'Stock Update' },
         { href: '/merchant/settings', icon: 'settings', labelKey: 'merchant.settings' },
         { href: '/merchant/social-media', icon: 'share', labelKey: 'merchant.socialMedia', labelAr: 'وسائل التواصل', labelEn: 'Social Media' },
     ];
