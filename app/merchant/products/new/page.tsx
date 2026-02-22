@@ -549,17 +549,7 @@ export default function NewProductPage() {
                             placeholder="تيشرت قطن 100%"
                         />
 
-                        <label className="block text-right font-bold text-text-light-primary mb-3 mt-4">
-                            كود المنتج (SKU)
-                        </label>
-                        <input
-                            type="text"
-                            name="sku"
-                            value={formData.sku}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
-                            placeholder="مثال: TSH-001 (اختياري - للربط مع السيستم)"
-                        />
+
                     </div>
 
                     {/* الوصف */}
@@ -579,30 +569,7 @@ export default function NewProductPage() {
 
                     {/* التصنيف والفئة */}
                     <div className="bg-card-light rounded-xl p-5 border border-border-light space-y-5">
-                        {/* فئة المحل */}
-                        {storeCategories.length > 0 && (
-                            <div>
-                                <label className="block text-right font-bold text-text-light-primary mb-3">
-                                    الفئة (رجالي، حريمي...)
-                                </label>
-                                <select
-                                    name="category_id"
-                                    value={formData.category_id}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right focus:ring-2 focus:ring-primary focus:border-transparent"
-                                >
-                                    <option value="">بدون فئة</option>
-                                    {storeCategories.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name_ar || cat.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <p className="text-xs text-text-light-secondary mt-2 text-right">
-                                    يمكنك إدارة الفئات من <a href="/merchant/categories" className="text-primary hover:underline">هنا</a>
-                                </p>
-                            </div>
-                        )}
+
                         {/* System Category Select */}
                         <div>
                             <label className="block text-right font-bold text-text-light-primary mb-3">

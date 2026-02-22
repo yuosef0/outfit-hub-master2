@@ -309,8 +309,8 @@ export default function CategoriesPage() {
                                         <button
                                             onClick={() => toggleActive(category)}
                                             className={`p-2 rounded-lg transition-colors ${category.is_active
-                                                    ? 'bg-green-900/20 text-green-400'
-                                                    : 'bg-card-light text-text-light-secondary'
+                                                ? 'bg-green-900/20 text-green-400'
+                                                : 'bg-card-light text-text-light-secondary'
                                                 }`}
                                             title={category.is_active ? 'إخفاء' : 'إظهار'}
                                         >
@@ -341,8 +341,8 @@ export default function CategoriesPage() {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card-light rounded-xl p-5 max-w-sm w-full border border-border-light max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-xl font-bold text-text-light-primary mb-4">
+                    <div className="bg-card-light rounded-xl p-4 max-w-xs w-full border border-border-light max-h-[85vh] overflow-y-auto">
+                        <h2 className="text-lg font-bold text-text-light-primary mb-3">
                             {editingCategory ? 'تعديل الفئة' : 'إضافة فئة جديدة'}
                         </h2>
 
