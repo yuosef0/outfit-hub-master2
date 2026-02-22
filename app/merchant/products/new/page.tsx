@@ -381,12 +381,11 @@ export default function NewProductPage() {
             const productData: any = {
                 store_id: storeId,
                 name: formData.name,
-                sku: formData.sku || null,
-                description: formData.description,
+                description: formData.description || null,
                 price: parseFloat(formData.price),
-                category: formData.category,
+                category: formData.category || null,
                 category_id: formData.category_id || null,
-                stock_quantity: parseInt(formData.stock_quantity), // Total stock
+                stock_quantity: parseInt(formData.stock_quantity) || 0, // Default to 0 if empty/NaN
                 image_urls: imageUrls,
                 is_active: formData.is_active,
                 subcategory_id: formData.subcategory_id || null,
