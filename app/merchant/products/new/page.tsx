@@ -45,7 +45,6 @@ export default function NewProductPage() {
 
     const [formData, setFormData] = useState({
         name: '',
-        sku: '',
         description: '',
         price: '',
         old_price: '',
@@ -533,7 +532,7 @@ export default function NewProductPage() {
                         </div>
                     </div>
 
-                    {/* اسم المنتج + SKU */}
+                    {/* اسم المنتج */}
                     <div className="bg-card-light rounded-xl p-5 border border-border-light">
                         <label className="block text-right font-bold text-text-light-primary mb-3">
                             اسم المنتج *
