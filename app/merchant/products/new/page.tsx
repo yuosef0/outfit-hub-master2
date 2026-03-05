@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import Toast from '@/components/Toast';
 
-const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+const LETTER_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+const NUMERIC_SIZES = ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
+const AVAILABLE_SIZES = [...LETTER_SIZES, ...NUMERIC_SIZES];
 
 const AVAILABLE_COLORS = [
     { name: 'أسود', hex: '#000000' },
@@ -62,6 +64,7 @@ export default function NewProductPage() {
     const [selectedColors, setSelectedColors] = useState<{ name: string, hex: string }[]>([]);
     const [customSize, setCustomSize] = useState('');
     const [showCustomSizeInput, setShowCustomSizeInput] = useState(false);
+    const [sizeTab, setSizeTab] = useState<'letter' | 'numeric'>('letter');
     const [showAddColorModal, setShowAddColorModal] = useState(false);
     const [newColorName, setNewColorName] = useState('');
     const [newColorHex, setNewColorHex] = useState('#000000');
@@ -698,8 +701,33 @@ export default function NewProductPage() {
                         <label className="block text-right font-bold text-text-light-primary mb-3">
                             المقاسات المتاحة
                         </label>
+
+                        {/* Size Type Tabs */}
+                        <div className="flex gap-2 mb-4 bg-surface-light p-1 rounded-lg">
+                            <button
+                                type="button"
+                                onClick={() => setSizeTab('letter')}
+                                className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${sizeTab === 'letter'
+                                        ? 'bg-primary text-white shadow-sm'
+                                        : 'text-text-light-secondary hover:text-text-light-primary'
+                                    }`}
+                            >
+                                🔤 مقاسات حروف (S, M, L...)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSizeTab('numeric')}
+                                className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${sizeTab === 'numeric'
+                                        ? 'bg-primary text-white shadow-sm'
+                                        : 'text-text-light-secondary hover:text-text-light-primary'
+                                    }`}
+                            >
+                                🔢 مقاسات أرقام (36, 37...)
+                            </button>
+                        </div>
+
                         <div className="flex flex-wrap gap-2 mb-3">
-                            {AVAILABLE_SIZES.map((size) => (
+                            {(sizeTab === 'letter' ? LETTER_SIZES : NUMERIC_SIZES).map((size) => (
                                 <button
                                     key={size}
                                     type="button"
@@ -714,27 +742,38 @@ export default function NewProductPage() {
                             ))}
                         </div>
 
-                        {/* Custom sizes */}
-                        {selectedSizes.filter(s => !AVAILABLE_SIZES.includes(s)).map((size) => (
-                            <span key={size} className="inline-flex items-center gap-1 px-3 py-1 bg-primary text-white rounded-lg text-sm mr-2 mb-2">
-                                {size}
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedSizes(selectedSizes.filter(s => s !== size))}
-                                    className="hover:bg-white/20 rounded"
-                                >
-                                    <span className="material-symbols-outlined text-sm">close</span>
-                                </button>
-                            </span>
-                        ))}
+                        {/* Selected sizes summary */}
+                        {selectedSizes.length > 0 && (
+                            <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                                <p className="text-xs text-primary font-bold mb-2 text-right">✅ المقاسات المختارة:</p>
+                                <div className="flex flex-wrap gap-1">
+                                    {selectedSizes.map((size) => (
+                                        <span
+                                            key={size}
+                                            className="inline-flex items-center gap-1 px-2 py-1 bg-primary text-white rounded-md text-xs font-medium"
+                                        >
+                                            {size}
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedSizes(selectedSizes.filter(s => s !== size))}
+                                                className="hover:bg-white/20 rounded"
+                                            >
+                                                <span className="material-symbols-outlined text-xs">close</span>
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
+                        {/* Custom sizes */}
                         {showCustomSizeInput ? (
                             <div className="flex gap-2 mt-3">
                                 <input
                                     type="text"
                                     value={customSize}
                                     onChange={(e) => setCustomSize(e.target.value)}
-                                    placeholder="مثال: 38، 40"
+                                    placeholder="مثال: 47، 48"
                                     className="flex-1 px-3 py-2 rounded-lg border border-border-light bg-background-light text-text-light-primary text-right"
                                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomSize())}
                                 />
@@ -760,9 +799,9 @@ export default function NewProductPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowCustomSizeInput(true)}
-                                className="text-primary font-medium text-sm hover:underline"
+                                className="text-primary font-medium text-sm hover:underline mt-2 block"
                             >
-                                + مقاس مخصص
+                                + مقاس مخصص آخر
                             </button>
                         )}
                     </div>
