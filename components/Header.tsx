@@ -9,8 +9,6 @@ import { SearchModal } from '@/components/SearchModal';
 import { useCartUI } from '@/context/CartUIContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { useAuthStore } from '@/store/authStore';
-import { Fanous, StringLights } from '@/components/RamadanDecorations';
-import IftarCountdown from '@/components/IftarCountdown';
 
 export default function Header() {
     const pathname = usePathname();
@@ -165,19 +163,6 @@ export default function Header() {
     return (
         <>
             <header className="sticky top-0 z-50 bg-background-light/95 backdrop-blur-md shadow-sm">
-                {/* Ramadan Decorations */}
-                <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
-                    <div className="opacity-80 scale-75 origin-top">
-                        <StringLights top="-10px" />
-                    </div>
-                    {/* Hanging Lanterns */}
-                    <div className="absolute top-0 left-1 md:left-2 animate-swing origin-top">
-                        <Fanous color="red" className="w-8 h-14 md:w-10 md:h-16 drop-shadow-md" />
-                    </div>
-                    <div className="absolute top-0 right-1 md:right-2 animate-swing-slow origin-top">
-                        <Fanous color="gold" className="w-8 h-14 md:w-10 md:h-16 drop-shadow-md" />
-                    </div>
-                </div>
                 <div className="relative flex items-center px-4 py-3 justify-between">
                     {/* Left - Menu Button */}
                     <div className="flex items-center gap-1">
@@ -208,17 +193,7 @@ export default function Header() {
                         >
                             OutFit-Hub
                         </h1>
-                        <p className="font-playfair text-cream text-sm md:text-base font-bold -mt-0.5 tracking-wide">
-                            رمضان كريم
-                        </p>
-                    </div>
-
-                    {/* Iftar Countdown (Hidden on small screens if needed, but useful generally) */}
-                    <div className="absolute left-[20%] hidden lg:block z-20">
-                        <IftarCountdown />
-                    </div>
-
-                    {/* Right - Search & Notifications */}
+                    </div>                    {/* Right - Search & Notifications */}
                     <div className="flex items-center gap-1">
                         <button
                             onClick={() => setIsSearchOpen(true)}

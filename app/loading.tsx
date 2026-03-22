@@ -1,5 +1,5 @@
-import RamadanLoader from '@/components/RamadanLoader';
+import { LoadingScreen } from '@/components/LoadingSpinner';
 
 export default function Loading() {
-    return <RamadanLoader />;
+    return <LoadingScreen />;
 }

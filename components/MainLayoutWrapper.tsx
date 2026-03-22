@@ -7,7 +7,6 @@ import BottomNav from '@/components/BottomNav';
 import CartManager from "@/components/CartManager";
 import ScrollToTop from "@/components/ScrollToTop";
 import CursorTrail from "@/components/CursorTrail";
-import RamadanGreeting from "@/components/RamadanGreeting";
 
 export default function MainLayoutWrapper({
     children,
@@ -29,7 +28,6 @@ export default function MainLayoutWrapper({
 
     return (
         <>
-            <RamadanGreeting />
             <Header />
             {children}
             <Footer />

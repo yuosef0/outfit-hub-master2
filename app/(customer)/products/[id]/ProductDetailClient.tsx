@@ -8,7 +8,7 @@ import WishlistButton from '@/components/WishlistButton';
 import Toast from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Product } from '@/lib/types';
-import RamadanLoader from '@/components/RamadanLoader';
+import { LoadingScreen } from '@/components/LoadingSpinner';
 
 export default function ProductDetailPage() {
     const router = useRouter();
@@ -181,11 +181,7 @@ export default function ProductDetailPage() {
     // ... (in the component)
 
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-card-light">
-                <RamadanLoader />
-            </div>
-        );
+        return <LoadingScreen />;
     }
 
     if (!product) {

@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import WishlistButton from '@/components/WishlistButton';
-import RamadanDecorations from '@/components/RamadanDecorations';
-import RamadanLoader from '@/components/RamadanLoader';
+import { LoadingScreen } from '@/components/LoadingSpinner';
 import { createBrowserClient } from '@supabase/ssr';
 import type { SliderImage, Category, Store, Product } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
@@ -237,7 +236,7 @@ export default function HomePage() {
     }, [sliderImages.length]);
 
     if (isLoading) {
-        return <RamadanLoader />;
+        return <LoadingScreen />;
     }
 
     return (
@@ -245,7 +244,6 @@ export default function HomePage() {
             className="relative flex h-auto min-h-screen w-full flex-col bg-background-dark justify-between group/design-root overflow-x-hidden"
             style={{ fontFamily: 'Inter, "Noto Sans", sans-serif' }}
         >
-            <RamadanDecorations />
             <div className="pb-24">
                 {/* Slider Section */}
                 <div className="@container px-4 pt-3">
@@ -298,7 +296,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Categories Section */}
-                <div className="bg-arabesque/30 pt-4 pb-8 rounded-t-3xl mt-4 border-t border-[#FFD700]/20">
+                <div className="pt-4 pb-8 rounded-t-3xl mt-4 border-t border-primary/20">
                     <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-4 text-center">
                         Categories
                     </h3>
@@ -311,8 +309,8 @@ export default function HomePage() {
                                         href={`/categories/${category.name.toLowerCase()}`}
                                         className="flex h-full flex-1 flex-col gap-4 text-center rounded-lg min-w-32 pt-4 hover:opacity-80 transition-opacity"
                                     >
-                                        {/* Festive Border Container */}
-                                        <div className="w-full aspect-square rounded-full flex flex-col items-center justify-center p-[2px] bg-gradient-to-br from-[#FFD700]/40 via-transparent to-[#FFD700]/40 shadow-lg">
+                                        {/* Standard Border Container */}
+                                        <div className="w-full aspect-square rounded-full flex flex-col items-center justify-center p-[2px] bg-gradient-to-br from-primary/20 via-transparent to-primary/20 shadow-lg">
                                             {category.image_url ? (
                                                 <div
                                                     className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-full h-full border-2 border-background-dark"
@@ -337,7 +335,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Featured Stores Section */}
-                <div className="bg-arabesque/30 pt-4 pb-8 rounded-t-3xl mt-4 border-t border-[#FFD700]/20">
+                <div className="pt-4 pb-8 rounded-t-3xl mt-4 border-t border-primary/20">
                     <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-4 text-center">
                         Featured Stores
                     </h3>
@@ -352,8 +350,8 @@ export default function HomePage() {
                                     >
 
 
-                                        {/* Festive Border Container */}
-                                        <div className="w-full aspect-video rounded-xl relative overflow-hidden bg-card-dark p-[1px] bg-gradient-to-br from-[#FFD700]/40 via-transparent to-[#FFD700]/40 shadow-md transform group-hover:scale-105 transition-transform duration-300">
+                                        {/* Standard Border Container */}
+                                        <div className="w-full aspect-video rounded-xl relative overflow-hidden bg-card-dark p-[1px] bg-gradient-to-br from-primary/20 via-transparent to-primary/20 shadow-md transform group-hover:scale-105 transition-transform duration-300">
                                             <div className="w-full h-full rounded-[11px] overflow-hidden relative bg-card-dark">
                                                 {store.logo_url ? (
                                                     <div
@@ -389,9 +387,9 @@ export default function HomePage() {
                 </div>
 
                 {/* New Arrivals Section */}
-                <div className="bg-arabesque/30 pt-4 pb-8 rounded-t-3xl mt-4 border-t border-[#FFD700]/20">
+                <div className="pt-4 pb-8 rounded-t-3xl mt-4 border-t border-primary/20">
                     <h3 className="text-cream text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 text-center">
-                        New Arrivals <span className="text-[#FFD700]">✨</span>
+                        New Arrivals
                     </h3>
                     <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
                         {newArrivals.length > 0 ? (
@@ -401,8 +399,8 @@ export default function HomePage() {
                                     href={`/products/${product.id}`}
                                     className="flex flex-col gap-3 pb-3 group relative"
                                 >
-                                    {/* Festive Border Container */}
-                                    <div className="w-full aspect-[3/4] rounded-xl relative overflow-hidden bg-card-dark p-[1px] bg-gradient-to-br from-[#FFD700]/40 via-transparent to-[#FFD700]/40">
+                                    {/* Standard Border Container */}
+                                    <div className="w-full aspect-[3/4] rounded-xl relative overflow-hidden bg-card-dark p-[1px] bg-gradient-to-br from-primary/20 via-transparent to-primary/20">
                                         <div className="w-full h-full rounded-[11px] overflow-hidden relative bg-card-dark">
                                             {product.image_urls && product.image_urls.length > 0 ? (
                                                 <div
